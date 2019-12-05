@@ -1,0 +1,200 @@
+package hashtreedb
+
+import (
+	"bytes"
+	"encoding/binary"
+	"fmt"
+)
+
+/**
+ * Save Value
+ */
+func (ins *QueryInstance) Save(valuedatas []byte) (error) {
+	dtleg := len(valuedatas)
+	mxvsz := int(ins.db.config.MaxValueSize)
+	if dtleg > mxvsz {
+		return fmt.Errorf("value size too much.")
+	}else if dtleg < mxvsz {
+		// add to Max size
+		maxvalue := make([]byte, mxvsz)
+		copy(maxvalue, valuedatas)
+		valuedatas = maxvalue
+	}
+	ofstitem, err := ins.SearchIndex()
+	if err != nil {
+		return err
+	}
+	if ofstitem == nil {
+		return fmt.Errorf("*FindValueOffsetItem not find, index file is breakdown.")
+	}
+	if ofstitem.Type == IndexItemTypeValue {
+		e2 := ins.readSegmentDataFillItem(ofstitem, false)
+		if e2 != nil {
+			return e2 // error
+		}
+		if bytes.Compare(ins.key, ofstitem.ValueKey) == 0 {
+			// replace target data
+			return ins.replace(ofstitem, valuedatas)
+		}
+	}
+	// add new value
+	return ins.append(ofstitem, valuedatas)
+}
+
+
+/**
+ * update search item
+ */
+
+func (ins *QueryInstance) updateSearchItem(sitem *FindValueOffsetItem) (error) {
+	atpos := sitem.IndexMenuSelfSegmentOffset * uint32(IndexMenuSize) + sitem.IndexItemSelfAlignment
+	itbytes := sitem.Serialize()
+	wn, err := ins.targetFilePackage.indexFile.WriteAt(itbytes, int64(atpos))
+	if err != nil {
+		return err
+	}
+	if wn != len(itbytes) {
+		return fmt.Errorf("write to index file error.")
+	}
+	return nil
+}
+
+
+
+/**
+ * update search item
+ */
+
+func (ins *QueryInstance) parseSearchMenu(char1 int, mark1 byte, segofst1 uint32, char2 int, mark2 byte, segofst2 uint32) ([]byte) {
+	chars := []int{char1, char2}
+	marks := []byte{mark1, mark2}
+	segofsts := []uint32{segofst1, segofst2}
+	menubytes := bytes.Repeat([]byte{0}, IndexMenuSize)
+	for i := 0; i < 2; i++ {
+		char := chars[i]
+		mark := marks[i]
+		segofst := segofsts[i]
+		if char < 0 || char > 255 || mark < 0 || mark > 255 {
+			break
+		}
+		// insert
+		insert_pos := char * IndexItemSize
+		menubytes[insert_pos] = mark
+		ofstdts := []byte{0, 0, 0, 0}
+		binary.BigEndian.PutUint32(ofstdts, segofst)
+		copy(menubytes[insert_pos+1:insert_pos+1+4], ofstdts)
+	}
+	return menubytes
+}
+
+
+func (ins *QueryInstance) appendSearchMenu(char1 int, mark1 byte, segofst1 uint32, char2 int, mark2 byte, segofst2 uint32) (int64, error) {
+	menubytes := ins.parseSearchMenu(char1, mark1, segofst1, char2, mark2, segofst2)
+	// write file
+	idxstat, e1 := ins.targetFilePackage.indexFile.Stat()
+	if e1 != nil {
+		return 0, e1
+	}
+	wtatsz := idxstat.Size()
+	wn, e2 := ins.targetFilePackage.indexFile.WriteAt(menubytes, wtatsz)
+	if e2 != nil {
+		return 0, e2
+	}
+	if wn != IndexMenuSize {
+		return 0, fmt.Errorf("write to index file error.")
+	}
+	return wtatsz + int64(IndexMenuSize), nil
+}
+
+
+
+
+/**
+ * Save data
+ */
+func (ins *QueryInstance) writeSegmentData(segmentOffset uint32, valuedatas []byte) (err error) {
+	// write to the file
+	var datas = bytes.NewBuffer([]byte{})
+	if ins.db.config.SaveMarkBeforeValue {
+		datas.WriteByte( byte(2) ) // store mark
+	}
+	datas.Write( ins.key )
+	datas.Write( valuedatas )
+	// write
+	segdatas := datas.Bytes()
+	wtpos := int64(segmentOffset * ins.db.config.segmentSize)
+	wn, e4 := ins.targetFilePackage.dataFile.WriteAt( segdatas, wtpos )
+	if e4 != nil {
+		err = e4
+		return
+	}
+	if wn != len(segdatas) {
+		err = fmt.Errorf("segment file WriteAt length error.")
+		return
+	}
+	return nil
+}
+
+
+
+/**
+ * Save data
+ */
+func (ins *QueryInstance) writeValueDataToFileWithGC(valuedatas []byte) (segmentOffset uint32, err error) {
+	var segmentwtat int64 = -1
+	// check gc
+	if ! ins.db.config.ForbidGC {
+		gcfile := ins.targetFilePackage.gcFile
+		gcstat, e2 := gcfile.Stat()
+		if e2 != nil {
+			err = e2
+			return
+		}
+		gcfsz := gcstat.Size()
+		if uint32(gcfsz) % 4 != 0 {
+			err = fmt.Errorf("ins.targetFilePackage.gcFile is breakdown.")
+			return
+		}
+		if gcfsz >= 4 {
+			useofst := gcfsz - 4
+			gcptr := make([]byte, 4)
+			rdn, e3 := gcfile.ReadAt(gcptr, useofst)
+			if e3 != nil {
+				err = e3
+				return
+			}
+			if rdn != 4 {
+				err = fmt.Errorf("ins.targetFilePackage.gcFile is breakdown.")
+				return
+			}
+			segmentwtat = int64( binary.BigEndian.Uint32(gcptr) )
+			gcfile.Truncate(useofst) // change & use a gc ptr
+		}else{
+			// gc file is empty, do nothing
+		}
+	}
+	// append file tail
+	if segmentwtat == -1 {
+		dtstat, e1 := ins.targetFilePackage.dataFile.Stat()
+		if e1 != nil {
+			err = e1
+			return
+		}
+		segmentwtat = dtstat.Size()
+		if uint32(segmentwtat) % ins.db.config.segmentSize != 0 {
+			err = fmt.Errorf("wtat - ins.db.config.segmentSize != 0, data file is breakdown.")
+			return
+		}
+	}
+	// write segment data
+	segmentOffset = uint32(segmentwtat) / ins.db.config.segmentSize
+	e5 := ins.writeSegmentData(segmentOffset, valuedatas)
+	if e5 != nil {
+		err = e5
+		return
+	}
+	// success return
+	return
+}
+
+

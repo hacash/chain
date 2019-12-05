@@ -1,0 +1,147 @@
+package hashtreedb
+
+import (
+	"bytes"
+	"fmt"
+)
+
+/**
+ * append value to file
+ */
+func (ins *QueryInstance) append(searchitem *FindValueOffsetItem, valuedatas []byte) (error) {
+	// write data
+	segmentOffset, err := ins.writeValueDataToFileWithGC(valuedatas)
+	if err != nil {
+		return err
+	}
+	// check index type
+	ty := searchitem.Type
+	if ty == IndexItemTypeNull || ty == IndexItemTypeValueDelete {
+		updateitem := searchitem.IncompleteCopy()
+		updateitem.Type = IndexItemTypeValue
+		updateitem.ValueSegmentOffset = segmentOffset
+		return ins.updateSearchItem(updateitem)
+	}else if ty == IndexItemTypeValue {
+		return ins.insertIndexBranch(searchitem, segmentOffset)
+	}else{
+		return fmt.Errorf("searchitem.Type error, index file breakdown.")
+	}
+
+	return nil
+}
+
+
+
+/**
+ * insert index branch
+ */
+func (ins *QueryInstance) insertIndexBranch(searchitem *FindValueOffsetItem, valueSegmentOffset uint32) (error) {
+	doSaveSearchHash := ins.searchHash
+	existSearchHash, _, _ := ins.db.spreadHashToIndexPath(ins.db.convertKeyToHash(searchitem.ValueKey))
+	search_i := searchitem.searchCount // already drop file part prefix from hash
+	//fmt.Println("search_i", search_i, "key", doSaveSearchHash, existSearchHash)
+
+	idxstat, e1 := ins.targetFilePackage.indexFile.Stat()
+	if e1 != nil {
+		return e1
+	}
+	wtatsz := idxstat.Size()
+	indexoldsngofst := wtatsz / int64(IndexMenuSize)
+	indexcursngofst := indexoldsngofst
+	indexFileAppendBytes := bytes.NewBuffer([]byte{})
+	for {
+		search_i ++
+		if search_i >= len(doSaveSearchHash) {
+			return fmt.Errorf("overflow search hash length.")
+		}
+		char_1 := doSaveSearchHash[search_i]
+		char_2 := existSearchHash[search_i]
+		if char_1 == char_2 {
+			indexcursngofst ++
+			brhdts := ins.parseSearchMenu(int(char_2), IndexItemTypeBranch, uint32(indexcursngofst), -1, 0, 0)
+			indexFileAppendBytes.Write( brhdts )
+			// fmt.Println("- - - Branch brhdts", brhdts)
+		}else{
+			brhdts := ins.parseSearchMenu(int(char_1), IndexItemTypeValue, valueSegmentOffset, int(char_2), IndexItemTypeValue, searchitem.ValueSegmentOffset)
+			indexFileAppendBytes.Write( brhdts )
+			// fmt.Println("@ value brhdts", brhdts)
+			break
+		}
+	}
+	// append index
+	appendidxcon := indexFileAppendBytes.Bytes()
+	wn, e2 := ins.targetFilePackage.indexFile.WriteAt(appendidxcon, wtatsz)
+	if e2 != nil {
+		return e2
+	}
+	if wn != len(appendidxcon) {
+		return fmt.Errorf("write to index file error.")
+	}
+
+	// update ptr
+	brhwriteitem := searchitem.IncompleteCopy()
+	brhwriteitem.Type = IndexItemTypeBranch
+	brhwriteitem.ValueSegmentOffset = uint32(indexoldsngofst) // start pos
+	e3 := ins.updateSearchItem(brhwriteitem)
+	if e3 != nil {
+		return e3
+	}
+	return nil
+}
+
+/**
+ * insert index branch
+ */
+func (ins *QueryInstance) insertIndexBranch_old(searchitem *FindValueOffsetItem, valueSegmentOffset uint32) (error) {
+	doSaveSearchHash := ins.searchHash
+	existSearchHash, _, _ := ins.db.spreadHashToIndexPath( ins.db.convertKeyToHash(searchitem.ValueKey) )
+	search_i := searchitem.searchCount // already drop file part prefix from hash
+	fmt.Println("search_i", search_i, "key", doSaveSearchHash, existSearchHash)
+	canToAddBranch := true
+	for {
+		search_i ++
+		if search_i >= len(doSaveSearchHash) {
+			return fmt.Errorf("overflow search hash length.")
+		}
+		char_1 := doSaveSearchHash[search_i]
+		char_2 := existSearchHash[search_i]
+		brhwriteitem := searchitem.IncompleteCopy()
+		if char_1 != char_2 {
+			// ok end
+			idxfilesz, e2 := ins.appendSearchMenu(int(char_1), IndexItemTypeValue, valueSegmentOffset, int(char_2), IndexItemTypeValue, searchitem.ValueSegmentOffset)
+			if e2 != nil {
+				return e2
+			}
+			brhwriteitem.Type = IndexItemTypeBranch
+			brhwriteitem.ValueSegmentOffset = uint32(idxfilesz/int64(IndexMenuSize)) - 1 // start pos
+			e3 := ins.updateSearchItem(brhwriteitem)
+			if e3 != nil {
+				return e3
+			}
+			return nil
+		}
+		// continue branch
+		if canToAddBranch {
+			idxfilesz, e4 := ins.appendSearchMenu(int(char_2), IndexItemTypeValue, searchitem.ValueSegmentOffset, -1, 0, 0)
+			if e4 != nil {
+				return e4
+			}
+			brhwriteitem.Type = IndexItemTypeBranch
+			brhwriteitem.ValueSegmentOffset = uint32(idxfilesz/int64(IndexMenuSize)) - 1 // start pos
+			e5 := ins.updateSearchItem(brhwriteitem)
+			if e5 != nil {
+				return e5
+			}
+			// update old
+			//searchitem.Type = IndexItemTypeValue
+			//searchitem.ValueSegmentOffset = searchitem.ValueSegmentOffset
+			searchitem.IndexMenuSelfSegmentOffset = brhwriteitem.ValueSegmentOffset
+
+		}
+		canToAddBranch = true
+		//searchitem.IndexItemSelfAlignment = uint32(char_2) * uint32(IndexItemSize)
+		continue
+	}
+
+}
+

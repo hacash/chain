@@ -1,9 +1,12 @@
 package chainstate
 
 type ChainStateConfig struct {
+	Datadir string
 }
 
-func NewChainStateConfig() *ChainStateConfig {
-	cnf := &ChainStateConfig{}
+func NewChainStateConfig(datadir string) *ChainStateConfig {
+	cnf := &ChainStateConfig{
+		Datadir: datadir,
+	}
 	return cnf
 }

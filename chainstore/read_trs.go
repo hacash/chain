@@ -6,6 +6,16 @@ import (
 	"github.com/hacash/core/fields"
 )
 
+// trs is exist
+func (cs *ChainStore) TransactionIsExist(txhash fields.Hash) (bool, error) {
+	query, e1 := cs.trsdataptrDB.CreateNewQueryInstance(txhash)
+	if e1 != nil {
+		return false, e1
+	}
+	defer query.Destroy()
+	return query.Exist() // search
+}
+
 // block data store
 func (cs *ChainStore) ReadTransactionDataByHash(txhash fields.Hash) ([]byte, error) {
 	query, e1 := cs.trsdataptrDB.CreateNewQueryInstance(txhash)

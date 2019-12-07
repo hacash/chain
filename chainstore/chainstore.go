@@ -18,6 +18,7 @@ type ChainStore struct {
 	trsdataptrDB *hashtreedb.HashTreeDB
 	blknumhashDB *hashtreedb.HashTreeDB
 	diamondDB    *hashtreedb.HashTreeDB
+	diamondnumDB *hashtreedb.HashTreeDB
 }
 
 func NewChainStore(cnf *ChainStoreConfig) (*ChainStore, error) {
@@ -43,6 +44,10 @@ func NewChainStore(cnf *ChainStoreConfig) (*ChainStore, error) {
 	dmdcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.absdir, "diamond"), stores.DiamondSmeltSize, 6)
 	tdrcnf.KeyPrefixSupplement = 11
 	diamondDB := hashtreedb.NewHashTreeDB(dmdcnf)
+	// create diamondnumDB
+	dmdnumcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.absdir, "diamondnum"), 6, 4)
+	tdrcnf.KeyPrefixSupplement = 4
+	diamondnumDB := hashtreedb.NewHashTreeDB(dmdnumcnf)
 	// return ok
 	cs := &ChainStore{
 		config:       cnf,
@@ -50,6 +55,7 @@ func NewChainStore(cnf *ChainStoreConfig) (*ChainStore, error) {
 		trsdataptrDB: trsdataptrDB,
 		blknumhashDB: blknumhashDB,
 		diamondDB:    diamondDB,
+		diamondnumDB: diamondnumDB,
 	}
 	return cs, nil
 }

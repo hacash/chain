@@ -1,42 +1,51 @@
 package tinykvdb
 
-import "encoding/binary"
+import (
+	"encoding/binary"
+	"fmt"
+)
 
-func (kv *TinyKVDB) Get(key []byte) []byte {
+func (kv *TinyKVDB) Get(key []byte) ([]byte, error) {
 	hashkey := convertKeyToLen16Hash(key)
 	// query
-	query, _ := kv.bashhashtreedb.CreateNewQueryInstance(hashkey)
-	if query == nil {
-		return nil
+	query, e1 := kv.bashhashtreedb.CreateNewQueryInstance(hashkey)
+	if e1 != nil {
+		return nil, e1
 	}
 	defer query.Destroy()
-	value, _ := query.Find()
+	value, e2 := query.Find()
+	if e2 != nil {
+		return nil, e2
+	}
 	if len(value) < 9 {
-		return nil
+		return nil, fmt.Errorf("store file break down.")
 	}
 	if value[0] == 0 {
-		return value[1:] // on tree
+		return value[1:], nil // on tree
 	}
 	if value[0] == ItemDelMark {
 		// delete mark
-		return nil
+		return nil, nil // not find
 	}
 	valstart := binary.BigEndian.Uint32(value[1:5])
 	vallength := binary.BigEndian.Uint32(value[5:9])
 	// read from store file
-	stat, _ := kv.storefile.Stat()
-	if stat == nil {
-		return nil
+	stat, e3 := kv.storefile.Stat()
+	if e3 != nil {
+		return nil, e3
 	}
 	// check size
 	if stat.Size() < int64(valstart+vallength) {
-		return nil
+		return nil, fmt.Errorf("store file size is error.")
 	}
 	resvalue := make([]byte, vallength)
-	n, _ := kv.storefile.ReadAt(resvalue, int64(valstart))
+	n, e4 := kv.storefile.ReadAt(resvalue, int64(valstart))
+	if e4 != nil {
+		return nil, e4
+	}
 	if n != int(vallength) {
-		return nil
+		return nil, fmt.Errorf("ReadAt error")
 	}
 	// read successfully
-	return resvalue
+	return resvalue, nil
 }

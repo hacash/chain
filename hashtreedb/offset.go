@@ -19,7 +19,7 @@ type FindValueOffsetItem struct {
 	// data
 	ValueMark byte
 	ValueKey  []byte
-	ValueBody []byte   //
+	ValueBody []byte //
 
 	// opt cnf
 	searchHash  []byte
@@ -28,20 +28,20 @@ type FindValueOffsetItem struct {
 
 func NewFindValueOffsetItem(ty uint8, ValueSegmentOffset uint32) *FindValueOffsetItem {
 	return &FindValueOffsetItem{
-		Type:        ty,
+		Type:               ty,
 		ValueSegmentOffset: ValueSegmentOffset,
 	}
 }
 
 func (this *FindValueOffsetItem) IncompleteCopy() *FindValueOffsetItem {
 	return &FindValueOffsetItem{
-		Type: this.Type,
-		ValueSegmentOffset: this.ValueSegmentOffset,
+		Type:                       this.Type,
+		ValueSegmentOffset:         this.ValueSegmentOffset,
 		IndexMenuSelfSegmentOffset: this.IndexMenuSelfSegmentOffset,
-		IndexItemSelfAlignment: this.IndexItemSelfAlignment,
-		ValueKey: nil,
-		ValueBody: nil,
-		searchHash: nil,
+		IndexItemSelfAlignment:     this.IndexItemSelfAlignment,
+		ValueKey:                   nil,
+		ValueBody:                  nil,
+		searchHash:                 nil,
 	}
 }
 

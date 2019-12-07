@@ -7,65 +7,82 @@ import (
 )
 
 /**
+ * Save Value Segment Offset
+ */
+func (ins *QueryInstance) UnsafeSaveWithValueSegmentOffset(ValueSegmentOffset uint32) error {
+	_, err := ins.saveEx(nil, int64(ValueSegmentOffset))
+	return err
+}
+
+/**
  * Save Value
  */
-func (ins *QueryInstance) Save(valuedatas []byte) (error) {
-	dtleg := len(valuedatas)
-	mxvsz := int(ins.db.config.MaxValueSize)
-	if dtleg > mxvsz {
-		return fmt.Errorf("value size too much.")
-	}else if dtleg < mxvsz {
-		// add to Max size
-		maxvalue := make([]byte, mxvsz)
-		copy(maxvalue, valuedatas)
-		valuedatas = maxvalue
+func (ins *QueryInstance) Save(valuedatas []byte) (ValueSegmentOffset uint32, err error) {
+	return ins.saveEx(valuedatas, -1)
+}
+
+/**
+ * Save Value
+ */
+func (ins *QueryInstance) saveEx(valuedatas []byte, SaveValueSegmentOffset int64) (ValueSegmentOffset uint32, err error) {
+	if valuedatas == nil && SaveValueSegmentOffset < 0 {
+		return 0, fmt.Errorf("valuedatas or SaveValueSegmentOffset must give one.")
+	}
+	if valuedatas != nil {
+		dtleg := len(valuedatas)
+		mxvsz := int(ins.db.config.MaxValueSize)
+		if dtleg > mxvsz {
+			return 0, fmt.Errorf("value size too much.")
+		} else if dtleg < mxvsz {
+			// add to Max size
+			maxvalue := make([]byte, mxvsz)
+			copy(maxvalue, valuedatas)
+			valuedatas = maxvalue
+		}
 	}
 	ofstitem, err := ins.SearchIndex()
 	if err != nil {
-		return err
+		return 0, err
 	}
 	if ofstitem == nil {
-		return fmt.Errorf("*FindValueOffsetItem not find, index file is breakdown.")
+		return 0, fmt.Errorf("*FindValueOffsetItem not find, index file is breakdown.")
 	}
 	if ofstitem.Type == IndexItemTypeValue {
 		e2 := ins.readSegmentDataFillItem(ofstitem, false)
 		if e2 != nil {
-			return e2 // error
+			return 0, e2 // error
 		}
 		if bytes.Compare(ins.key, ofstitem.ValueKey) == 0 {
 			// replace target data
-			return ins.replace(ofstitem, valuedatas)
+			return ins.replace(ofstitem, valuedatas, SaveValueSegmentOffset)
 		}
 	}
 	// add new value
-	return ins.append(ofstitem, valuedatas)
+	return ins.append(ofstitem, valuedatas, SaveValueSegmentOffset)
 }
-
 
 /**
  * update search item
  */
 
-func (ins *QueryInstance) updateSearchItem(sitem *FindValueOffsetItem) (error) {
-	atpos := sitem.IndexMenuSelfSegmentOffset * uint32(IndexMenuSize) + sitem.IndexItemSelfAlignment
+func (ins *QueryInstance) updateSearchItem(sitem *FindValueOffsetItem) (ValueSegmentOffset uint32, err error) {
+	atpos := sitem.IndexMenuSelfSegmentOffset*uint32(IndexMenuSize) + sitem.IndexItemSelfAlignment
 	itbytes := sitem.Serialize()
 	wn, err := ins.targetFilePackage.indexFile.WriteAt(itbytes, int64(atpos))
 	if err != nil {
-		return err
+		return 0, err
 	}
 	if wn != len(itbytes) {
-		return fmt.Errorf("write to index file error.")
+		return 0, fmt.Errorf("write to index file error.")
 	}
-	return nil
+	return sitem.ValueSegmentOffset, nil
 }
-
-
 
 /**
  * update search item
  */
 
-func (ins *QueryInstance) parseSearchMenu(char1 int, mark1 byte, segofst1 uint32, char2 int, mark2 byte, segofst2 uint32) ([]byte) {
+func (ins *QueryInstance) parseSearchMenu(char1 int, mark1 byte, segofst1 uint32, char2 int, mark2 byte, segofst2 uint32) []byte {
 	chars := []int{char1, char2}
 	marks := []byte{mark1, mark2}
 	segofsts := []uint32{segofst1, segofst2}
@@ -87,7 +104,6 @@ func (ins *QueryInstance) parseSearchMenu(char1 int, mark1 byte, segofst1 uint32
 	return menubytes
 }
 
-
 func (ins *QueryInstance) appendSearchMenu(char1 int, mark1 byte, segofst1 uint32, char2 int, mark2 byte, segofst2 uint32) (int64, error) {
 	menubytes := ins.parseSearchMenu(char1, mark1, segofst1, char2, mark2, segofst2)
 	// write file
@@ -106,70 +122,60 @@ func (ins *QueryInstance) appendSearchMenu(char1 int, mark1 byte, segofst1 uint3
 	return wtatsz + int64(IndexMenuSize), nil
 }
 
-
-
-
 /**
  * Save data
  */
-func (ins *QueryInstance) writeSegmentData(segmentOffset uint32, valuedatas []byte) (err error) {
+func (ins *QueryInstance) writeSegmentData(segmentOffset uint32, valuedatas []byte) (ValueSegmentOffset uint32, err error) {
 	// write to the file
 	var datas = bytes.NewBuffer([]byte{})
 	if ins.db.config.SaveMarkBeforeValue {
-		datas.WriteByte( byte(2) ) // store mark
+		datas.WriteByte(byte(2)) // store mark
 	}
-	datas.Write( ins.key )
-	datas.Write( valuedatas )
+	datas.Write(ins.key)
+	datas.Write(valuedatas)
 	// write
 	segdatas := datas.Bytes()
 	wtpos := int64(segmentOffset * ins.db.config.segmentSize)
-	wn, e4 := ins.targetFilePackage.dataFile.WriteAt( segdatas, wtpos )
+	wn, e4 := ins.targetFilePackage.dataFile.WriteAt(segdatas, wtpos)
 	if e4 != nil {
-		err = e4
-		return
+		return 0, e4
 	}
 	if wn != len(segdatas) {
-		err = fmt.Errorf("segment file WriteAt length error.")
-		return
+		return 0, fmt.Errorf("segment file WriteAt length error.")
 	}
-	return nil
+	return segmentOffset, nil
 }
-
-
 
 /**
  * Save data
  */
-func (ins *QueryInstance) writeValueDataToFileWithGC(valuedatas []byte) (segmentOffset uint32, err error) {
+func (ins *QueryInstance) writeValueDataToFileWithGC(valuedatas []byte) (valueSegmentOffset uint32, err error) {
 	var segmentwtat int64 = -1
 	// check gc
-	if ! ins.db.config.ForbidGC {
+	if !ins.db.config.ForbidGC {
 		gcfile := ins.targetFilePackage.gcFile
 		gcstat, e2 := gcfile.Stat()
 		if e2 != nil {
-			err = e2
-			return
+			return 0, e2
 		}
 		gcfsz := gcstat.Size()
-		if uint32(gcfsz) % 4 != 0 {
-			err = fmt.Errorf("ins.targetFilePackage.gcFile is breakdown.")
-			return
+		if uint32(gcfsz)%4 != 0 {
+			return 0, fmt.Errorf("ins.targetFilePackage.gcFile is breakdown.")
 		}
 		if gcfsz >= 4 {
 			useofst := gcfsz - 4
 			gcptr := make([]byte, 4)
 			rdn, e3 := gcfile.ReadAt(gcptr, useofst)
 			if e3 != nil {
-				err = e3
-				return
+				return 0, e3
 			}
 			if rdn != 4 {
 				err = fmt.Errorf("ins.targetFilePackage.gcFile is breakdown.")
 				return
 			}
-			segmentwtat = int64( binary.BigEndian.Uint32(gcptr) )
+			segmentwtat = int64(binary.BigEndian.Uint32(gcptr))
 			gcfile.Truncate(useofst) // change & use a gc ptr
-		}else{
+		} else {
 			// gc file is empty, do nothing
 		}
 	}
@@ -177,24 +183,15 @@ func (ins *QueryInstance) writeValueDataToFileWithGC(valuedatas []byte) (segment
 	if segmentwtat == -1 {
 		dtstat, e1 := ins.targetFilePackage.dataFile.Stat()
 		if e1 != nil {
-			err = e1
-			return
+			return 0, e1
 		}
 		segmentwtat = dtstat.Size()
-		if uint32(segmentwtat) % ins.db.config.segmentSize != 0 {
+		if uint32(segmentwtat)%ins.db.config.segmentSize != 0 {
 			err = fmt.Errorf("wtat - ins.db.config.segmentSize != 0, data file is breakdown.")
 			return
 		}
 	}
 	// write segment data
-	segmentOffset = uint32(segmentwtat) / ins.db.config.segmentSize
-	e5 := ins.writeSegmentData(segmentOffset, valuedatas)
-	if e5 != nil {
-		err = e5
-		return
-	}
-	// success return
-	return
+	segmentOffset := uint32(segmentwtat) / ins.db.config.segmentSize
+	return ins.writeSegmentData(segmentOffset, valuedatas)
 }
-
-

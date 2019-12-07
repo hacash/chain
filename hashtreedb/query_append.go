@@ -8,11 +8,17 @@ import (
 /**
  * append value to file
  */
-func (ins *QueryInstance) append(searchitem *FindValueOffsetItem, valuedatas []byte) (error) {
+func (ins *QueryInstance) append(searchitem *FindValueOffsetItem, valuedatas []byte, SaveValueSegmentOffset uint32) (ValueSegmentOffset uint32, err error) {
 	// write data
-	segmentOffset, err := ins.writeValueDataToFileWithGC(valuedatas)
-	if err != nil {
-		return err
+	segmentOffset := uint32(0)
+	if valuedatas != nil {
+		segmentOffset, err = ins.writeValueDataToFileWithGC(valuedatas)
+		if err != nil {
+			return 0, err
+		}
+	} else {
+		// do not really write file
+		segmentOffset = SaveValueSegmentOffset
 	}
 	// check index type
 	ty := searchitem.Type
@@ -21,21 +27,17 @@ func (ins *QueryInstance) append(searchitem *FindValueOffsetItem, valuedatas []b
 		updateitem.Type = IndexItemTypeValue
 		updateitem.ValueSegmentOffset = segmentOffset
 		return ins.updateSearchItem(updateitem)
-	}else if ty == IndexItemTypeValue {
+	} else if ty == IndexItemTypeValue {
 		return ins.insertIndexBranch(searchitem, segmentOffset)
-	}else{
-		return fmt.Errorf("searchitem.Type error, index file breakdown.")
+	} else {
+		return 0, fmt.Errorf("searchitem.Type error, index file breakdown.")
 	}
-
-	return nil
 }
-
-
 
 /**
  * insert index branch
  */
-func (ins *QueryInstance) insertIndexBranch(searchitem *FindValueOffsetItem, valueSegmentOffset uint32) (error) {
+func (ins *QueryInstance) insertIndexBranch(searchitem *FindValueOffsetItem, valueSegmentOffset uint32) (ValueSegmentOffset uint32, err error) {
 	doSaveSearchHash := ins.searchHash
 	existSearchHash, _, _ := ins.db.spreadHashToIndexPath(ins.db.convertKeyToHash(searchitem.ValueKey))
 	search_i := searchitem.searchCount // already drop file part prefix from hash
@@ -43,27 +45,27 @@ func (ins *QueryInstance) insertIndexBranch(searchitem *FindValueOffsetItem, val
 
 	idxstat, e1 := ins.targetFilePackage.indexFile.Stat()
 	if e1 != nil {
-		return e1
+		return 0, e1
 	}
 	wtatsz := idxstat.Size()
 	indexoldsngofst := wtatsz / int64(IndexMenuSize)
 	indexcursngofst := indexoldsngofst
 	indexFileAppendBytes := bytes.NewBuffer([]byte{})
 	for {
-		search_i ++
+		search_i++
 		if search_i >= len(doSaveSearchHash) {
-			return fmt.Errorf("overflow search hash length.")
+			return 0, fmt.Errorf("overflow search hash length.")
 		}
 		char_1 := doSaveSearchHash[search_i]
 		char_2 := existSearchHash[search_i]
 		if char_1 == char_2 {
-			indexcursngofst ++
+			indexcursngofst++
 			brhdts := ins.parseSearchMenu(int(char_2), IndexItemTypeBranch, uint32(indexcursngofst), -1, 0, 0)
-			indexFileAppendBytes.Write( brhdts )
+			indexFileAppendBytes.Write(brhdts)
 			// fmt.Println("- - - Branch brhdts", brhdts)
-		}else{
+		} else {
 			brhdts := ins.parseSearchMenu(int(char_1), IndexItemTypeValue, valueSegmentOffset, int(char_2), IndexItemTypeValue, searchitem.ValueSegmentOffset)
-			indexFileAppendBytes.Write( brhdts )
+			indexFileAppendBytes.Write(brhdts)
 			// fmt.Println("@ value brhdts", brhdts)
 			break
 		}
@@ -72,26 +74,22 @@ func (ins *QueryInstance) insertIndexBranch(searchitem *FindValueOffsetItem, val
 	appendidxcon := indexFileAppendBytes.Bytes()
 	wn, e2 := ins.targetFilePackage.indexFile.WriteAt(appendidxcon, wtatsz)
 	if e2 != nil {
-		return e2
+		return 0, e2
 	}
 	if wn != len(appendidxcon) {
-		return fmt.Errorf("write to index file error.")
+		return 0, fmt.Errorf("write to index file error.")
 	}
 
 	// update ptr
 	brhwriteitem := searchitem.IncompleteCopy()
 	brhwriteitem.Type = IndexItemTypeBranch
 	brhwriteitem.ValueSegmentOffset = uint32(indexoldsngofst) // start pos
-	e3 := ins.updateSearchItem(brhwriteitem)
-	if e3 != nil {
-		return e3
-	}
-	return nil
+	return ins.updateSearchItem(brhwriteitem)
 }
 
 /**
  * insert index branch
- */
+ *
 func (ins *QueryInstance) insertIndexBranch_old(searchitem *FindValueOffsetItem, valueSegmentOffset uint32) (error) {
 	doSaveSearchHash := ins.searchHash
 	existSearchHash, _, _ := ins.db.spreadHashToIndexPath( ins.db.convertKeyToHash(searchitem.ValueKey) )
@@ -114,11 +112,7 @@ func (ins *QueryInstance) insertIndexBranch_old(searchitem *FindValueOffsetItem,
 			}
 			brhwriteitem.Type = IndexItemTypeBranch
 			brhwriteitem.ValueSegmentOffset = uint32(idxfilesz/int64(IndexMenuSize)) - 1 // start pos
-			e3 := ins.updateSearchItem(brhwriteitem)
-			if e3 != nil {
-				return e3
-			}
-			return nil
+			return ins.updateSearchItem(brhwriteitem)
 		}
 		// continue branch
 		if canToAddBranch {
@@ -142,6 +136,5 @@ func (ins *QueryInstance) insertIndexBranch_old(searchitem *FindValueOffsetItem,
 		//searchitem.IndexItemSelfAlignment = uint32(char_2) * uint32(IndexItemSize)
 		continue
 	}
-
 }
-
+*/

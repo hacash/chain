@@ -15,7 +15,7 @@ type QueryInstance struct {
 	filePath   string
 	searchHash []byte
 
-	targetFilePackage *TargetFilePackage
+	targetFilePackage         *TargetFilePackage
 	targetFileWriteJustUnlock *sync.Mutex
 
 	// search cache
@@ -28,11 +28,11 @@ type QueryInstance struct {
  *     Save(valuebytes []byte)
  * }
  */
-func newQueryInstance(db *HashTreeDB, key []byte) (*QueryInstance, error){
+func newQueryInstance(db *HashTreeDB, key []byte) (*QueryInstance, error) {
 
 	ins := &QueryInstance{
-		db: db,
-		key: key,
+		db:                db,
+		key:               key,
 		searchResultCache: nil,
 	}
 	ins.hash = db.convertKeyToHash(key)
@@ -63,4 +63,3 @@ func (ins *QueryInstance) Destroy() {
 	ins.targetFileWriteJustUnlock = nil
 	ins.searchResultCache = nil
 }
-

@@ -14,8 +14,6 @@ func ReverseHashOrder(hash []byte) []byte {
 	return hsdt
 }
 
-
-
 //
 func PathExists(path string) (bool, error) {
 	_, err := os.Stat(path)
@@ -27,4 +25,3 @@ func PathExists(path string) (bool, error) {
 	}
 	return false, err
 }
-

@@ -12,7 +12,7 @@ func (ins *QueryInstance) append(searchitem *FindValueOffsetItem, valuedatas []b
 	// write data
 	segmentOffset := uint32(0)
 	if valuedatas != nil {
-		segmentOffset, err = ins.writeValueDataToFileWithGC(valuedatas)
+		segmentOffset, err = ins.writeValueDataToFileWithGC(searchitem, valuedatas)
 		if err != nil {
 			return 0, err
 		}
@@ -22,13 +22,14 @@ func (ins *QueryInstance) append(searchitem *FindValueOffsetItem, valuedatas []b
 	}
 	// check index type
 	ty := searchitem.Type
-	if ty == IndexItemTypeNull || ty == IndexItemTypeValueDelete {
+	if ty == IndexItemTypeValue {
+		// value or keep delete mark
+		return ins.insertIndexBranch(searchitem, segmentOffset)
+	} else if ty == IndexItemTypeNull || ty == IndexItemTypeValueDelete {
 		updateitem := searchitem.IncompleteCopy()
 		updateitem.Type = IndexItemTypeValue
 		updateitem.ValueSegmentOffset = segmentOffset
 		return ins.updateSearchItem(updateitem)
-	} else if ty == IndexItemTypeValue {
-		return ins.insertIndexBranch(searchitem, segmentOffset)
 	} else {
 		return 0, fmt.Errorf("searchitem.Type error, index file breakdown.")
 	}
@@ -64,7 +65,13 @@ func (ins *QueryInstance) insertIndexBranch(searchitem *FindValueOffsetItem, val
 			indexFileAppendBytes.Write(brhdts)
 			// fmt.Println("- - - Branch brhdts", brhdts)
 		} else {
-			brhdts := ins.parseSearchMenu(int(char_1), IndexItemTypeValue, valueSegmentOffset, int(char_2), IndexItemTypeValue, searchitem.ValueSegmentOffset)
+			// can keep delete mark
+			searchItemType := searchitem.Type
+			if searchItemType != IndexItemTypeValueDelete {
+				searchItemType = IndexItemTypeValue
+			}
+			// write
+			brhdts := ins.parseSearchMenu(int(char_1), IndexItemTypeValue, valueSegmentOffset, int(char_2), searchItemType, searchitem.ValueSegmentOffset)
 			indexFileAppendBytes.Write(brhdts)
 			// fmt.Println("@ value brhdts", brhdts)
 			break

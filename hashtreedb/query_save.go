@@ -125,16 +125,8 @@ func (ins *QueryInstance) appendSearchMenu(char1 int, mark1 byte, segofst1 uint3
 /**
  * Save data
  */
-func (ins *QueryInstance) writeSegmentData(segmentOffset uint32, valuedatas []byte) (ValueSegmentOffset uint32, err error) {
+func (ins *QueryInstance) writeSegmentDataEx(segmentOffset uint32, segdatas []byte) (ValueSegmentOffset uint32, err error) {
 	// write to the file
-	var datas = bytes.NewBuffer([]byte{})
-	if ins.db.config.SaveMarkBeforeValue {
-		datas.WriteByte(byte(2)) // store mark
-	}
-	datas.Write(ins.key)
-	datas.Write(valuedatas)
-	// write
-	segdatas := datas.Bytes()
 	wtpos := int64(segmentOffset * ins.db.config.segmentValueSize)
 	wn, e4 := ins.targetFilePackage.dataFile.WriteAt(segdatas, wtpos)
 	if e4 != nil {
@@ -149,34 +141,35 @@ func (ins *QueryInstance) writeSegmentData(segmentOffset uint32, valuedatas []by
 /**
  * Save data
  */
-func (ins *QueryInstance) writeValueDataToFileWithGC(valuedatas []byte) (valueSegmentOffset uint32, err error) {
+func (ins *QueryInstance) writeSegmentData(segmentOffset uint32, valuedatas []byte) (ValueSegmentOffset uint32, err error) {
+	// write to the file
+	var datas = bytes.NewBuffer([]byte{})
+	if ins.db.config.SaveMarkBeforeValue {
+		datas.WriteByte(byte(2)) // store mark
+	}
+	datas.Write(ins.key)
+	datas.Write(valuedatas)
+	// write
+	segdatas := datas.Bytes()
+	return ins.writeSegmentDataEx(segmentOffset, segdatas)
+}
+
+/**
+ * Save data
+ */
+func (ins *QueryInstance) writeValueDataToFileWithGC(searchitem *FindValueOffsetItem, valuedatas []byte) (valueSegmentOffset uint32, err error) {
 	var segmentwtat int64 = -1
+	if searchitem.Type == IndexItemTypeValueDelete {
+		segmentwtat = int64(searchitem.ValueSegmentOffset * ins.db.config.segmentValueSize)
+	}
 	// check gc
-	if !ins.db.config.ForbidGC {
-		gcfile := ins.targetFilePackage.gcFile
-		gcstat, e2 := gcfile.Stat()
-		if e2 != nil {
-			return 0, e2
+	if segmentwtat == -1 && ins.db.config.ForbidGC == false {
+		ptr, e := ins.releaseGarbageSpace()
+		if e != nil {
+			return 0, e
 		}
-		gcfsz := gcstat.Size()
-		if uint32(gcfsz)%4 != 0 {
-			return 0, fmt.Errorf("ins.targetFilePackage.gcFile is breakdown.")
-		}
-		if gcfsz >= 4 {
-			useofst := gcfsz - 4
-			gcptr := make([]byte, 4)
-			rdn, e3 := gcfile.ReadAt(gcptr, useofst)
-			if e3 != nil {
-				return 0, e3
-			}
-			if rdn != 4 {
-				err = fmt.Errorf("ins.targetFilePackage.gcFile is breakdown.")
-				return
-			}
-			segmentwtat = int64(binary.BigEndian.Uint32(gcptr))
-			gcfile.Truncate(useofst) // change & use a gc ptr
-		} else {
-			// gc file is empty, do nothing
+		if ptr > 0 {
+			segmentwtat = int64(ptr * ins.db.config.segmentValueSize)
 		}
 	}
 	// append file tail

@@ -2,7 +2,6 @@ package chainstate
 
 import (
 	"fmt"
-	"github.com/hacash/chain/chainstore"
 	"github.com/hacash/chain/hashtreedb"
 	"github.com/hacash/chain/tinykvdb"
 	"github.com/hacash/core/fields"
@@ -32,7 +31,7 @@ type ChainState struct {
 	channelDB *hashtreedb.HashTreeDB
 
 	// store
-	datastore *chainstore.ChainStore
+	datastore interfaces.ChainStore
 
 	// data hold
 	pendingBlockHeight *uint64
@@ -40,8 +39,9 @@ type ChainState struct {
 
 	submitStoreDiamond *stores.DiamondSmelt
 
-	lastestBlockHead interfaces.Block
-	lastestDiamond   *stores.DiamondSmelt
+	prev288BlockTimestamp   uint64
+	lastestBlockHeadAndMeta interfaces.Block
+	lastestDiamond          *stores.DiamondSmelt
 }
 
 func NewChainState(cnf *ChainStateConfig) (*ChainState, error) {
@@ -49,23 +49,32 @@ func NewChainState(cnf *ChainStateConfig) (*ChainState, error) {
 }
 
 func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainState, error) {
+	var laststatusDB *tinykvdb.TinyKVDB = nil
 	// is temp state
 	var temporaryDataDir string
 	if isSubBranchTemporary {
 		randstr := strconv.FormatUint(uint64(rand.Uint32()), 10)
 		temporaryDataDir = path.Join(os.TempDir(), "hacash_state_temp_"+randstr)
 		cnf.Datadir = temporaryDataDir
-	}
-	// laststatusDB
-	laststatusDB, lserr := tinykvdb.NewTinyKVDB(path.Join(cnf.Datadir, "laststatus"))
-	if lserr != nil {
-		return nil, lserr
+	} else {
+		// laststatusDB
+		lsdb, lserr := tinykvdb.NewTinyKVDB(path.Join(cnf.Datadir, "laststatus"))
+		if lserr != nil {
+			return nil, lserr
+		}
+		laststatusDB = lsdb
 	}
 	// balanceDB
+	// fmt.Println("balanceDB dir:", path.Join(cnf.Datadir, "balance"))
+	// os.MkdirAll(path.Join(cnf.Datadir, "balance"), os.ModePerm)
 	blscnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "balance"), stores.BalanceSize, 21)
 	blscnf.KeyReverse = true
 	if !isSubBranchTemporary {
 		blscnf.FileDividePartitionLevel = 2
+	} else {
+		blscnf.ForbidGC = true
+		blscnf.KeepDeleteMark = true
+		blscnf.SaveMarkBeforeValue = true
 	}
 	balanceDB := hashtreedb.NewHashTreeDB(blscnf)
 	// diamondDB
@@ -73,24 +82,33 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 	dmdcnf.KeyPrefixSupplement = 10
 	if !isSubBranchTemporary {
 		dmdcnf.FileDividePartitionLevel = 1
+	} else {
+		dmdcnf.ForbidGC = true
+		dmdcnf.KeepDeleteMark = true
+		dmdcnf.SaveMarkBeforeValue = true
 	}
 	diamondDB := hashtreedb.NewHashTreeDB(dmdcnf)
 	// channelDB
 	chlcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "channel"), stores.ChannelSize, 16)
 	if !isSubBranchTemporary {
 		chlcnf.FileDividePartitionLevel = 1
+	} else {
+		chlcnf.ForbidGC = true
+		chlcnf.KeepDeleteMark = true
+		chlcnf.SaveMarkBeforeValue = true
 	}
 	channelDB := hashtreedb.NewHashTreeDB(chlcnf)
 	// return ok
 	cs := &ChainState{
-		temporaryDataDir:   temporaryDataDir,
-		base:               nil,
-		config:             cnf,
-		laststatusDB:       laststatusDB,
-		balanceDB:          balanceDB,
-		diamondDB:          diamondDB,
-		channelDB:          channelDB,
-		pendingBlockHeight: nil,
+		temporaryDataDir:      temporaryDataDir,
+		base:                  nil,
+		config:                cnf,
+		laststatusDB:          laststatusDB,
+		balanceDB:             balanceDB,
+		diamondDB:             diamondDB,
+		channelDB:             channelDB,
+		prev288BlockTimestamp: 0,
+		pendingBlockHeight:    nil,
 	}
 	return cs, nil
 }
@@ -108,18 +126,18 @@ func (cs *ChainState) DestoryTemporary() {
 }
 
 // chain data store
-func (cs *ChainState) GetChainStore() *chainstore.ChainStore {
+func (cs *ChainState) ChainStore() interfaces.ChainStore {
 	if cs.datastore != nil {
 		return cs.datastore
 	}
 	if cs.base != nil {
-		cs.datastore = cs.base.GetChainStore() // copy
+		cs.datastore = cs.base.ChainStore() // copy
 		return cs.datastore
 	}
 	return cs.datastore
 }
 
-func (cs *ChainState) SetChainStore(store *chainstore.ChainStore) error {
+func (cs *ChainState) SetChainStore(store interfaces.ChainStore) error {
 	if cs.base != nil {
 		return fmt.Errorf("Can only be set chainstore in the final state.")
 	}
@@ -137,10 +155,13 @@ func (cs *ChainState) MergeCoverWriteChainState(src *ChainState) error {
 		cs.SetPendingBlockHash(src.pendingBlockHash)
 	}
 	if src.submitStoreDiamond != nil {
-		cs.SetPendingSubmitStoreDiamond(src.submitStoreDiamond)
+		e := cs.SetPendingSubmitStoreDiamond(src.submitStoreDiamond)
+		if e != nil {
+			return e
+		}
 	}
-	if src.lastestBlockHead != nil {
-		e := cs.SetLastestBlockHead(src.lastestBlockHead)
+	if src.lastestBlockHeadAndMeta != nil {
+		e := cs.SetLastestBlockHeadAndMeta(src.lastestBlockHeadAndMeta)
 		if e != nil {
 			return e
 		}
@@ -152,13 +173,28 @@ func (cs *ChainState) MergeCoverWriteChainState(src *ChainState) error {
 		}
 	}
 
-	//  TODO: COPY COVER WRITE STATE
+	//  COPY COVER WRITE STATE
+
+	e1 := cs.balanceDB.TraversalCopy(src.balanceDB, false)
+	if e1 != nil {
+		return e1
+	}
+	e2 := cs.diamondDB.TraversalCopy(src.diamondDB, false)
+	if e2 != nil {
+		return e2
+	}
+	e3 := cs.channelDB.TraversalCopy(src.channelDB, false)
+	if e3 != nil {
+		return e3
+	}
+
+	// copy ok
 
 	return nil
 }
 
 // fork sub
-func (cs *ChainState) NewSubBranchTemporaryChainState(abspath string) (*ChainState, error) {
+func (cs *ChainState) NewSubBranchTemporaryChainState() (*ChainState, error) {
 
 	tempcnf := NewChainStateConfig("")
 	newTempState, err1 := newChainStateEx(tempcnf, true)
@@ -177,12 +213,16 @@ func (cs *ChainState) SubmitDataStoreWriteToInvariableDisk(block interfaces.Bloc
 		return fmt.Errorf("Can only be saved in the final state.")
 	}
 	//
-	store := cs.GetChainStore()
+	store := cs.ChainStore()
 	if store == nil {
 		return fmt.Errorf("Not find ChainStore object.")
 	}
 	// save status
-	e1 := cs.IncompleteSaveLastestBlockHead()
+	e0 := cs.SetLastestBlockHeadAndMeta(block)
+	if e0 != nil {
+		return e0
+	}
+	e1 := cs.IncompleteSaveLastestBlockHeadAndMeta()
 	if e1 != nil {
 		return e1
 	}
@@ -190,11 +230,26 @@ func (cs *ChainState) SubmitDataStoreWriteToInvariableDisk(block interfaces.Bloc
 	if e2 != nil {
 		return e2
 	}
+	// save diamond
+	if cs.submitStoreDiamond != nil {
+		if cs.pendingBlockHash == nil {
+			return fmt.Errorf("Block pending hash not set.")
+		}
+		cs.submitStoreDiamond.ContainBlockHash = cs.pendingBlockHash // copy
+		e := store.SaveDiamond(cs.submitStoreDiamond)
+		if e != nil {
+			return e
+		}
+		cs.submitStoreDiamond = nil // reset
+	}
 	// save block data
 	e3 := store.SaveBlockUniteTransactions(block)
 	if e3 != nil {
 		return e3
 	}
+	// clear
+	cs.pendingBlockHash = nil
+	cs.pendingBlockHeight = nil
 	// ok
 	return nil
 }

@@ -12,6 +12,39 @@ const (
 	TestDir = "/media/yangjie/500GB/Hacash/src/github.com/hacash/chain/testdata/"
 )
 
+func Test_gc(t *testing.T) {
+
+	TestDir := "/home/shiqiujie/Desktop/Hacash/go/src/github.com/hacash/chain/hashtreedb/testdata"
+
+	cnf := NewHashTreeDBConfig(TestDir, 4, 4)
+	//cnf.FileDividePartitionLevel = 2
+	//cnf.KeepDeleteMark = true
+	db := NewHashTreeDB(cnf)
+
+	key1 := []byte{1, 1, 1, 1}
+	key2 := []byte{17, 17, 17, 17}
+	key3 := []byte{33, 33, 33, 33}
+
+	fmt.Println(key1, key2, key3)
+
+	kv := key2
+
+	ins, _ := db.CreateNewQueryInstance(kv)
+	ins.Save(kv)
+
+	//ins.Delete()
+
+	//fmt.Println( ins.Find() )
+	//e3 := ins1.Delete()
+	//if e3 != nil {
+	//	fmt.Println(e3)
+	//	return
+	//}
+
+	ins.Destroy()
+
+}
+
 func Test_store_list_t5(t *testing.T) {
 
 	stokeys := [][]byte{

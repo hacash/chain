@@ -17,6 +17,9 @@ func (kv *TinyKVDB) Get(key []byte) ([]byte, error) {
 	if e2 != nil {
 		return nil, e2
 	}
+	if value == nil {
+		return nil, nil // not find
+	}
 	if len(value) < 9 {
 		return nil, fmt.Errorf("store file break down.")
 	}

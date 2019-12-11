@@ -39,6 +39,9 @@ func (ins *QueryInstance) Find() ([]byte, error) {
 	if ofstItem == nil {
 		return nil, nil // not find
 	}
+	if ofstItem.Type == 0 {
+		return nil, nil // not find
+	}
 	e2 := ins.readSegmentDataFillItem(ofstItem, true)
 	if e2 != nil {
 		return nil, e2 // error
@@ -57,12 +60,12 @@ func (ins *QueryInstance) Find() ([]byte, error) {
  */
 func (ins *QueryInstance) readSegmentDataFillItem(fditem *FindValueOffsetItem, isreadvalue bool) error {
 	// read data from file
-	readsz := int(ins.db.config.segmentSize)
+	readsz := int(ins.db.config.segmentValueSize)
 	if !isreadvalue {
 		readsz -= int(ins.db.config.MaxValueSize)
 	}
 	var databytes = make([]byte, readsz)
-	var rdoffset = fditem.ValueSegmentOffset * ins.db.config.segmentSize
+	var rdoffset = fditem.ValueSegmentOffset * ins.db.config.segmentValueSize
 	rdsz, rderr := ins.targetFilePackage.dataFile.ReadAt(databytes, int64(rdoffset))
 	if rderr != nil {
 		return rderr // return error

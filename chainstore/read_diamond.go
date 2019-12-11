@@ -3,7 +3,7 @@ package chainstore
 import (
 	"encoding/binary"
 	"fmt"
-	"github.com/hacash/blockmint/block/fields"
+	"github.com/hacash/core/fields"
 	"github.com/hacash/core/stores"
 )
 

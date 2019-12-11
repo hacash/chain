@@ -9,29 +9,28 @@ import (
 )
 
 const (
-	LastestStatusKeyName_lastest_block_head = "lastest_block_head"
-	LastestStatusKeyName_lastest_diamond    = "lastest_diamond"
+	LastestStatusKeyName_lastest_block_head_meta = "lastest_block_head_meta"
+	LastestStatusKeyName_lastest_diamond         = "lastest_diamond"
 )
 
-// status
-func (cs *ChainState) SetLastestBlockHead(blockhead interfaces.Block) error {
-	cs.lastestBlockHead = blockhead
+func (cs *ChainState) SetLastestBlockHeadAndMeta(blockmeta interfaces.Block) error {
+	cs.lastestBlockHeadAndMeta = blockmeta
 	return nil
 }
 
-func (cs *ChainState) IncompleteSaveLastestBlockHead() error {
+func (cs *ChainState) IncompleteSaveLastestBlockHeadAndMeta() error {
 	if cs.laststatusDB == nil {
 		return fmt.Errorf("cs.laststatusDB is not init.")
 	}
-	if cs.lastestBlockHead == nil {
+	if cs.lastestBlockHeadAndMeta == nil {
 		return nil // not set
 	}
-	stodatas, e2 := cs.lastestBlockHead.SerializeHead()
+	stodatas, e2 := cs.lastestBlockHeadAndMeta.SerializeExcludeTransactions()
 	if e2 != nil {
 		return e2
 	}
 	// save
-	e3 := cs.laststatusDB.Set([]byte(LastestStatusKeyName_lastest_block_head), stodatas)
+	e3 := cs.laststatusDB.Set([]byte(LastestStatusKeyName_lastest_block_head_meta), stodatas)
 	if e3 != nil {
 		return e3
 	}
@@ -39,15 +38,15 @@ func (cs *ChainState) IncompleteSaveLastestBlockHead() error {
 	return nil
 }
 
-func (cs *ChainState) ReadLastestBlockHead() (interfaces.Block, error) {
-	if cs.lastestBlockHead != nil {
-		return cs.lastestBlockHead, nil
+func (cs *ChainState) ReadLastestBlockHeadAndMeta() (interfaces.Block, error) {
+	if cs.lastestBlockHeadAndMeta != nil {
+		return cs.lastestBlockHeadAndMeta, nil
 	}
 	if cs.base != nil {
-		return cs.base.ReadLastestBlockHead()
+		return cs.base.ReadLastestBlockHeadAndMeta()
 	}
 	// read from status db
-	vdatas, e2 := cs.laststatusDB.Get([]byte(LastestStatusKeyName_lastest_block_head))
+	vdatas, e2 := cs.laststatusDB.Get([]byte(LastestStatusKeyName_lastest_block_head_meta))
 	if e2 != nil {
 		return nil, e2
 	}
@@ -58,12 +57,16 @@ func (cs *ChainState) ReadLastestBlockHead() (interfaces.Block, error) {
 	if len(vdatas) < blocks.BlockHeadSize {
 		return nil, fmt.Errorf("lastest_block_head store file error.")
 	}
-	tarblk, _, err := blocks.ParseBlockHead(vdatas, 0)
-	if err != nil {
-		return nil, err
+	tarblk, _, err1 := blocks.ParseBlockHead(vdatas, 0)
+	if err1 != nil {
+		return nil, err1
+	}
+	_, err1 = tarblk.ParseExcludeTransactions(vdatas, 0)
+	if err1 != nil {
+		return nil, err1
 	}
 	// cache set
-	cs.lastestBlockHead = tarblk
+	cs.lastestBlockHeadAndMeta = tarblk
 	return tarblk, nil
 }
 
@@ -95,7 +98,7 @@ func (cs *ChainState) IncompleteSaveLastestDiamond() error {
 }
 
 func (cs *ChainState) ReadLastestDiamond() (*stores.DiamondSmelt, error) {
-	if cs.lastestBlockHead != nil {
+	if cs.lastestBlockHeadAndMeta != nil {
 		return cs.lastestDiamond, nil
 	}
 	if cs.base != nil {

@@ -12,20 +12,17 @@ const (
 	TestDir = "/media/yangjie/500GB/Hacash/src/github.com/hacash/chain/testdata/"
 )
 
-
-
-
 func Test_store_list_t5(t *testing.T) {
 
 	stokeys := [][]byte{
 		//[]byte{0,0,0,0},
 		//[]byte{0,0,0,1},
 		//[]byte{0,1,0,2},
-		[]byte{1,1,1,3},
+		[]byte{1, 1, 1, 3},
 		//[]byte{1,0,1,3},
 		//[]byte{0,1,1,3},
 		//[]byte{1,1,1,3},
-		[]byte{1,1,1,1},
+		[]byte{1, 1, 1, 1},
 	}
 	//stokey1 := []byte{1,7,8,9}
 	cnf := NewHashTreeDBConfig(TestDir, 4, 4)
@@ -37,7 +34,7 @@ func Test_store_list_t5(t *testing.T) {
 		fmt.Println("- - - - - - - -", key)
 
 		ins1, _ := db.CreateNewQueryInstance(key)
-		e1 := ins1.Save(key)
+		_, e1 := ins1.Save(key)
 		if e1 != nil {
 			fmt.Println(e1)
 		}
@@ -52,16 +49,7 @@ func Test_store_list_t5(t *testing.T) {
 		ins2.Destroy()
 	}
 
-
-
-
-
-
 }
-
-
-
-
 
 func Test_store_hash_t4(t *testing.T) {
 
@@ -70,13 +58,13 @@ func Test_store_hash_t4(t *testing.T) {
 	db := NewHashTreeDB(cnf)
 
 	curkey := make([]byte, 32)
-	for i0:=0; i0<1000000; i0++ {
+	for i0 := 0; i0 < 1000000; i0++ {
 		rand.Read(curkey)
 		ins1, e0 := db.CreateNewQueryInstance(curkey)
 		if e0 != nil {
 			panic(e0)
 		}
-		e2 := ins1.Save(curkey)
+		_, e2 := ins1.Save(curkey)
 		if e2 != nil {
 			panic(e2)
 		}
@@ -111,11 +99,7 @@ func Test_store_hash_t4(t *testing.T) {
 	//	}
 	//}
 
-
-
-
 }
-
 
 func Test_store_much_t3(t *testing.T) {
 
@@ -123,17 +107,17 @@ func Test_store_much_t3(t *testing.T) {
 	//cnf.FileDividePartitionLevel = 2
 	db := NewHashTreeDB(cnf)
 
-	for i0:=uint8(0); i0<4; i0++ {
-		for i1:=uint8(0); i1<4; i1++ {
-			for i2:=uint8(0); i2<3; i2++ {
-				for i3:=uint8(0); i3<3; i3++ {
-					curkey := []byte{i0,i1,i2,i3}
+	for i0 := uint8(0); i0 < 4; i0++ {
+		for i1 := uint8(0); i1 < 4; i1++ {
+			for i2 := uint8(0); i2 < 3; i2++ {
+				for i3 := uint8(0); i3 < 3; i3++ {
+					curkey := []byte{i0, i1, i2, i3}
 					fmt.Println(curkey)
 					ins1, e1 := db.CreateNewQueryInstance(curkey)
 					if e1 != nil {
 						panic(e1)
 					}
-					e2 := ins1.Save(curkey)
+					_, e2 := ins1.Save(curkey)
 					if e2 != nil {
 						panic(e2)
 					}
@@ -150,30 +134,24 @@ func Test_store_much_t3(t *testing.T) {
 					if bytes.Compare(value, curkey) != 0 {
 						fmt.Println("...........", curkey, value)
 						//panic("not value")
-					}else{
+					} else {
 						fmt.Println("===========", curkey, value)
 					}
 					ins2.Destroy()
-
-
 
 				}
 			}
 		}
 	}
 
-
-
-
 }
-
 
 func Test_store_new_t2(t *testing.T) {
 
-	stokey1 := []byte{0,0,0,0}
-	stokey2 := []byte{0,0,0,1}
-	stokey3 := []byte{0,0,0,2}
-	stokey4 := []byte{0,0,0,3}
+	stokey1 := []byte{0, 0, 0, 0}
+	stokey2 := []byte{0, 0, 0, 1}
+	stokey3 := []byte{0, 0, 0, 2}
+	stokey4 := []byte{0, 0, 0, 3}
 	fmt.Println(stokey1, stokey2, stokey3, stokey4)
 	//stokey1 := []byte{1,7,8,9}
 	cnf := NewHashTreeDBConfig(TestDir, 4, 4)
@@ -187,7 +165,7 @@ func Test_store_new_t2(t *testing.T) {
 	ins1.Destroy()
 
 	ins2, _ := db.CreateNewQueryInstance(stokey2)
-	e2 := ins2.Save([]byte("VVVV"))
+	_, e2 := ins2.Save([]byte("VVVV"))
 	fmt.Println(e2)
 	fddts2, _ := ins2.Find()
 	fmt.Println(string(fddts2))
@@ -206,10 +184,7 @@ func Test_store_new_t2(t *testing.T) {
 	//fmt.Println(string(fddts))
 	//ins1.Destroy()
 
-
-
 }
-
 
 func Test_create_query_ins_t1(t *testing.T) {
 
@@ -238,16 +213,7 @@ func Test_create_query_ins_t1(t *testing.T) {
 	// 关闭查询
 	qins.Destroy()
 
-
 	qins_1, _ := db.CreateNewQueryInstance(key1)
 	qins_1.Destroy()
 
-
-
 }
-
-
-
-
-
-

@@ -8,7 +8,7 @@ import (
 /**
  * append value to file
  */
-func (ins *QueryInstance) append(searchitem *FindValueOffsetItem, valuedatas []byte, SaveValueSegmentOffset uint32) (ValueSegmentOffset uint32, err error) {
+func (ins *QueryInstance) append(searchitem *FindValueOffsetItem, valuedatas []byte, SaveValueSegmentOffset int64) (ValueSegmentOffset uint32, err error) {
 	// write data
 	segmentOffset := uint32(0)
 	if valuedatas != nil {
@@ -18,7 +18,7 @@ func (ins *QueryInstance) append(searchitem *FindValueOffsetItem, valuedatas []b
 		}
 	} else {
 		// do not really write file
-		segmentOffset = SaveValueSegmentOffset
+		segmentOffset = uint32(SaveValueSegmentOffset)
 	}
 	// check index type
 	ty := searchitem.Type

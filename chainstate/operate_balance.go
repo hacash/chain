@@ -16,6 +16,13 @@ func (cs *ChainState) Balance(addr fields.Address) *stores.Balance {
 	if e2 != nil {
 		return nil // error
 	}
+	if vdatas == nil {
+		if cs.base != nil {
+			return cs.base.Balance(addr) // check base
+		} else {
+			return stores.NewEmptyBalance() // not find
+		}
+	}
 	if len(vdatas) < stores.BalanceSize {
 		return nil // error
 	}

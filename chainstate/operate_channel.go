@@ -6,8 +6,8 @@ import (
 )
 
 //
-func (cs *ChainState) Channel(diamond fields.Bytes6) *stores.Channel {
-	query, e1 := cs.channelDB.CreateNewQueryInstance(diamond)
+func (cs *ChainState) Channel(channelid fields.Bytes16) *stores.Channel {
+	query, e1 := cs.channelDB.CreateNewQueryInstance(channelid)
 	if e1 != nil {
 		return nil // error
 	}
@@ -16,7 +16,14 @@ func (cs *ChainState) Channel(diamond fields.Bytes6) *stores.Channel {
 	if e2 != nil {
 		return nil // error
 	}
-	if len(vdatas) < stores.BalanceSize {
+	if vdatas == nil {
+		if cs.base != nil {
+			return cs.base.Channel(channelid) // check base
+		} else {
+			return nil // not find
+		}
+	}
+	if len(vdatas) < stores.ChannelSize {
 		return nil // error
 	}
 	var stoitem stores.Channel
@@ -29,13 +36,13 @@ func (cs *ChainState) Channel(diamond fields.Bytes6) *stores.Channel {
 }
 
 //
-func (cs *ChainState) ChannelCreate(channel_id fields.Bytes16, diamond *stores.Channel) error {
+func (cs *ChainState) ChannelCreate(channel_id fields.Bytes16, channel *stores.Channel) error {
 	query, e1 := cs.channelDB.CreateNewQueryInstance(channel_id)
 	if e1 != nil {
 		return e1 // error
 	}
 	defer query.Destroy()
-	stodatas, e3 := diamond.Serialize()
+	stodatas, e3 := channel.Serialize()
 	if e3 != nil {
 		return e3 // error
 	}

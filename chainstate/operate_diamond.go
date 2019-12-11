@@ -16,7 +16,14 @@ func (cs *ChainState) Diamond(diamond fields.Bytes6) *stores.Diamond {
 	if e2 != nil {
 		return nil // error
 	}
-	if len(vdatas) < stores.BalanceSize {
+	if vdatas == nil {
+		if cs.base != nil {
+			return cs.base.Diamond(diamond) // check base
+		} else {
+			return nil // not find
+		}
+	}
+	if len(vdatas) < stores.DiamondSize {
 		return nil // error
 	}
 	var stoitem stores.Diamond

@@ -53,16 +53,17 @@ func (cs *ChainState) setPendingSubmitStoreDiamondContainBlockHash(hash fields.H
 
 ////////////////////////////////////
 
-func (cs *ChainState) GetPendingSubmitStoreDiamond() *stores.DiamondSmelt {
+func (cs *ChainState) GetPendingSubmitStoreDiamond() (*stores.DiamondSmelt, error) {
 	if cs.submitStoreDiamond == nil {
 		if cs.base != nil {
 			return cs.base.GetPendingSubmitStoreDiamond()
 		}
-		return nil
+		return nil, nil // not find
 	}
-	return cs.submitStoreDiamond
+	return cs.submitStoreDiamond, nil
 }
 
-func (cs *ChainState) SetPendingSubmitStoreDiamond(diamond *stores.DiamondSmelt) {
+func (cs *ChainState) SetPendingSubmitStoreDiamond(diamond *stores.DiamondSmelt) error {
 	cs.submitStoreDiamond = diamond
+	return nil
 }

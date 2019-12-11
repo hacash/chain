@@ -71,12 +71,13 @@ func (cs *ChainStore) SaveBlockUniteTransactions(fullblock interfaces.Block) err
 	if e5 != nil {
 		return e5
 	}
-	e6 := blkhsquery.Save(fullblockhash)
+	_, e6 := blkhsquery.Save(fullblockhash)
 	if e6 != nil {
 		return e6
 	}
+	blkhsquery.Destroy() // clean
 	// do save all trs
-	fmt.Println(stoptr.Filenum, stoptr.Fileseek, stoptr.Valsize)
+	//fmt.Println(stoptr.Filenum, stoptr.Fileseek, stoptr.Valsize)
 	for _, item := range allTransactionStoreItem {
 		trssto := stoptr.Copy()
 		trssto.Fileseek += item.storeoffset
@@ -89,11 +90,12 @@ func (cs *ChainStore) SaveBlockUniteTransactions(fullblock interfaces.Block) err
 		if e2 != nil {
 			return e2
 		}
-		fmt.Println(trssto.Filenum, trssto.Fileseek, trssto.Valsize)
-		e3 := query.Save(trsdataptr)
+		//fmt.Println(trssto.Filenum, trssto.Fileseek, trssto.Valsize)
+		_, e3 := query.Save(trsdataptr)
 		if e3 != nil {
 			return e3
 		}
+		query.Destroy() // clean
 	}
 	return nil
 }

@@ -135,7 +135,7 @@ func (ins *QueryInstance) writeSegmentData(segmentOffset uint32, valuedatas []by
 	datas.Write(valuedatas)
 	// write
 	segdatas := datas.Bytes()
-	wtpos := int64(segmentOffset * ins.db.config.segmentSize)
+	wtpos := int64(segmentOffset * ins.db.config.segmentValueSize)
 	wn, e4 := ins.targetFilePackage.dataFile.WriteAt(segdatas, wtpos)
 	if e4 != nil {
 		return 0, e4
@@ -186,12 +186,12 @@ func (ins *QueryInstance) writeValueDataToFileWithGC(valuedatas []byte) (valueSe
 			return 0, e1
 		}
 		segmentwtat = dtstat.Size()
-		if uint32(segmentwtat)%ins.db.config.segmentSize != 0 {
-			err = fmt.Errorf("wtat - ins.db.config.segmentSize != 0, data file is breakdown.")
+		if uint32(segmentwtat)%ins.db.config.segmentValueSize != 0 {
+			err = fmt.Errorf("segmentwtat(%d) %% ins.db.config.segmentValueSize(%d) != 0, data file is breakdown.", uint32(segmentwtat), ins.db.config.segmentValueSize)
 			return
 		}
 	}
 	// write segment data
-	segmentOffset := uint32(segmentwtat) / ins.db.config.segmentSize
+	segmentOffset := uint32(segmentwtat) / ins.db.config.segmentValueSize
 	return ins.writeSegmentData(segmentOffset, valuedatas)
 }

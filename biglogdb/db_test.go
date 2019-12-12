@@ -24,7 +24,7 @@ func Test_t1(t *testing.T) {
 	//	fmt.Println(stoptr.Filenum, stoptr.Fileseek, stoptr.Valsize)
 	//}
 
-	valuedts, e2 := db.Read([]byte("02345678"))
+	valuedts, e2 := db.Read([]byte("02345678"), 0)
 	if e2 != nil {
 		fmt.Println(e)
 	}

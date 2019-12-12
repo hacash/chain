@@ -3,7 +3,7 @@ package biglogdb
 import "fmt"
 
 // Read log all data
-func (db *BigLogDB) Read(key []byte) ([]byte, error) {
+func (db *BigLogDB) Read(key []byte, readlen uint32) ([]byte, error) {
 	loghead, logptritem, err := db.ReadHead(key)
 	if err != nil {
 		return nil, err
@@ -11,7 +11,7 @@ func (db *BigLogDB) Read(key []byte) ([]byte, error) {
 	if loghead == nil {
 		return nil, nil // not find
 	}
-	logbody, e1 := db.ReadBodyByPosition(logptritem)
+	logbody, e1 := db.ReadBodyByPosition(logptritem, readlen)
 	if e1 != nil {
 		return nil, e1
 	}
@@ -47,17 +47,20 @@ func (db *BigLogDB) ReadHead(key []byte) ([]byte, *LogFilePtrSeek, error) {
 }
 
 // Read data by position
-func (db *BigLogDB) ReadBodyByPosition(ptrseek *LogFilePtrSeek) ([]byte, error) {
+func (db *BigLogDB) ReadBodyByPosition(ptrseek *LogFilePtrSeek, readlen uint32) ([]byte, error) {
+	if readlen == 0 || readlen > ptrseek.Valsize {
+		readlen = ptrseek.Valsize
+	}
 	stofile, e0 := db.getStoreFileByNum(ptrseek.Filenum)
 	if e0 != nil {
 		return nil, e0
 	}
-	datas := make([]byte, ptrseek.Valsize)
+	datas := make([]byte, readlen)
 	rn, e1 := stofile.ReadAt(datas, int64(ptrseek.Fileseek))
 	if e1 != nil {
 		return nil, e1
 	}
-	if rn != int(ptrseek.Valsize) {
+	if rn != int(readlen) {
 		return nil, fmt.Errorf("read part store file error.")
 	}
 	// ret ok

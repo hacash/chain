@@ -6,8 +6,8 @@ import (
 )
 
 // block data store
-func (cs *BlockStore) ReadBlockBytesByHash(blkhash fields.Hash) ([]byte, error) {
-	blkdata, e1 := cs.blockdataDB.Read(blkhash)
+func (cs *BlockStore) ReadBlockBytesByHash(blkhash fields.Hash, readlen uint32) ([]byte, error) {
+	blkdata, e1 := cs.blockdataDB.Read(blkhash, readlen)
 	if e1 != nil {
 		return nil, e1
 	}
@@ -15,7 +15,7 @@ func (cs *BlockStore) ReadBlockBytesByHash(blkhash fields.Hash) ([]byte, error) 
 }
 
 // block data store
-func (cs *BlockStore) ReadBlockBytesByHeight(height uint64) ([]byte, error) {
+func (cs *BlockStore) ReadBlockBytesByHeight(height uint64, readlen uint32) ([]byte, error) {
 	numhash := make([]byte, 8)
 	binary.BigEndian.PutUint64(numhash, height)
 	// read
@@ -29,7 +29,7 @@ func (cs *BlockStore) ReadBlockBytesByHeight(height uint64) ([]byte, error) {
 		return nil, e2
 	}
 	// read
-	return cs.ReadBlockBytesByHash(blkhash)
+	return cs.ReadBlockBytesByHash(blkhash, readlen)
 }
 
 // block data store
@@ -43,6 +43,16 @@ func (cs *BlockStore) ReadBlockHeadBytesByHash(blkhash fields.Hash) ([]byte, err
 
 // block data store
 func (cs *BlockStore) ReadBlockHeadBytesByHeight(height uint64) ([]byte, error) {
+	// read
+	blkhash, err := cs.ReadBlockHashByHeight(height)
+	if err != nil {
+		return nil, err
+	}
+	return cs.ReadBlockHeadBytesByHash(blkhash)
+}
+
+// block data store
+func (cs *BlockStore) ReadBlockHashByHeight(height uint64) (fields.Hash, error) {
 	numhash := make([]byte, 8)
 	binary.BigEndian.PutUint64(numhash, height)
 	// read
@@ -55,6 +65,5 @@ func (cs *BlockStore) ReadBlockHeadBytesByHeight(height uint64) ([]byte, error) 
 	if e2 != nil {
 		return nil, e2
 	}
-	// read
-	return cs.ReadBlockHeadBytesByHash(blkhash)
+	return blkhash, nil
 }

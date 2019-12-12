@@ -1,4 +1,4 @@
-package chainstore
+package blockstore
 
 import (
 	"encoding/binary"
@@ -8,7 +8,7 @@ import (
 )
 
 // block data store
-func (cs *ChainStore) ReadDiamond(diamond_name fields.Bytes6) (*stores.DiamondSmelt, error) {
+func (cs *BlockStore) ReadDiamond(diamond_name fields.Bytes6) (*stores.DiamondSmelt, error) {
 	// find
 	query1, e1 := cs.diamondDB.CreateNewQueryInstance(diamond_name)
 	if e1 != nil {
@@ -32,7 +32,7 @@ func (cs *ChainStore) ReadDiamond(diamond_name fields.Bytes6) (*stores.DiamondSm
 }
 
 // block data store
-func (cs *ChainStore) ReadDiamondByNumber(number uint32) (*stores.DiamondSmelt, error) {
+func (cs *BlockStore) ReadDiamondByNumber(number uint32) (*stores.DiamondSmelt, error) {
 	// find by number key
 	numberkey := make([]byte, 4)
 	binary.BigEndian.PutUint32(numberkey, number)

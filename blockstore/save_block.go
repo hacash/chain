@@ -1,4 +1,4 @@
-package chainstore
+package blockstore
 
 import (
 	"bytes"
@@ -16,7 +16,7 @@ type transactionStoreItemV1 struct {
 }
 
 // block data store
-func (cs *ChainStore) SaveBlockUniteTransactions(fullblock interfaces.Block) error {
+func (cs *BlockStore) SaveBlockUniteTransactions(fullblock interfaces.Block) error {
 	// trs
 	allTransactionStoreItem := make([]transactionStoreItemV1, 0, fullblock.GetTransactionCount())
 	alltrs := fullblock.GetTransactions()

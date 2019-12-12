@@ -1,4 +1,4 @@
-package chainstore
+package blockstore
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 )
 
 // trs is exist
-func (cs *ChainStore) TransactionIsExist(txhash fields.Hash) (bool, error) {
+func (cs *BlockStore) TransactionIsExist(txhash fields.Hash) (bool, error) {
 	query, e1 := cs.trsdataptrDB.CreateNewQueryInstance(txhash)
 	if e1 != nil {
 		return false, e1
@@ -17,7 +17,7 @@ func (cs *ChainStore) TransactionIsExist(txhash fields.Hash) (bool, error) {
 }
 
 // block data store
-func (cs *ChainStore) ReadTransactionDataByHash(txhash fields.Hash) ([]byte, error) {
+func (cs *BlockStore) ReadTransactionDataByHash(txhash fields.Hash) ([]byte, error) {
 	query, e1 := cs.trsdataptrDB.CreateNewQueryInstance(txhash)
 	if e1 != nil {
 		return nil, e1

@@ -1,4 +1,4 @@
-package chainstore
+package blockstore
 
 import (
 	"fmt"
@@ -17,9 +17,9 @@ func Test_t1(t *testing.T) {
 
 	//os.RemoveAll(testdir)
 
-	cscnf := NewChainStoreConfig(testdir)
-
-	db, e1 := NewChainStore(cscnf)
+	cscnf := NewEmptyBlockStoreConfig()
+	cscnf.Datadir = testdir
+	db, e1 := NewBlockStore(cscnf)
 	if e1 != nil {
 		fmt.Println(e1)
 		return

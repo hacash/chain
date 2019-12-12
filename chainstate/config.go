@@ -1,12 +1,23 @@
 package chainstate
 
+import (
+	"github.com/hacash/core/sys"
+	"path"
+)
+
 type ChainStateConfig struct {
 	Datadir string
 }
 
-func NewChainStateConfig(datadir string) *ChainStateConfig {
-	cnf := &ChainStateConfig{
-		Datadir: datadir,
-	}
+func NewEmptyChainStateConfig() *ChainStateConfig {
+	cnf := &ChainStateConfig{}
+	return cnf
+}
+
+func NewChainStateConfig(cnffile *sys.Inicnf) *ChainStateConfig {
+	cnf := NewEmptyChainStateConfig()
+
+	cnf.Datadir = path.Join(cnffile.MustDataDir(), "chainstore")
+
 	return cnf
 }

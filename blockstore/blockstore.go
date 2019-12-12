@@ -1,4 +1,4 @@
-package chainstore
+package blockstore
 
 import (
 	"github.com/hacash/chain/biglogdb"
@@ -8,10 +8,10 @@ import (
 	"path"
 )
 
-type ChainStore struct {
+type BlockStore struct {
 
 	// config
-	config *ChainStoreConfig
+	config *BlockStoreConfig
 
 	// data store
 	blockdataDB  *biglogdb.BigLogDB
@@ -21,9 +21,9 @@ type ChainStore struct {
 	diamondnumDB *hashtreedb.HashTreeDB
 }
 
-func NewChainStore(cnf *ChainStoreConfig) (*ChainStore, error) {
+func NewBlockStore(cnf *BlockStoreConfig) (*BlockStore, error) {
 	// create blockdataDB
-	blcnf := biglogdb.NewBigLogDBConfig(path.Join(cnf.absdir, "blockdata"), 32)
+	blcnf := biglogdb.NewBigLogDBConfig(path.Join(cnf.Datadir, "blockdata"), 32)
 	blcnf.LogHeadMaxSize = blocks.BlockHeadSize
 	blcnf.BlockPartFileMaxSize = 1024 * 1024 * 100 // 100MB
 	blcnf.FileDividePartitionLevel = 1
@@ -33,23 +33,23 @@ func NewChainStore(cnf *ChainStoreConfig) (*ChainStore, error) {
 		return nil, e0
 	}
 	// create trsdataptrDB
-	tdrcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.absdir, "trsdataptr"), biglogdb.LogFilePtrSeekSize, 32)
+	tdrcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "trsdataptr"), biglogdb.LogFilePtrSeekSize, 32)
 	tdrcnf.FileDividePartitionLevel = 2
 	trsdataptrDB := hashtreedb.NewHashTreeDB(tdrcnf)
 	// create blknumhashDB
-	bnhcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.absdir, "blocknum"), 32, 8)
+	bnhcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "blocknum"), 32, 8)
 	tdrcnf.KeyPrefixSupplement = 8
 	blknumhashDB := hashtreedb.NewHashTreeDB(bnhcnf)
 	// create diamondDB
-	dmdcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.absdir, "diamond"), stores.DiamondSmeltSize, 6)
+	dmdcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "diamond"), stores.DiamondSmeltSize, 6)
 	tdrcnf.KeyPrefixSupplement = 11
 	diamondDB := hashtreedb.NewHashTreeDB(dmdcnf)
 	// create diamondnumDB
-	dmdnumcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.absdir, "diamondnum"), 6, 4)
+	dmdnumcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "diamondnum"), 6, 4)
 	tdrcnf.KeyPrefixSupplement = 4
 	diamondnumDB := hashtreedb.NewHashTreeDB(dmdnumcnf)
 	// return ok
-	cs := &ChainStore{
+	cs := &BlockStore{
 		config:       cnf,
 		blockdataDB:  blockdataDB,
 		trsdataptrDB: trsdataptrDB,

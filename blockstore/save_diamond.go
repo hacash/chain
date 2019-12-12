@@ -1,4 +1,4 @@
-package chainstore
+package blockstore
 
 import (
 	"encoding/binary"
@@ -6,7 +6,7 @@ import (
 )
 
 // block data store
-func (cs *ChainStore) SaveDiamond(diamond *stores.DiamondSmelt) error {
+func (cs *BlockStore) SaveDiamond(diamond *stores.DiamondSmelt) error {
 	// save
 	query1, e1 := cs.diamondDB.CreateNewQueryInstance(diamond.Diamond)
 	if e1 != nil {

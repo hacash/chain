@@ -31,7 +31,7 @@ type ChainState struct {
 	channelDB *hashtreedb.HashTreeDB
 
 	// store
-	datastore interfaces.ChainStore
+	datastore interfaces.BlockStore
 
 	// data hold
 	pendingBlockHeight *uint64
@@ -126,18 +126,18 @@ func (cs *ChainState) DestoryTemporary() {
 }
 
 // chain data store
-func (cs *ChainState) ChainStore() interfaces.ChainStore {
+func (cs *ChainState) BlockStore() interfaces.BlockStore {
 	if cs.datastore != nil {
 		return cs.datastore
 	}
 	if cs.base != nil {
-		cs.datastore = cs.base.ChainStore() // copy
+		cs.datastore = cs.base.BlockStore() // copy
 		return cs.datastore
 	}
 	return cs.datastore
 }
 
-func (cs *ChainState) SetChainStore(store interfaces.ChainStore) error {
+func (cs *ChainState) SetBlockStore(store interfaces.BlockStore) error {
 	if cs.base != nil {
 		return fmt.Errorf("Can only be set chainstore in the final state.")
 	}
@@ -196,7 +196,7 @@ func (cs *ChainState) MergeCoverWriteChainState(src *ChainState) error {
 // fork sub
 func (cs *ChainState) NewSubBranchTemporaryChainState() (*ChainState, error) {
 
-	tempcnf := NewChainStateConfig("")
+	tempcnf := NewEmptyChainStateConfig()
 	newTempState, err1 := newChainStateEx(tempcnf, true)
 	if err1 != nil {
 		return nil, err1
@@ -213,9 +213,9 @@ func (cs *ChainState) SubmitDataStoreWriteToInvariableDisk(block interfaces.Bloc
 		return fmt.Errorf("Can only be saved in the final state.")
 	}
 	//
-	store := cs.ChainStore()
+	store := cs.BlockStore()
 	if store == nil {
-		return fmt.Errorf("Not find ChainStore object.")
+		return fmt.Errorf("Not find BlockStore object.")
 	}
 	// save status
 	e0 := cs.SetLastestBlockHeadAndMeta(block)

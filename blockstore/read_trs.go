@@ -40,7 +40,7 @@ func (cs *BlockStore) ReadTransactionDataByHash(txhash fields.Hash) ([]byte, err
 		return nil, e3
 	}
 	// read trs
-	trsdata, e4 := cs.blockdataDB.ReadBodyByPosition(&ptritem)
+	trsdata, e4 := cs.blockdataDB.ReadBodyByPosition(&ptritem, 0)
 	if e4 != nil {
 		return nil, e4
 	}

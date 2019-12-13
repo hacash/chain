@@ -57,11 +57,7 @@ func (cs *ChainState) ReadLastestBlockHeadAndMeta() (interfaces.Block, error) {
 	if len(vdatas) < blocks.BlockHeadSize {
 		return nil, fmt.Errorf("lastest_block_head store file error.")
 	}
-	tarblk, _, err1 := blocks.ParseBlockHead(vdatas, 0)
-	if err1 != nil {
-		return nil, err1
-	}
-	_, err1 = tarblk.ParseExcludeTransactions(vdatas, 0)
+	tarblk, _, err1 := blocks.ParseExcludeTransactions(vdatas, 0)
 	if err1 != nil {
 		return nil, err1
 	}

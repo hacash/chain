@@ -88,19 +88,21 @@ func (db *HashTreeDB) waitForTakeControlOfFile(ins *QueryInstance) (*sync.Mutex,
 		// 检查缓存池
 		if db.targetFilePackagePool != nil && strings.Compare(ins.fileKey, db.targetFilePackagePool.fileKey) == 0 {
 			targetfilepkg = db.targetFilePackagePool // 直接使用缓存
-			//fmt.Println("-------------------- targetFilePackagePool")
+			// fmt.Println("-------------------- targetFilePackagePool")
 		} else {
 			// 新打开文件并创建
 			err := openCreateTargetFiles(ins.filePath, targetfilepkg)
 			if err != nil {
 				return nil, err
 			}
-			//fmt.Println("=================== open file")
+			// fmt.Println("=================== open file")
 		}
 	}
-	if db.targetFilePackagePool == nil {
-		db.targetFilePackagePool = targetfilepkg // 暂保留一条缓存
+	if db.targetFilePackagePool != nil && db.targetFilePackagePool != targetfilepkg {
+		db.targetFilePackagePool.Destroy() // close cache
 	}
+	db.targetFilePackagePool = targetfilepkg // 暂保留一条缓存
+
 	db.existsFileKeys.Store(ins.fileKey, true) // 确定存在
 	// 给出文件包
 	ins.targetFilePackage = targetfilepkg

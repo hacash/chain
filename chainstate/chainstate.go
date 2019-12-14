@@ -240,16 +240,16 @@ func (cs *ChainState) SubmitDataStoreWriteToInvariableDisk(block interfaces.Bloc
 		if e != nil {
 			return e
 		}
-		cs.submitStoreDiamond = nil // reset
 	}
 	// save block data
 	e3 := store.SaveBlockUniteTransactions(block)
 	if e3 != nil {
 		return e3
 	}
-	// clear
+	// reset clear
 	cs.pendingBlockHash = nil
 	cs.pendingBlockHeight = nil
+	cs.submitStoreDiamond = nil
 	// ok
 	return nil
 }

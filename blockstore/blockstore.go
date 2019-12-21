@@ -33,7 +33,7 @@ func NewBlockStore(cnf *BlockStoreConfig) (*BlockStore, error) {
 		return nil, e0
 	}
 	// create trsdataptrDB
-	tdrcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "trsdataptr"), biglogdb.LogFilePtrSeekSize, 32)
+	tdrcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "trsdataptr"), 5+biglogdb.LogFilePtrSeekSize, 32)
 	tdrcnf.FileDividePartitionLevel = 2
 	trsdataptrDB := hashtreedb.NewHashTreeDB(tdrcnf)
 	// create blknumhashDB

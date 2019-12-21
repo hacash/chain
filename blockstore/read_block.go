@@ -15,21 +15,22 @@ func (cs *BlockStore) ReadBlockBytesByHash(blkhash fields.Hash, readlen uint32) 
 }
 
 // block data store
-func (cs *BlockStore) ReadBlockBytesByHeight(height uint64, readlen uint32) ([]byte, error) {
+func (cs *BlockStore) ReadBlockBytesByHeight(height uint64, readlen uint32) ([]byte, []byte, error) {
 	numhash := make([]byte, 8)
 	binary.BigEndian.PutUint64(numhash, height)
 	// read
 	query, e1 := cs.blknumhashDB.CreateNewQueryInstance(numhash)
 	if e1 != nil {
-		return nil, e1
+		return nil, nil, e1
 	}
 	defer query.Destroy()
 	blkhash, e2 := query.Find()
 	if e2 != nil {
-		return nil, e2
+		return nil, nil, e2
 	}
 	// read
-	return cs.ReadBlockBytesByHash(blkhash, readlen)
+	resdata, err := cs.ReadBlockBytesByHash(blkhash, readlen)
+	return blkhash, resdata, err
 }
 
 // block data store

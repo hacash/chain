@@ -90,10 +90,15 @@ func (cs *BlockStore) SaveBlockUniteTransactions(fullblock interfaces.Block) err
 		if e2 != nil {
 			return e2
 		}
-		//fmt.Println(trssto.Filenum, trssto.Fileseek, trssto.Valsize)
-		_, e3 := query.Save(trsdataptr)
+		blkhei := fields.VarInt5(fullblock.GetHeight())
+		blkheibts, e3 := blkhei.Serialize()
 		if e3 != nil {
 			return e3
+		}
+		//fmt.Println(trssto.Filenum, trssto.Fileseek, trssto.Valsize)
+		_, e4 := query.Save(append(blkheibts, trsdataptr...))
+		if e4 != nil {
+			return e4
 		}
 		query.Destroy() // clean
 	}

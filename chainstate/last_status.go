@@ -94,7 +94,7 @@ func (cs *ChainState) IncompleteSaveLastestDiamond() error {
 }
 
 func (cs *ChainState) ReadLastestDiamond() (*stores.DiamondSmelt, error) {
-	if cs.lastestBlockHeadAndMeta != nil {
+	if cs.lastestDiamond != nil {
 		return cs.lastestDiamond, nil
 	}
 	if cs.base != nil {

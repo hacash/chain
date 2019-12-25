@@ -33,6 +33,8 @@ func (cs *ChainState) GetPendingBlockHash() fields.Hash {
 }
 
 func (cs *ChainState) SetPendingBlockHash(hash fields.Hash) {
+	//fmt.Println("SetPendingBlockHash", hash.ToHex())
+	hash = append([]byte{}, hash...)
 	cs.pendingBlockHash = hash
 	// set diamond contail block hash
 	cs.setPendingSubmitStoreDiamondContainBlockHash(hash)

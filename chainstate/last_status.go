@@ -15,6 +15,7 @@ const (
 
 func (cs *ChainState) SetLastestBlockHeadAndMeta(blockmeta interfaces.Block) error {
 	cs.lastestBlockHeadAndMeta = blockmeta
+	cs.lastestBlockHeadAndMeta_forSave = blockmeta
 	return nil
 }
 
@@ -22,13 +23,14 @@ func (cs *ChainState) IncompleteSaveLastestBlockHeadAndMeta() error {
 	if cs.laststatusDB == nil {
 		return fmt.Errorf("cs.laststatusDB is not init.")
 	}
-	if cs.lastestBlockHeadAndMeta == nil {
+	if cs.lastestBlockHeadAndMeta_forSave == nil {
 		return nil // not set
 	}
-	stodatas, e2 := cs.lastestBlockHeadAndMeta.SerializeExcludeTransactions()
+	stodatas, e2 := cs.lastestBlockHeadAndMeta_forSave.SerializeExcludeTransactions()
 	if e2 != nil {
 		return e2
 	}
+	cs.lastestBlockHeadAndMeta_forSave = nil // clean data
 	// save
 	e3 := cs.laststatusDB.Set([]byte(LastestStatusKeyName_lastest_block_head_meta), stodatas)
 	if e3 != nil {
@@ -69,22 +71,33 @@ func (cs *ChainState) ReadLastestBlockHeadAndMeta() (interfaces.Block, error) {
 /////////////////////////////////////////////////////////////////////////
 
 func (cs *ChainState) SetLastestDiamond(diamond *stores.DiamondSmelt) error {
+	//fmt.Println("<<<<<<<<<<<<<   SetLastestDiamond")
+	//fmt.Println("diamond", string(diamond.Diamond), diamond.PrevContainBlockHash.ToHex(), diamond.ContainBlockHash.ToHex())
 	cs.lastestDiamond = diamond
+	cs.lastestDiamond_forSave = diamond
 	return nil
 }
 
 func (cs *ChainState) IncompleteSaveLastestDiamond() error {
-	if cs.laststatusDB == nil {
-		return fmt.Errorf("cs.laststatusDB is not init.")
+	if cs.pendingBlockHash == nil {
+		//return fmt.Errorf("Block pending hash not set.")
+		panic("pending block hash not be set.")
 	}
-	if cs.lastestDiamond == nil {
+	if cs.laststatusDB == nil {
+		panic("cs.laststatusDB is not init.")
+	}
+	if cs.lastestDiamond_forSave == nil {
 		return nil // not set
 	}
-	stodatas, e2 := cs.lastestDiamond.Serialize()
+	//fmt.Println("IncompleteSaveLastestDiamond  cs.pendingBlockHash ", cs.pendingBlockHash.ToHex())
+	cs.lastestDiamond_forSave.ContainBlockHash = cs.pendingBlockHash // copy
+	stodatas, e2 := cs.lastestDiamond_forSave.Serialize()
 	if e2 != nil {
 		return e2
 	}
+	cs.lastestDiamond_forSave = nil
 	// save
+	//fmt.Println("IncompleteSaveLastestDiamond", LastestStatusKeyName_lastest_diamond, stodatas)
 	e3 := cs.laststatusDB.Set([]byte(LastestStatusKeyName_lastest_diamond), stodatas)
 	if e3 != nil {
 		return e3
@@ -94,6 +107,7 @@ func (cs *ChainState) IncompleteSaveLastestDiamond() error {
 }
 
 func (cs *ChainState) ReadLastestDiamond() (*stores.DiamondSmelt, error) {
+	//fmt.Println("ReadLastestDiamond >>>>>>>")
 	if cs.lastestDiamond != nil {
 		return cs.lastestDiamond, nil
 	}
@@ -101,11 +115,13 @@ func (cs *ChainState) ReadLastestDiamond() (*stores.DiamondSmelt, error) {
 		return cs.base.ReadLastestDiamond()
 	}
 	// read from status db
+	//fmt.Println("ReadLastestDiamond >>>>>>>  read from status db")
 	vdatas, e2 := cs.laststatusDB.Get([]byte(LastestStatusKeyName_lastest_diamond))
 	if e2 != nil {
 		return nil, e2
 	}
 	if vdatas == nil {
+		//fmt.Println("ReadLastestDiamond   return nil, nil // first one")
 		return nil, nil // first one
 	}
 	if len(vdatas) < stores.DiamondSmeltSize {
@@ -117,6 +133,7 @@ func (cs *ChainState) ReadLastestDiamond() (*stores.DiamondSmelt, error) {
 		return nil, err
 	}
 	// cache set
+	//fmt.Println("ReadLastestDiamond ", diamond)
 	cs.lastestDiamond = &diamond
 	return &diamond, nil
 

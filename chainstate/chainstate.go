@@ -39,9 +39,11 @@ type ChainState struct {
 
 	submitStoreDiamond *stores.DiamondSmelt
 
-	prev288BlockTimestamp   uint64
-	lastestBlockHeadAndMeta interfaces.Block
-	lastestDiamond          *stores.DiamondSmelt
+	prev288BlockTimestamp           uint64
+	lastestBlockHeadAndMeta         interfaces.Block
+	lastestDiamond                  *stores.DiamondSmelt
+	lastestBlockHeadAndMeta_forSave interfaces.Block
+	lastestDiamond_forSave          *stores.DiamondSmelt
 }
 
 func NewChainState(cnf *ChainStateConfig) (*ChainState, error) {
@@ -109,6 +111,7 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 		channelDB:             channelDB,
 		prev288BlockTimestamp: 0,
 		pendingBlockHeight:    nil,
+		pendingBlockHash:      nil,
 	}
 	return cs, nil
 }
@@ -210,7 +213,11 @@ func (cs *ChainState) NewSubBranchTemporaryChainState() (*ChainState, error) {
 // submit to write disk
 func (cs *ChainState) SubmitDataStoreWriteToInvariableDisk(block interfaces.Block) error {
 	if cs.base != nil {
-		return fmt.Errorf("Can only be saved in the final state.")
+		panic("Can only be saved in the final state.")
+	}
+	if cs.pendingBlockHash == nil {
+		//return fmt.Errorf("Block pending hash not set.")
+		panic("pending block hash not be set.")
 	}
 	//
 	store := cs.BlockStore()
@@ -232,9 +239,6 @@ func (cs *ChainState) SubmitDataStoreWriteToInvariableDisk(block interfaces.Bloc
 	}
 	// save diamond
 	if cs.submitStoreDiamond != nil {
-		if cs.pendingBlockHash == nil {
-			return fmt.Errorf("Block pending hash not set.")
-		}
 		cs.submitStoreDiamond.ContainBlockHash = cs.pendingBlockHash // copy
 		e := store.SaveDiamond(cs.submitStoreDiamond)
 		if e != nil {

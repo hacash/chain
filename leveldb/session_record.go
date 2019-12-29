@@ -12,8 +12,8 @@ import (
 	"io"
 	"strings"
 
-	"github.com/syndtr/goleveldb/leveldb/errors"
-	"github.com/syndtr/goleveldb/leveldb/storage"
+	"github.com/hacash/chain/leveldb/errors"
+	"github.com/hacash/chain/leveldb/storage"
 )
 
 type byteReader interface {

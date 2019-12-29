@@ -12,9 +12,9 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/syndtr/goleveldb/leveldb/iterator"
-	"github.com/syndtr/goleveldb/leveldb/opt"
-	"github.com/syndtr/goleveldb/leveldb/util"
+	"github.com/hacash/chain/leveldb/iterator"
+	"github.com/hacash/chain/leveldb/opt"
+	"github.com/hacash/chain/leveldb/util"
 )
 
 type tSet struct {

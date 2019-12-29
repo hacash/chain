@@ -1,4 +1,4 @@
-package mapset2
+package mapset
 
 // Iterator defines an iterator over a Set, its C channel can be used to range over the Set's
 // elements.

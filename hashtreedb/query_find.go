@@ -16,8 +16,17 @@ func (ins *QueryInstance) Exist() (bool, error) {
 		return false, err // error
 	}
 	if ofstItem == nil {
+		//fmt.Println("ofstItem == nil return false, nil // not find")
 		return false, nil // not find
 	}
+	if ofstItem.Type == 0 {
+		return false, nil // not find
+	}
+	e2 := ins.readSegmentDataFillItem(ofstItem, false)
+	if e2 != nil {
+		return false, e2 // error
+	}
+	//fmt.Println("bytes.Compare(ins.key, ofstItem.ValueKey)", ins.key, ofstItem.ValueKey)
 	if bytes.Compare(ins.key, ofstItem.ValueKey) == 0 {
 		// find ok
 		return true, nil

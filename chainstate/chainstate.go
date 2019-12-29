@@ -116,6 +116,11 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 	return cs, nil
 }
 
+// interface api
+func (cs *ChainState) Destory() {
+	cs.DestoryTemporary()
+}
+
 // destory temporary
 func (cs *ChainState) DestoryTemporary() {
 	if len(cs.temporaryDataDir) == 0 || cs.base == nil {
@@ -194,6 +199,11 @@ func (cs *ChainState) MergeCoverWriteChainState(src *ChainState) error {
 	// copy ok
 
 	return nil
+}
+
+// interface api
+func (cs *ChainState) Fork() (interfaces.ChainState, error) {
+	return cs.NewSubBranchTemporaryChainState()
 }
 
 // fork sub

@@ -1,4 +1,4 @@
-package mapset2
+package mapset
 
 // Set is the primary interface provided by the mapset package.  It
 // represents an unordered set of data and a large number of

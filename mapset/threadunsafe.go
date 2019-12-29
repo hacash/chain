@@ -1,4 +1,4 @@
-package mapset2
+package mapset
 
 import (
 	"bytes"

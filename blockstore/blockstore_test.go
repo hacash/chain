@@ -13,7 +13,7 @@ import (
 
 func Test_t1(t *testing.T) {
 
-	testdir := "/home/shiqiujie/Desktop/Hacash/go/src/github.com/hacash/chain/chainstore/testdata"
+	testdir := "/home/shiqiujie/Desktop/Hacash/go/src/github.com/hacash/chain/chainstore/data1"
 
 	//os.RemoveAll(testdir)
 

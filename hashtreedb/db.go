@@ -112,7 +112,7 @@ func NewHashTreeDB(config *HashTreeDBConfig) *HashTreeDB {
 // 创建执行单元
 func (db *HashTreeDB) CreateNewQueryInstance(key []byte) (*QueryInstance, error) {
 	if len(key) != int(db.config.KeySize) {
-		return nil, fmt.Errorf("len(key) not more than db.config.KeySize")
+		return nil, fmt.Errorf("len(key)<%d> not more than db.config.KeySize<%d>", len(key), int(db.config.KeySize))
 	}
 	return newQueryInstance(db, key)
 }

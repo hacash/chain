@@ -28,6 +28,9 @@ func (cs *BlockStore) ReadBlockBytesByHeight(height uint64, readlen uint32) ([]b
 	if e2 != nil {
 		return nil, nil, e2
 	}
+	if blkhash == nil || len(blkhash) != 32 {
+		return nil, nil, nil // not find
+	}
 	// read
 	resdata, err := cs.ReadBlockBytesByHash(blkhash, readlen)
 	return blkhash, resdata, err

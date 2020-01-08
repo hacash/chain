@@ -7,7 +7,7 @@ import (
 
 func Test_t1(t *testing.T) {
 
-	testdir := "/home/shiqiujie/Desktop/Hacash/go/src/github.com/hacash/chain/biglogdb/testdata"
+	testdir := "/home/shiqiujie/Desktop/Hacash/go/src/github.com/hacash/chain/biglogdb/data1"
 
 	dbcnf := NewBigLogDBConfig(testdir, 8)
 	dbcnf.LogHeadMaxSize = 5

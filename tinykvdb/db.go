@@ -41,3 +41,8 @@ func NewTinyKVDB(abspath string) (*TinyKVDB, error) {
 	}
 	return db, nil
 }
+
+
+func (kv *TinyKVDB) Close() error {
+	return kv.bashhashtreedb.Close()
+}

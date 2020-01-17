@@ -130,3 +130,12 @@ func (db *HashTreeDB) freshRecordDataSize() {
 	}
 	db.config.segmentValueSize += uint32(db.config.KeySize) + db.config.MaxValueSize
 }
+
+
+// close
+func (db *HashTreeDB) Close() error {
+	if db.targetFilePackagePool != nil {
+		db.targetFilePackagePool.Destroy() // close cache
+	}
+	return nil
+}

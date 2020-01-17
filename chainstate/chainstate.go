@@ -126,6 +126,10 @@ func (cs *ChainState) DestoryTemporary() {
 	if len(cs.temporaryDataDir) == 0 || cs.base == nil {
 		return
 	}
+	cs.laststatusDB.Close()
+	cs.balanceDB.Close()
+	cs.channelDB.Close()
+	cs.diamondDB.Close()
 	// remove temp data dir
 	e1 := os.RemoveAll(cs.temporaryDataDir)
 	if e1 != nil {

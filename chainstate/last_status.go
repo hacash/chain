@@ -79,10 +79,6 @@ func (cs *ChainState) SetLastestDiamond(diamond *stores.DiamondSmelt) error {
 }
 
 func (cs *ChainState) IncompleteSaveLastestDiamond() error {
-	if cs.pendingBlockHash == nil {
-		//return fmt.Errorf("Block pending hash not set.")
-		panic("pending block hash not be set.")
-	}
 	if cs.laststatusDB == nil {
 		panic("cs.laststatusDB is not init.")
 	}
@@ -90,7 +86,13 @@ func (cs *ChainState) IncompleteSaveLastestDiamond() error {
 		return nil // not set
 	}
 	//fmt.Println("IncompleteSaveLastestDiamond  cs.pendingBlockHash ", cs.pendingBlockHash.ToHex())
-	cs.lastestDiamond_forSave.ContainBlockHash = cs.pendingBlockHash // copy
+	if cs.lastestDiamond_forSave.ContainBlockHash == nil {
+		if cs.pendingBlockHash == nil {
+			//return fmt.Errorf("Block pending hash not set.")
+			panic("pending block hash not be set.")
+		}
+		cs.lastestDiamond_forSave.ContainBlockHash = cs.pendingBlockHash // copy
+	}
 	stodatas, e2 := cs.lastestDiamond_forSave.Serialize()
 	if e2 != nil {
 		return e2

@@ -55,6 +55,11 @@ func (cs *ChainState) ChannelCreate(channel_id fields.Bytes16, channel *stores.C
 }
 
 //
+func (cs *ChainState) ChannelUpdate(channel_id fields.Bytes16, channel *stores.Channel) error {
+	return cs.ChannelCreate(channel_id, channel)
+}
+
+//
 func (cs *ChainState) ChannelDelete(channel_id fields.Bytes16) error {
 	query, e1 := cs.channelDB.CreateNewQueryInstance(channel_id)
 	if e1 != nil {

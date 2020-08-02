@@ -29,6 +29,7 @@ type ChainState struct {
 	balanceDB *hashtreedb.HashTreeDB
 	diamondDB *hashtreedb.HashTreeDB
 	channelDB *hashtreedb.HashTreeDB
+	satoshiDB *hashtreedb.HashTreeDB // BTC 聪 账户
 
 	// store
 	datastore interfaces.BlockStore
@@ -100,6 +101,17 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 		chlcnf.SaveMarkBeforeValue = true
 	}
 	channelDB := hashtreedb.NewHashTreeDB(chlcnf)
+	// satoshiDB
+	stscnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "satoshi"), stores.SatoshiSize, 21)
+	stscnf.KeyReverse = true
+	if !isSubBranchTemporary {
+		stscnf.FileDividePartitionLevel = 2
+	} else {
+		stscnf.ForbidGC = true
+		stscnf.KeepDeleteMark = true
+		stscnf.SaveMarkBeforeValue = true
+	}
+	satoshiDB := hashtreedb.NewHashTreeDB(stscnf)
 	// return ok
 	cs := &ChainState{
 		temporaryDataDir:      temporaryDataDir,
@@ -109,6 +121,7 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 		balanceDB:             balanceDB,
 		diamondDB:             diamondDB,
 		channelDB:             channelDB,
+		satoshiDB:             satoshiDB,
 		prev288BlockTimestamp: 0,
 		pendingBlockHeight:    nil,
 		pendingBlockHash:      nil,
@@ -137,6 +150,9 @@ func (cs *ChainState) DestoryTemporary() {
 	}
 	if cs.diamondDB != nil {
 		cs.diamondDB.Close()
+	}
+	if cs.satoshiDB != nil {
+		cs.satoshiDB.Close()
 	}
 	// remove temp data dir
 	e1 := os.RemoveAll(cs.temporaryDataDir)
@@ -206,6 +222,10 @@ func (cs *ChainState) MergeCoverWriteChainState(src *ChainState) error {
 	e3 := cs.channelDB.TraversalCopy(src.channelDB, false)
 	if e3 != nil {
 		return e3
+	}
+	e4 := cs.satoshiDB.TraversalCopy(src.satoshiDB, false)
+	if e4 != nil {
+		return e4
 	}
 
 	// copy ok

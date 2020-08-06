@@ -59,8 +59,7 @@ func (ins *QueryInstance) Find() ([]byte, error) {
 		// read target ok
 		return ofstItem.ValueBody, nil
 	} else {
-		// other one
-		return nil, nil
+		return nil, nil // other one not find
 	}
 }
 

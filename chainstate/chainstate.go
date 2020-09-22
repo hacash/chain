@@ -31,6 +31,7 @@ type ChainState struct {
 	channelDB *hashtreedb.HashTreeDB
 	satoshiDB *hashtreedb.HashTreeDB // BTC 聪 账户
 	movebtcDB *hashtreedb.HashTreeDB // 转移BTC记录
+	lockblsDB *hashtreedb.HashTreeDB // 线性锁仓地址 key len = 24
 
 	// store
 	datastore interfaces.BlockStore
@@ -127,6 +128,17 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 		mvbtcnf.SaveMarkBeforeValue = true
 	}
 	movebtcDB := hashtreedb.NewHashTreeDB(mvbtcnf)
+	// lockblsDB
+	lkblscnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "lockbls"), stores.LockblsSize, 24)
+	blscnf.KeyReverse = true // 倒排key
+	if !isSubBranchTemporary {
+		mvbtcnf.FileDividePartitionLevel = 1
+	} else {
+		mvbtcnf.ForbidGC = true
+		mvbtcnf.KeepDeleteMark = true
+		mvbtcnf.SaveMarkBeforeValue = true
+	}
+	lockblsDB := hashtreedb.NewHashTreeDB(lkblscnf)
 	// return ok
 	cs := &ChainState{
 		config:                cnf,
@@ -138,6 +150,7 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 		channelDB:             channelDB,
 		satoshiDB:             satoshiDB,
 		movebtcDB:             movebtcDB,
+		lockblsDB:             lockblsDB,
 		prev288BlockTimestamp: 0,
 		pendingBlockHeight:    nil,
 		pendingBlockHash:      nil,
@@ -173,6 +186,9 @@ func (cs *ChainState) DestoryTemporary() {
 	}
 	if cs.movebtcDB != nil {
 		cs.movebtcDB.Close()
+	}
+	if cs.lockblsDB != nil {
+		cs.lockblsDB.Close()
 	}
 	// remove temp data dir
 	e1 := os.RemoveAll(cs.temporaryDataDir)
@@ -250,6 +266,10 @@ func (cs *ChainState) MergeCoverWriteChainState(src *ChainState) error {
 	e5 := cs.movebtcDB.TraversalCopy(src.movebtcDB, false)
 	if e5 != nil {
 		return e5
+	}
+	e6 := cs.lockblsDB.TraversalCopy(src.lockblsDB, false)
+	if e6 != nil {
+		return e6
 	}
 
 	// copy ok

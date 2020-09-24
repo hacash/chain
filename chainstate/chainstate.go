@@ -132,11 +132,11 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 	lkblscnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "lockbls"), stores.LockblsSize, 24)
 	blscnf.KeyReverse = true // 倒排key
 	if !isSubBranchTemporary {
-		mvbtcnf.FileDividePartitionLevel = 1
+		lkblscnf.FileDividePartitionLevel = 1
 	} else {
-		mvbtcnf.ForbidGC = true
-		mvbtcnf.KeepDeleteMark = true
-		mvbtcnf.SaveMarkBeforeValue = true
+		lkblscnf.ForbidGC = true
+		lkblscnf.KeepDeleteMark = true
+		lkblscnf.SaveMarkBeforeValue = true
 	}
 	lockblsDB := hashtreedb.NewHashTreeDB(lkblscnf)
 	// return ok

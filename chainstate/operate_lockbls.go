@@ -6,7 +6,7 @@ import (
 )
 
 // lockbls 查询
-func (cs *ChainState) Lockbls(lkid fields.Bytes24) *stores.Lockbls {
+func (cs *ChainState) Lockbls(lkid fields.Bytes18) *stores.Lockbls {
 	query, e1 := cs.lockblsDB.CreateNewQueryInstance(lkid)
 	if e1 != nil {
 		return nil // error
@@ -36,7 +36,7 @@ func (cs *ChainState) Lockbls(lkid fields.Bytes24) *stores.Lockbls {
 }
 
 // 创建线性锁仓
-func (cs *ChainState) LockblsCreate(lkid fields.Bytes24, stoitem *stores.Lockbls) error {
+func (cs *ChainState) LockblsCreate(lkid fields.Bytes18, stoitem *stores.Lockbls) error {
 	query, e1 := cs.lockblsDB.CreateNewQueryInstance(lkid)
 	if e1 != nil {
 		return e1 // error
@@ -55,12 +55,12 @@ func (cs *ChainState) LockblsCreate(lkid fields.Bytes24, stoitem *stores.Lockbls
 }
 
 // 释放（取出部分任意可取额度）
-func (cs *ChainState) LockblsUpdate(lkid fields.Bytes24, stoitem *stores.Lockbls) error {
+func (cs *ChainState) LockblsUpdate(lkid fields.Bytes18, stoitem *stores.Lockbls) error {
 	return cs.LockblsCreate(lkid, stoitem)
 }
 
 // 删除
-func (cs *ChainState) LockblsDelete(lkid fields.Bytes24) error {
+func (cs *ChainState) LockblsDelete(lkid fields.Bytes18) error {
 	query, e1 := cs.lockblsDB.CreateNewQueryInstance(lkid)
 	if e1 != nil {
 		return e1 // error

@@ -129,7 +129,7 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 	}
 	movebtcDB := hashtreedb.NewHashTreeDB(mvbtcnf)
 	// lockblsDB
-	lkblscnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "lockbls"), stores.LockblsSize, 24)
+	lkblscnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "lockbls"), stores.LockblsSize, stores.LockblsIdLength)
 	blscnf.KeyReverse = true // 倒排key
 	if !isSubBranchTemporary {
 		lkblscnf.FileDividePartitionLevel = 1

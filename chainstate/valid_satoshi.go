@@ -141,12 +141,12 @@ func readSatoshiGenesisByUrl(url string, trsno int64) *stores.SatoshiGenesis {
 	}
 	// 生成
 	genesis := stores.SatoshiGenesis{
-		TransferNo:               fields.VarInt4(nums[0]),     // 转账流水编号
-		BitcoinBlockHeight:       fields.VarInt4(nums[1]),     // 转账的比特币区块高度
-		BitcoinBlockTimestamp:    fields.VarInt4(nums[2]),     // 转账的比特币区块时间戳
-		BitcoinEffectiveGenesis:  fields.VarInt4(nums[3]),     // 在这笔之前已经成功转移的比特币数量
-		BitcoinQuantity:          fields.VarInt4(nums[4]),     // 本笔转账的比特币数量（单位：枚）
-		AdditionalTotalHacAmount: fields.VarInt4(totalAddHAC), // 本次转账[总共]应该增发的 hac 数量 （单位：枚）
+		TransferNo:               fields.VarUint4(nums[0]),     // 转账流水编号
+		BitcoinBlockHeight:       fields.VarUint4(nums[1]),     // 转账的比特币区块高度
+		BitcoinBlockTimestamp:    fields.VarUint4(nums[2]),     // 转账的比特币区块时间戳
+		BitcoinEffectiveGenesis:  fields.VarUint4(nums[3]),     // 在这笔之前已经成功转移的比特币数量
+		BitcoinQuantity:          fields.VarUint4(nums[4]),     // 本笔转账的比特币数量（单位：枚）
+		AdditionalTotalHacAmount: fields.VarUint4(totalAddHAC), // 本次转账[总共]应该增发的 hac 数量 （单位：枚）
 		OriginAddress:            *addr,
 		BitcoinTransferHash:      trshx,
 	}

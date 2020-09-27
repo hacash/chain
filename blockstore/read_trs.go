@@ -49,7 +49,7 @@ func (cs *BlockStore) ReadTransactionBytesByHash(txhash fields.Hash) (uint64, []
 		return 0, nil, e4
 	}
 	// return ok
-	height := fields.VarInt5(0)
+	height := fields.VarUint5(0)
 	height.Parse(findbytes[0:5], 0)
 	return uint64(height), trsdata, nil
 }

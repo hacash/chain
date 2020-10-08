@@ -287,8 +287,8 @@ func (cs *ChainState) NewSubBranchTemporaryChainState() (*ChainState, error) {
 
 	tempcnf := NewEmptyChainStateConfig()
 	// 拷贝一些配置
-	tempcnf.SatoshiEnable = cs.config.SatoshiEnable
-	tempcnf.SatoshiBTCMoveLogsURL = cs.config.SatoshiBTCMoveLogsURL
+	tempcnf.BTCMoveCheckEnable = cs.config.BTCMoveCheckEnable
+	tempcnf.BTCMoveCheckLogsURL = cs.config.BTCMoveCheckLogsURL
 	// 拷贝完毕
 	newTempState, err1 := newChainStateEx(tempcnf, true)
 	if err1 != nil {

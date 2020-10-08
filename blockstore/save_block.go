@@ -16,6 +16,31 @@ type transactionStoreItemV1 struct {
 }
 
 // block data store
+func (cs *BlockStore) CancelUniteTransactions(fullblock interfaces.Block) error {
+	alltrs := fullblock.GetTransactions()
+	txlen := len(alltrs)
+	if txlen < 1 {
+		return fmt.Errorf("not find coinbase trs.")
+	}
+	if txlen == 1 {
+		return nil // nothing to do
+	}
+	for i := 1; i < len(alltrs); i++ {
+		tx := alltrs[i]
+		query, e1 := cs.trsdataptrDB.CreateNewQueryInstance(tx.Hash())
+		if e1 != nil {
+			return e1
+		}
+		e2 := query.Delete()
+		if e2 != nil {
+			return e2
+		}
+		query.Destroy()
+	}
+	return nil
+}
+
+// block data store
 func (cs *BlockStore) SaveBlockUniteTransactions(fullblock interfaces.Block) error {
 	// trs
 	allTransactionStoreItem := make([]transactionStoreItemV1, 0, fullblock.GetTransactionCount())

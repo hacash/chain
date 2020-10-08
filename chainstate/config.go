@@ -8,8 +8,8 @@ import (
 type ChainStateConfig struct {
 	Datadir string
 
-	SatoshiEnable         bool
-	SatoshiBTCMoveLogsURL string
+	BTCMoveCheckEnable  bool
+	BTCMoveCheckLogsURL string
 }
 
 func NewEmptyChainStateConfig() *ChainStateConfig {
@@ -23,11 +23,11 @@ func NewChainStateConfig(cnffile *sys.Inicnf) *ChainStateConfig {
 	cnf.Datadir = path.Join(cnffile.MustDataDir(), "chainstate")
 
 	// 验证比特币转移
-	sec1 := cnffile.Section("satoshi")
-	cnf.SatoshiEnable = sec1.Key("enable").MustBool(false)
-	cnf.SatoshiBTCMoveLogsURL = sec1.Key("btcmovelogs_url").MustString("")
+	sec1 := cnffile.Section("btcmovecheck")
+	cnf.BTCMoveCheckEnable = sec1.Key("enable").MustBool(false)
+	cnf.BTCMoveCheckLogsURL = sec1.Key("logs_url").MustString("")
 
-	//fmt.Println(cnf.SatoshiEnable, cnf.SatoshiBTCMoveLogsURL)
+	//fmt.Println(cnf.BTCMoveCheckEnable, cnf.BTCMoveCheckLogsURL)
 
 	return cnf
 }

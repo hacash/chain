@@ -74,11 +74,11 @@ func (cs *ChainState) LoadValidatedSatoshiGenesis(trsno int64) (*stores.SatoshiG
 	if cs.isInTxPool {
 		mustcheck = true
 	}
-	//fmt.Println(cs.config.SatoshiEnable, cs.config.SatoshiBTCMoveLogsURL)
-	if cs.config.SatoshiEnable {
+	//fmt.Println(cs.config.BTCMoveCheckEnable, cs.config.BTCMoveCheckLogsURL)
+	if cs.config.BTCMoveCheckEnable {
 		mustcheck = true
-		if len(cs.config.SatoshiBTCMoveLogsURL) > 0 {
-			genesis = readSatoshiGenesisByUrl(cs.config.SatoshiBTCMoveLogsURL, trsno)
+		if len(cs.config.BTCMoveCheckLogsURL) > 0 {
+			genesis = readSatoshiGenesisByUrl(cs.config.BTCMoveCheckLogsURL, trsno)
 		}
 	}
 	// 返回

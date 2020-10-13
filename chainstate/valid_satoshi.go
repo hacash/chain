@@ -86,6 +86,9 @@ func (cs *ChainState) LoadValidatedSatoshiGenesis(trsno int64) (*stores.SatoshiG
 }
 
 func readSatoshiGenesisByUrl(url string, trsno int64) *stores.SatoshiGenesis {
+	if len(url) == 0 {
+		return nil // error
+	}
 	client := http.Client{
 		Timeout: time.Duration(5 * time.Second),
 	}
@@ -129,8 +132,8 @@ func readSatoshiGenesisByUrl(url string, trsno int64) *stores.SatoshiGenesis {
 	// 检查转账数量
 	ttb := nums[3]
 	btcs := nums[4]
-	if btcs < 1 && btcs > 1000 {
-		return nil // 转移的比特币最小一枚，最大 1000 枚（超过1000的按1000计算）
+	if btcs < 1 && btcs > 10000 {
+		return nil // 转移的比特币最小一枚，最大 10000 枚（超过10000的按1000计算）
 	}
 	var totalAddHAC int64 = 0
 	for i := ttb + 1; i <= ttb+btcs; i++ {

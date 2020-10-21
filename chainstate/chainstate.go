@@ -29,7 +29,7 @@ type ChainState struct {
 	balanceDB *hashtreedb.HashTreeDB
 	diamondDB *hashtreedb.HashTreeDB
 	channelDB *hashtreedb.HashTreeDB
-	satoshiDB *hashtreedb.HashTreeDB // BTC 聪 账户
+	// satoshiDB *hashtreedb.HashTreeDB // BTC 聪 账户
 	movebtcDB *hashtreedb.HashTreeDB // 转移BTC记录
 	lockblsDB *hashtreedb.HashTreeDB // 线性锁仓地址 key len = 24
 
@@ -106,17 +106,19 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 		chlcnf.SaveMarkBeforeValue = true
 	}
 	channelDB := hashtreedb.NewHashTreeDB(chlcnf)
-	// satoshiDB
-	stscnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "satoshi"), stores.SatoshiSize, 21)
-	stscnf.KeyReverse = true
-	if !isSubBranchTemporary {
-		stscnf.FileDividePartitionLevel = 2
-	} else {
-		stscnf.ForbidGC = true
-		stscnf.KeepDeleteMark = true
-		stscnf.SaveMarkBeforeValue = true
-	}
-	satoshiDB := hashtreedb.NewHashTreeDB(stscnf)
+	/*
+		// satoshiDB
+		stscnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "satoshi"), stores.SatoshiSize, 21)
+		stscnf.KeyReverse = true
+		if !isSubBranchTemporary {
+			stscnf.FileDividePartitionLevel = 2
+		} else {
+			stscnf.ForbidGC = true
+			stscnf.KeepDeleteMark = true
+			stscnf.SaveMarkBeforeValue = true
+		}
+		satoshiDB := hashtreedb.NewHashTreeDB(stscnf)
+	*/
 	// movebtcDB
 	mvbtcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "movebtc"), 32, 4)
 	mvbtcnf.KeyPrefixSupplement = 4
@@ -141,14 +143,14 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 	lockblsDB := hashtreedb.NewHashTreeDB(lkblscnf)
 	// return ok
 	cs := &ChainState{
-		config:                cnf,
-		temporaryDataDir:      temporaryDataDir,
-		base:                  nil,
-		laststatusDB:          laststatusDB,
-		balanceDB:             balanceDB,
-		diamondDB:             diamondDB,
-		channelDB:             channelDB,
-		satoshiDB:             satoshiDB,
+		config:           cnf,
+		temporaryDataDir: temporaryDataDir,
+		base:             nil,
+		laststatusDB:     laststatusDB,
+		balanceDB:        balanceDB,
+		diamondDB:        diamondDB,
+		channelDB:        channelDB,
+		// satoshiDB:             satoshiDB,
 		movebtcDB:             movebtcDB,
 		lockblsDB:             lockblsDB,
 		prev288BlockTimestamp: 0,
@@ -181,9 +183,11 @@ func (cs *ChainState) DestoryTemporary() {
 	if cs.diamondDB != nil {
 		cs.diamondDB.Close()
 	}
-	if cs.satoshiDB != nil {
-		cs.satoshiDB.Close()
-	}
+	/*
+		if cs.satoshiDB != nil {
+			cs.satoshiDB.Close()
+		}
+	*/
 	if cs.movebtcDB != nil {
 		cs.movebtcDB.Close()
 	}
@@ -259,10 +263,12 @@ func (cs *ChainState) MergeCoverWriteChainState(src *ChainState) error {
 	if e3 != nil {
 		return e3
 	}
-	e4 := cs.satoshiDB.TraversalCopy(src.satoshiDB, false)
-	if e4 != nil {
-		return e4
-	}
+	/*
+		e4 := cs.satoshiDB.TraversalCopy(src.satoshiDB, false)
+		if e4 != nil {
+			return e4
+		}
+	*/
 	e5 := cs.movebtcDB.TraversalCopy(src.movebtcDB, false)
 	if e5 != nil {
 		return e5

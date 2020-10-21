@@ -1,9 +1,6 @@
 package chainstate
 
-import (
-	"github.com/hacash/core/fields"
-	"github.com/hacash/core/stores"
-)
+/*
 
 //
 func (cs *ChainState) Satoshi(addr fields.Address) *stores.Satoshi {
@@ -68,3 +65,5 @@ func (cs *ChainState) SatoshiDel(addr fields.Address) error {
 	// ok
 	return nil
 }
+
+*/

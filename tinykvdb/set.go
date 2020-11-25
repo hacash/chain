@@ -16,7 +16,7 @@ func (kv *TinyKVDB) Set(key []byte, value []byte) error {
 	defer query.Destroy()
 	// check val size
 	if len(value) <= 8 {
-		_, e2 := query.Save(append([]byte{0}, value...))
+		e2 := query.Save(append([]byte{0}, value...))
 		if e2 != nil {
 			return e2
 		}
@@ -30,7 +30,7 @@ func (kv *TinyKVDB) Set(key []byte, value []byte) error {
 		if len(value) <= int(fvlen) {
 			if len(value) < int(fvlen) {
 				binary.BigEndian.PutUint32(item[5:9], uint32(len(value)))
-				_, e2 := query.Save(item) // update val size
+				e2 := query.Save(item) // update val size
 				if e2 != nil {
 					return e2
 				}
@@ -55,7 +55,7 @@ func (kv *TinyKVDB) Set(key []byte, value []byte) error {
 	itemv[0] = 1
 	binary.BigEndian.PutUint32(itemv[1:5], uint32(file_size))
 	binary.BigEndian.PutUint32(itemv[5:9], uint32(len(value)))
-	_, e5 := query.Save(itemv)
+	e5 := query.Save(itemv)
 	if e5 != nil {
 		return e5
 	}

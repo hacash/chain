@@ -17,7 +17,7 @@ func (cs *BlockStore) SaveDiamond(diamond *stores.DiamondSmelt) error {
 	if e2 != nil {
 		return e2
 	}
-	_, e3 := query1.Save(diamond_datas)
+	e3 := query1.Save(diamond_datas)
 	if e3 != nil {
 		return e3
 	}
@@ -29,7 +29,7 @@ func (cs *BlockStore) SaveDiamond(diamond *stores.DiamondSmelt) error {
 		return e4
 	}
 	defer query2.Destroy()
-	_, e5 := query2.Save(diamond.Diamond)
+	e5 := query2.Save(diamond.Diamond)
 	if e5 != nil {
 		return e5
 	}

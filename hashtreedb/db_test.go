@@ -67,7 +67,7 @@ func Test_store_list_t5(t *testing.T) {
 		fmt.Println("- - - - - - - -", key)
 
 		ins1, _ := db.CreateNewQueryInstance(key)
-		_, e1 := ins1.Save(key)
+		e1 := ins1.Save(key)
 		if e1 != nil {
 			fmt.Println(e1)
 		}
@@ -97,7 +97,7 @@ func Test_store_hash_t4(t *testing.T) {
 		if e0 != nil {
 			panic(e0)
 		}
-		_, e2 := ins1.Save(curkey)
+		e2 := ins1.Save(curkey)
 		if e2 != nil {
 			panic(e2)
 		}
@@ -150,7 +150,7 @@ func Test_store_much_t3(t *testing.T) {
 					if e1 != nil {
 						panic(e1)
 					}
-					_, e2 := ins1.Save(curkey)
+					e2 := ins1.Save(curkey)
 					if e2 != nil {
 						panic(e2)
 					}
@@ -198,7 +198,7 @@ func Test_store_new_t2(t *testing.T) {
 	ins1.Destroy()
 
 	ins2, _ := db.CreateNewQueryInstance(stokey2)
-	_, e2 := ins2.Save([]byte("VVVV"))
+	e2 := ins2.Save([]byte("VVVV"))
 	fmt.Println(e2)
 	fddts2, _ := ins2.Find()
 	fmt.Println(string(fddts2))

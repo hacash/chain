@@ -32,7 +32,7 @@ func (cs *ChainState) SaveMoveBTCBelongTxHash(trsno uint32, txhash []byte) error
 		return e4
 	}
 	defer query.Destroy()
-	_, e5 := query.Save(txhash)
+	e5 := query.Save(txhash)
 	if e5 != nil {
 		return e5
 	}

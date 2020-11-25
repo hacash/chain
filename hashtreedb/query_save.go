@@ -9,16 +9,30 @@ import (
 /**
  * Save Value Segment Offset
  */
-func (ins *QueryInstance) UnsafeSaveWithValueSegmentOffset(ValueSegmentOffset uint32) error {
-	_, err := ins.saveEx(nil, int64(ValueSegmentOffset))
-	return err
-}
+//func (ins *QueryInstance) UnsafeSaveWithValueSegmentOffset(ValueSegmentOffset uint32) error {
+//	_, err := ins.saveEx(nil, int64(ValueSegmentOffset))
+//	return err
+//}
 
 /**
  * Save Value
  */
-func (ins *QueryInstance) Save(valuedatas []byte) (ValueSegmentOffset uint32, err error) {
-	return ins.saveEx(valuedatas, -1)
+//func (ins *QueryInstance) Save(valuedatas []byte) (ValueSegmentOffset uint32, err error) {
+func (ins *QueryInstance) Save(valuedatas []byte) error {
+
+	// 内存数据库
+	if ins.db.config.MemoryStorage {
+		// copy
+		retdts := make([]byte, len(valuedatas))
+		copy(retdts, valuedatas)
+		//fmt.Println("MemoryStorageDB Save", fields.Address(ins.key).ToReadable(), valuedatas)
+		ins.db.MemoryStorageDB.Save(ins.key, retdts)
+		return nil
+	}
+
+	// 文件数据库
+	_, err := ins.saveEx(valuedatas, -1)
+	return err
 }
 
 /**

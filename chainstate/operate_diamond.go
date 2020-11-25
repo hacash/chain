@@ -46,7 +46,7 @@ func (cs *ChainState) DiamondSet(diamond_name fields.Bytes6, diamond *stores.Dia
 	if e3 != nil {
 		return e3 // error
 	}
-	_, e4 := query.Save(stodatas)
+	e4 := query.Save(stodatas)
 	if e4 != nil {
 		return e4 // error
 	}

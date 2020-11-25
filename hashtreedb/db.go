@@ -20,6 +20,8 @@ const (
 )
 
 type HashTreeDBConfig struct {
+	// MemoryStorage
+	MemoryStorage bool // 在内存内保存数据
 	// size
 	KeySize      uint8  // key值长度  <= 32
 	MaxValueSize uint32 // 数据内容长度
@@ -67,6 +69,9 @@ func NewHashTreeDBConfig(
 type HashTreeDB struct {
 	config *HashTreeDBConfig // config
 
+	// db in memory
+	MemoryStorageDB *MemoryStorageDB
+
 	// file opt
 	fileOptLock         sync.Mutex
 	fileWriteLockCount  sync.Map // map[string]int         // 写文件锁数量统计
@@ -105,6 +110,12 @@ func NewHashTreeDB(config *HashTreeDBConfig) *HashTreeDB {
 	db := &HashTreeDB{
 		config: config,
 	}
+	// 内存数据库
+	if config.MemoryStorage {
+		db.MemoryStorageDB = NewMemoryStorageDB()
+		return db
+	}
+	// 文件数据库，数据长度
 	db.freshRecordDataSize()
 	return db
 }
@@ -130,7 +141,6 @@ func (db *HashTreeDB) freshRecordDataSize() {
 	}
 	db.config.segmentValueSize += uint32(db.config.KeySize) + db.config.MaxValueSize
 }
-
 
 // close
 func (db *HashTreeDB) Close() error {

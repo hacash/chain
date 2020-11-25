@@ -35,6 +35,10 @@ func newQueryInstance(db *HashTreeDB, key []byte) (*QueryInstance, error) {
 		key:               key,
 		searchResultCache: nil,
 	}
+	// 如果是内存数据库，则不打开本地文件
+	if db.config.MemoryStorage {
+		return ins, nil
+	}
 	ins.hash = db.convertKeyToHash(key)
 	ins.filePath, ins.fileKey, ins.searchHash = db.locateTargetFilePath(ins.hash)
 	//fmt.Println("newQueryInstance searchHash ", ins.searchHash)
@@ -51,7 +55,9 @@ func newQueryInstance(db *HashTreeDB, key []byte) (*QueryInstance, error) {
 // 关闭
 func (ins *QueryInstance) Destroy() {
 	// 释放文件控制
-	ins.db.releaseControlOfFile(ins)
+	if !ins.db.config.MemoryStorage {
+		ins.db.releaseControlOfFile(ins)
+	}
 	// 清空数据
 	ins.db = nil
 	ins.key = nil

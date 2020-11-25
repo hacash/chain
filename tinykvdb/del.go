@@ -14,7 +14,7 @@ func (kv *TinyKVDB) Del(key []byte) error {
 	}
 	if item != nil {
 		item[0] = ItemDelMark // delete mark
-		_, e1 := query.Save(item)
+		e1 := query.Save(item)
 		if e1 != nil {
 			return e1
 		}

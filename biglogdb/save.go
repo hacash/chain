@@ -68,7 +68,7 @@ OPENSTOREFILE:
 	defer query.Destroy()
 	stoptrdts, _ := stoptr.Serialize()
 	stoptrdts = append(stoptrdts, logheaddatas...)
-	_, e5 := query.Save(stoptrdts)
+	e5 := query.Save(stoptrdts)
 	if e5 != nil {
 		return nil, e5
 	}

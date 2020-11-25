@@ -46,7 +46,7 @@ func (cs *ChainState) LockblsCreate(lkid fields.Bytes18, stoitem *stores.Lockbls
 	if e3 != nil {
 		return e3 // error
 	}
-	_, e4 := query.Save(stodatas)
+	e4 := query.Save(stodatas)
 	if e4 != nil {
 		return e4 // error
 	}

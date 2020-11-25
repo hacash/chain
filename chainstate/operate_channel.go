@@ -46,7 +46,7 @@ func (cs *ChainState) ChannelCreate(channel_id fields.Bytes16, channel *stores.C
 	if e3 != nil {
 		return e3 // error
 	}
-	_, e4 := query.Save(stodatas)
+	e4 := query.Save(stodatas)
 	if e4 != nil {
 		return e4 // error
 	}

@@ -10,6 +10,12 @@ import (
  * search index exist
  */
 func (ins *QueryInstance) Exist() (bool, error) {
+	// 内存数据库
+	if ins.db.config.MemoryStorage {
+		return ins.db.MemoryStorageDB.Exist(ins.key), nil
+	}
+
+	// 文件数据库
 	ins.ClearSearchIndexCache()
 	ofstItem, err := ins.SearchIndex()
 	if err != nil {
@@ -40,6 +46,20 @@ func (ins *QueryInstance) Exist() (bool, error) {
  * search index file and get the item part
  */
 func (ins *QueryInstance) Find() ([]byte, error) {
+	// 内存数据库
+	if ins.db.config.MemoryStorage {
+		v, ok := ins.db.MemoryStorageDB.Read(ins.key)
+		if !ok || v == nil {
+			return nil, nil
+		}
+		// copy
+		retdts := make([]byte, ins.db.config.MaxValueSize) // 补充不足的长度
+		copy(retdts, v)
+		//fmt.Println("MemoryStorageDB Find", fields.Address(ins.key).ToReadable(), retdts)
+		return retdts, nil
+	}
+
+	// 文件数据库
 	ins.ClearSearchIndexCache()
 	ofstItem, err := ins.SearchIndex()
 	if err != nil {

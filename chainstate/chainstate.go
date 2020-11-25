@@ -80,6 +80,7 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 	if !isSubBranchTemporary {
 		blscnf.FileDividePartitionLevel = 2
 	} else {
+		blscnf.MemoryStorage = true // 内存数据库
 		blscnf.ForbidGC = true
 		blscnf.KeepDeleteMark = true
 		blscnf.SaveMarkBeforeValue = true
@@ -91,6 +92,7 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 	if !isSubBranchTemporary {
 		dmdcnf.FileDividePartitionLevel = 1
 	} else {
+		dmdcnf.MemoryStorage = true // 内存数据库
 		dmdcnf.ForbidGC = true
 		dmdcnf.KeepDeleteMark = true
 		dmdcnf.SaveMarkBeforeValue = true
@@ -101,6 +103,7 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 	if !isSubBranchTemporary {
 		chlcnf.FileDividePartitionLevel = 1
 	} else {
+		chlcnf.MemoryStorage = true // 内存数据库
 		chlcnf.ForbidGC = true
 		chlcnf.KeepDeleteMark = true
 		chlcnf.SaveMarkBeforeValue = true
@@ -125,6 +128,7 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 	if !isSubBranchTemporary {
 		mvbtcnf.FileDividePartitionLevel = 1
 	} else {
+		mvbtcnf.MemoryStorage = true // 内存数据库
 		mvbtcnf.ForbidGC = true
 		mvbtcnf.KeepDeleteMark = true
 		mvbtcnf.SaveMarkBeforeValue = true
@@ -136,6 +140,7 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 	if !isSubBranchTemporary {
 		lkblscnf.FileDividePartitionLevel = 1
 	} else {
+		lkblscnf.MemoryStorage = true // 内存数据库
 		lkblscnf.ForbidGC = true
 		lkblscnf.KeepDeleteMark = true
 		lkblscnf.SaveMarkBeforeValue = true

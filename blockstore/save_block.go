@@ -96,7 +96,7 @@ func (cs *BlockStore) SaveBlockUniteTransactions(fullblock interfaces.Block) err
 	if e5 != nil {
 		return e5
 	}
-	_, e6 := blkhsquery.Save(fullblockhash)
+	e6 := blkhsquery.Save(fullblockhash)
 	if e6 != nil {
 		return e6
 	}
@@ -121,7 +121,7 @@ func (cs *BlockStore) SaveBlockUniteTransactions(fullblock interfaces.Block) err
 			return e3
 		}
 		//fmt.Println(trssto.Filenum, trssto.Fileseek, trssto.Valsize)
-		_, e4 := query.Save(append(blkheibts, trsdataptr...))
+		e4 := query.Save(append(blkheibts, trsdataptr...))
 		if e4 != nil {
 			return e4
 		}

@@ -10,6 +10,14 @@ import (
  * clear search index cache
  */
 func (ins *QueryInstance) Delete() error {
+
+	// 内存数据库
+	if ins.db.config.MemoryStorage {
+		ins.db.MemoryStorageDB.Delete(ins.key)
+		return nil
+	}
+
+	// 文件数据库
 	ins.ClearSearchIndexCache()
 	ofstItem, err := ins.SearchIndex()
 	if err != nil {

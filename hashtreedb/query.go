@@ -1,9 +1,5 @@
 package hashtreedb
 
-import (
-	"sync"
-)
-
 // 查询实例
 
 type QueryInstance struct {
@@ -15,8 +11,8 @@ type QueryInstance struct {
 	filePath   string
 	searchHash []byte
 
-	targetFilePackage         *TargetFilePackage
-	targetFileWriteJustUnlock *sync.Mutex
+	targetFilePackage *TargetFilePackage
+	targetFileItem    *lockFilePkgItem
 
 	// search cache
 	searchResultCache *FindValueOffsetItem
@@ -43,11 +39,11 @@ func newQueryInstance(db *HashTreeDB, key []byte) (*QueryInstance, error) {
 	ins.filePath, ins.fileKey, ins.searchHash = db.locateTargetFilePath(ins.hash)
 	//fmt.Println("newQueryInstance searchHash ", ins.searchHash)
 	// 等待获取文件控制
-	lock, err := db.waitForTakeControlOfFile(ins)
+	fileitem, err := db.waitForTakeControlOfFile(ins)
 	if err != nil {
 		return nil, err
 	}
-	ins.targetFileWriteJustUnlock = lock
+	ins.targetFileItem = fileitem
 	// 返回使用
 	return ins, nil
 }
@@ -66,6 +62,6 @@ func (ins *QueryInstance) Destroy() {
 	ins.filePath = ""
 	ins.searchHash = nil
 	ins.targetFilePackage = nil
-	ins.targetFileWriteJustUnlock = nil
+	ins.targetFileItem = nil
 	ins.searchResultCache = nil
 }

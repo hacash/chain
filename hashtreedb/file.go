@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"os"
 	"path"
-	"strings"
 	"sync"
 )
 
@@ -41,80 +40,70 @@ func (tf *TargetFilePackage) Destroy() {
 }
 
 // 等待获取文件控制权（锁）
-func (db *HashTreeDB) waitForTakeControlOfFile(ins *QueryInstance) (*sync.Mutex, error) {
+func (db *HashTreeDB) waitForTakeControlOfFile(ins *QueryInstance) (*lockFilePkgItem, error) {
 	if len(ins.fileKey) == 0 {
 		panic("(db *HashTreeDB) waitForTakeControlOfFile -> len(ins.fileKey) == 0")
 	}
-	db.fileOptLock.Lock()
+
+	// 操作锁定
+	db.filesOptLock.Lock()
+
+	// 开始检测文件
+	var fileitem *lockFilePkgItem = nil
 	fwlockptr := &sync.Mutex{}
-	tarlock, ldok := db.fileWriteLockMutexs.LoadOrStore(ins.fileKey, fwlockptr)
+	tarlock, ldok := db.filesWriteLock.Load(ins.fileKey)
 	if ldok {
-		fwlockptr = tarlock.(*sync.Mutex) // just get out
+		fileitem = tarlock.(*lockFilePkgItem) // just get out
+		fwlockptr = fileitem.lock
 	}
-	db.fileOptLock.Unlock()
-	fwlockptr.Lock() // 目标文件加锁
 	// 目标文件包
 	var targetfilepkg = &TargetFilePackage{}
-	var usetargetfilepkgcache bool = false
 	targetfilepkg.fileKey = ins.fileKey
 	targetfilepkg.filePath = ins.filePath
 	var datfn = ins.filePath + ".dat"
 	// 判断文件是否存在
-	_, is_exist := db.existsFileKeys.Load(ins.fileKey)
-	if !is_exist {
-		//fmt.Println("-- PathExists(datfn) --")
-		// 从文件夹检查文件是否存在
+	if fileitem != nil && fileitem.count >= 1 {
+		// 使用缓存，并且文件没有被关闭
+		targetfilepkg = fileitem.targetFilePackageCache
+		fileitem.count += 1 // 统计数量
+	} else {
+		// 缓存不存在
+		// 检查文件是否存在
 		exist, e1 := PathExists(datfn)
 		if e1 != nil {
-			fwlockptr.Unlock() // end
 			return nil, e1
 		}
-		is_exist = exist
-	} else {
-		//fmt.Println("is_exist  ==  true")
-	}
-	// 创建目标夹和文件
-	if !is_exist {
-		basedir := path.Dir(datfn)
-		e := os.MkdirAll(basedir, os.ModePerm)
-		if e != nil {
-			fwlockptr.Unlock() // end
-			return nil, e
+		if !exist {
+			// 文件不存在，则创建目录
+			basedir := path.Dir(datfn)
+			e := os.MkdirAll(basedir, os.ModePerm)
+			if e != nil {
+				return nil, e
+			}
 		}
-		//fmt.Println(basedir)
+		// 创建或打开文件
 		err := openCreateTargetFiles(ins.filePath, targetfilepkg)
 		if err != nil {
-			fwlockptr.Unlock() // end
 			return nil, err
 		}
-		//fmt.Println("+++++++++++++++++++++ create file")
-	} else {
-		// 检查缓存池
-		if db.targetFilePackageCache != nil && strings.Compare(ins.fileKey, db.targetFilePackageCache.fileKey) == 0 {
-			usetargetfilepkgcache = true              // 使用缓存
-			targetfilepkg = db.targetFilePackageCache // 直接使用缓存
-			// fmt.Println("-------------------- targetFilePackageCache")
-		} else {
-			// 新打开文件并创建
-			err := openCreateTargetFiles(ins.filePath, targetfilepkg)
-			if err != nil {
-				fwlockptr.Unlock() // end
-				return nil, err
-			}
-			// fmt.Println("=================== open file")
+		// 保存缓存
+		fileitem = &lockFilePkgItem{
+			count:                  1,
+			lock:                   fwlockptr,
+			targetFilePackageCache: targetfilepkg,
 		}
+		db.filesWriteLock.Store(ins.fileKey, fileitem)
 	}
-	if db.targetFilePackageCache != nil && !usetargetfilepkgcache {
-		// 没有用到缓存，而是新建一个的时候，销毁上一个缓存的文件包
-		db.targetFilePackageCache.Destroy() // close cache
-	}
-	db.targetFilePackageCache = targetfilepkg // 暂保留一条缓存
+	// 操作解锁
+	db.filesOptLock.Unlock()
+	// 目标文件加锁
+	fwlockptr.Lock()
 
-	db.existsFileKeys.Store(ins.fileKey, true) // 确定存在
+	//db.existsFileKeys.Store(ins.fileKey, true) // 确定存在
 	// 给出文件包
 	ins.targetFilePackage = targetfilepkg
 	// fwlockptr.Unlock()
-	return fwlockptr, nil
+	return fileitem, nil
 }
 
 func openCreateTargetFiles(fpfn string, targetfilepkg *TargetFilePackage) error {
@@ -146,7 +135,13 @@ func openCreateTargetFiles(fpfn string, targetfilepkg *TargetFilePackage) error 
 
 // 等待获取文件控制权
 func (db *HashTreeDB) releaseControlOfFile(ins *QueryInstance) error {
-	ins.targetFileWriteJustUnlock.Unlock() // 释放文件锁
+	ins.targetFileItem.count -= 1
+	if ins.targetFileItem.count <= 0 {
+		// 已经无人采用，关闭所有文件
+		ins.targetFileItem.targetFilePackageCache.Destroy()
+		ins.targetFileItem.targetFilePackageCache = nil
+	}
+	ins.targetFileItem.lock.Unlock() // 释放文件锁
 
 	//fk := ins.fileKey
 

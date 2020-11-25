@@ -120,11 +120,16 @@ func (this *HashTreeDB) recursTraversalCopy(values_list []byte, target *HashTree
 		if markty == IndexItemTypeValue {
 			onevaluebody := value[1+target.config.KeySize:]
 			e = query.Save(onevaluebody) // set
+			if e != nil {
+				query.Destroy()
+				return e
+			}
 		} else {
 			e = query.Delete() // del
-		}
-		if e != nil {
-			return e
+			if e != nil {
+				query.Destroy()
+				return e
+			}
 		}
 		query.Destroy()
 		// OK NEXT

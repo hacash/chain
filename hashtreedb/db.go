@@ -77,7 +77,7 @@ type HashTreeDB struct {
 	fileWriteLockCount  sync.Map // map[string]int         // 写文件锁数量统计
 	fileWriteLockMutexs sync.Map // map[string]*sync.Mutex // 写文件锁
 
-	targetFilePackagePool *TargetFilePackage // map[string]*TargetFilePackage // 暂时版本先只储存一个
+	targetFilePackageCache *TargetFilePackage // map[string]*TargetFilePackage // 暂时版本先只储存一个
 
 	existsFileKeys sync.Map // 已经存在的
 
@@ -144,8 +144,9 @@ func (db *HashTreeDB) freshRecordDataSize() {
 
 // close
 func (db *HashTreeDB) Close() error {
-	if db.targetFilePackagePool != nil {
-		db.targetFilePackagePool.Destroy() // close cache
+	if db.targetFilePackageCache != nil {
+		db.targetFilePackageCache.Destroy() // close cache
+		db.targetFilePackageCache = nil
 	}
 	return nil
 }

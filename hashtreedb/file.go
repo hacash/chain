@@ -55,6 +55,7 @@ func (db *HashTreeDB) waitForTakeControlOfFile(ins *QueryInstance) (*sync.Mutex,
 	fwlockptr.Lock() // 目标文件加锁
 	// 目标文件包
 	var targetfilepkg = &TargetFilePackage{}
+	var usetargetfilepkgcache bool = false
 	targetfilepkg.fileKey = ins.fileKey
 	targetfilepkg.filePath = ins.filePath
 	var datfn = ins.filePath + ".dat"
@@ -65,6 +66,7 @@ func (db *HashTreeDB) waitForTakeControlOfFile(ins *QueryInstance) (*sync.Mutex,
 		// 从文件夹检查文件是否存在
 		exist, e1 := PathExists(datfn)
 		if e1 != nil {
+			fwlockptr.Unlock() // end
 			return nil, e1
 		}
 		is_exist = exist
@@ -76,32 +78,37 @@ func (db *HashTreeDB) waitForTakeControlOfFile(ins *QueryInstance) (*sync.Mutex,
 		basedir := path.Dir(datfn)
 		e := os.MkdirAll(basedir, os.ModePerm)
 		if e != nil {
+			fwlockptr.Unlock() // end
 			return nil, e
 		}
 		//fmt.Println(basedir)
 		err := openCreateTargetFiles(ins.filePath, targetfilepkg)
 		if err != nil {
+			fwlockptr.Unlock() // end
 			return nil, err
 		}
 		//fmt.Println("+++++++++++++++++++++ create file")
 	} else {
 		// 检查缓存池
-		if db.targetFilePackagePool != nil && strings.Compare(ins.fileKey, db.targetFilePackagePool.fileKey) == 0 {
-			targetfilepkg = db.targetFilePackagePool // 直接使用缓存
-			// fmt.Println("-------------------- targetFilePackagePool")
+		if db.targetFilePackageCache != nil && strings.Compare(ins.fileKey, db.targetFilePackageCache.fileKey) == 0 {
+			usetargetfilepkgcache = true              // 使用缓存
+			targetfilepkg = db.targetFilePackageCache // 直接使用缓存
+			// fmt.Println("-------------------- targetFilePackageCache")
 		} else {
 			// 新打开文件并创建
 			err := openCreateTargetFiles(ins.filePath, targetfilepkg)
 			if err != nil {
+				fwlockptr.Unlock() // end
 				return nil, err
 			}
 			// fmt.Println("=================== open file")
 		}
 	}
-	if db.targetFilePackagePool != nil && db.targetFilePackagePool != targetfilepkg {
-		db.targetFilePackagePool.Destroy() // close cache
+	if db.targetFilePackageCache != nil && !usetargetfilepkgcache {
+		// 没有用到缓存，而是新建一个的时候，销毁上一个缓存的文件包
+		db.targetFilePackageCache.Destroy() // close cache
 	}
-	db.targetFilePackagePool = targetfilepkg // 暂保留一条缓存
+	db.targetFilePackageCache = targetfilepkg // 暂保留一条缓存
 
 	db.existsFileKeys.Store(ins.fileKey, true) // 确定存在
 	// 给出文件包

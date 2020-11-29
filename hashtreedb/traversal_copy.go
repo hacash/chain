@@ -40,6 +40,27 @@ func (this *HashTreeDB) TraversalCopy(target *HashTreeDB, datafilemustexist bool
 		return nil
 	}
 
+	// LevelDB
+	if target.config.LevelDB {
+		// 遍历
+		iter := target.LevelDB.NewIterator(nil, nil)
+		for iter.Next() {
+			//fmt.Printf("key:%s, value:%s\n", iter.Key(), iter.Value())
+			distins, e0 := this.CreateNewQueryInstance(iter.Key())
+			if e0 != nil {
+				return e0
+			}
+			e0 = distins.Save(iter.Value())
+			if e0 != nil {
+				distins.Destroy()
+				return e0
+			}
+			distins.Destroy()
+		}
+		iter.Release()
+		return nil
+	}
+
 	// 文件数据库
 	if target.config.FileDividePartitionLevel > 0 {
 		return fmt.Errorf("unsupported operations for TraversalCopy: config.FilePartitionLevel must be 0")

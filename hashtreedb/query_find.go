@@ -15,6 +15,18 @@ func (ins *QueryInstance) Exist() (bool, error) {
 		return ins.db.MemoryStorageDB.Exist(ins.key), nil
 	}
 
+	// LevelDB
+	if ins.db.config.LevelDB {
+		val, err := ins.db.LevelDB.Get(ins.key, nil)
+		if err != nil {
+			return false, err // error
+		}
+		if val == nil {
+			return false, nil
+		}
+		return true, nil
+	}
+
 	// 文件数据库
 	ins.ClearSearchIndexCache()
 	ofstItem, err := ins.SearchIndex()
@@ -55,6 +67,22 @@ func (ins *QueryInstance) Find() ([]byte, error) {
 		// copy
 		retdts := make([]byte, ins.db.config.MaxValueSize) // 补充不足的长度
 		copy(retdts, v)
+		//fmt.Println("MemoryStorageDB Find", fields.Address(ins.key).ToReadable(), retdts)
+		return retdts, nil
+	}
+
+	// LevelDB
+	if ins.db.config.LevelDB {
+		val, err := ins.db.LevelDB.Get(ins.key, nil)
+		if err != nil {
+			return nil, err // error
+		}
+		if val == nil {
+			return nil, nil
+		}
+		// copy
+		retdts := make([]byte, ins.db.config.MaxValueSize) // 补充不足的长度
+		copy(retdts, val)
 		//fmt.Println("MemoryStorageDB Find", fields.Address(ins.key).ToReadable(), retdts)
 		return retdts, nil
 	}

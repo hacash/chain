@@ -77,36 +77,39 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 	// os.MkdirAll(path.Join(cnf.Datadir, "balance"), os.ModePerm)
 	blscnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "balance"), stores.BalanceSize, 21)
 	blscnf.KeyReverse = true
-	if !isSubBranchTemporary {
-		blscnf.FileDividePartitionLevel = 2
-	} else {
+	if isSubBranchTemporary {
 		blscnf.MemoryStorage = true // 内存数据库
 		blscnf.ForbidGC = true
 		blscnf.KeepDeleteMark = true
 		blscnf.SaveMarkBeforeValue = true
+	} else {
+		//blscnf.LevelDB = true // 使用 level db
+		blscnf.FileDividePartitionLevel = 2
 	}
 	balanceDB := hashtreedb.NewHashTreeDB(blscnf)
 	// diamondDB
 	dmdcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "diamond"), stores.DiamondSize, 6)
 	dmdcnf.KeyPrefixSupplement = 10
-	if !isSubBranchTemporary {
-		dmdcnf.FileDividePartitionLevel = 1
-	} else {
+	if isSubBranchTemporary {
 		dmdcnf.MemoryStorage = true // 内存数据库
 		dmdcnf.ForbidGC = true
 		dmdcnf.KeepDeleteMark = true
 		dmdcnf.SaveMarkBeforeValue = true
+	} else {
+		//dmdcnf.LevelDB = true // 使用 level db
+		dmdcnf.FileDividePartitionLevel = 1
 	}
 	diamondDB := hashtreedb.NewHashTreeDB(dmdcnf)
 	// channelDB
 	chlcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "channel"), stores.ChannelSize, 16)
-	if !isSubBranchTemporary {
-		chlcnf.FileDividePartitionLevel = 1
-	} else {
+	if isSubBranchTemporary {
 		chlcnf.MemoryStorage = true // 内存数据库
 		chlcnf.ForbidGC = true
 		chlcnf.KeepDeleteMark = true
 		chlcnf.SaveMarkBeforeValue = true
+	} else {
+		//chlcnf.LevelDB = true // 使用 level db
+		chlcnf.FileDividePartitionLevel = 1
 	}
 	channelDB := hashtreedb.NewHashTreeDB(chlcnf)
 	/*
@@ -125,25 +128,27 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 	// movebtcDB
 	mvbtcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "movebtc"), 32, 4)
 	mvbtcnf.KeyPrefixSupplement = 4
-	if !isSubBranchTemporary {
-		mvbtcnf.FileDividePartitionLevel = 1
-	} else {
+	if isSubBranchTemporary {
 		mvbtcnf.MemoryStorage = true // 内存数据库
 		mvbtcnf.ForbidGC = true
 		mvbtcnf.KeepDeleteMark = true
 		mvbtcnf.SaveMarkBeforeValue = true
+	} else {
+		//mvbtcnf.LevelDB = true // 使用 level db
+		mvbtcnf.FileDividePartitionLevel = 1
 	}
 	movebtcDB := hashtreedb.NewHashTreeDB(mvbtcnf)
 	// lockblsDB
 	lkblscnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "lockbls"), stores.LockblsSize, stores.LockblsIdLength)
 	blscnf.KeyReverse = true // 倒排key
-	if !isSubBranchTemporary {
-		lkblscnf.FileDividePartitionLevel = 1
-	} else {
+	if isSubBranchTemporary {
 		lkblscnf.MemoryStorage = true // 内存数据库
 		lkblscnf.ForbidGC = true
 		lkblscnf.KeepDeleteMark = true
 		lkblscnf.SaveMarkBeforeValue = true
+	} else {
+		//lkblscnf.LevelDB = true // 使用 level db
+		lkblscnf.FileDividePartitionLevel = 1
 	}
 	lockblsDB := hashtreedb.NewHashTreeDB(lkblscnf)
 	// return ok

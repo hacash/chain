@@ -16,6 +16,11 @@ func (ins *QueryInstance) Delete() error {
 		ins.db.MemoryStorageDB.Delete(ins.key)
 		return nil
 	}
+	// 内存数据库
+	if ins.db.config.LevelDB {
+		ins.db.LevelDB.Delete(ins.key, nil)
+		return nil
+	}
 
 	// 文件数据库
 	ins.ClearSearchIndexCache()

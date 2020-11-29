@@ -30,6 +30,11 @@ func (ins *QueryInstance) Save(valuedatas []byte) error {
 		return nil
 	}
 
+	// LevelDB
+	if ins.db.config.LevelDB {
+		return ins.db.LevelDB.Put(ins.key, valuedatas, nil)
+	}
+
 	// 文件数据库
 	_, err := ins.saveEx(valuedatas, -1)
 	return err

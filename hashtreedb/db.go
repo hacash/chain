@@ -2,6 +2,7 @@ package hashtreedb
 
 import (
 	"fmt"
+	"github.com/hacash/chain/leveldb"
 	"sync"
 )
 
@@ -22,6 +23,8 @@ const (
 type HashTreeDBConfig struct {
 	// MemoryStorage
 	MemoryStorage bool // 在内存内保存数据
+	// LevelDB
+	LevelDB bool // 使用 level db 保存数据
 	// size
 	KeySize      uint8  // key值长度  <= 32
 	MaxValueSize uint32 // 数据内容长度
@@ -72,6 +75,9 @@ type HashTreeDB struct {
 	// db in memory
 	MemoryStorageDB *MemoryStorageDB
 
+	// db in memory
+	LevelDB *leveldb.DB
+
 	// file opt
 	filesOptLock   sync.Mutex
 	filesWriteLock sync.Map // map[string]*lockFilePkgItem
@@ -114,6 +120,16 @@ func NewHashTreeDB(config *HashTreeDBConfig) *HashTreeDB {
 	// 内存数据库
 	if config.MemoryStorage {
 		db.MemoryStorageDB = NewMemoryStorageDB()
+		return db
+	}
+	// 使用 level db
+	if config.LevelDB {
+		//fmt.Println("config.LevelDB file path: ", config.FileAbsPath)
+		ldb, err := leveldb.OpenFile(config.FileAbsPath, nil)
+		if err != nil {
+			panic(err)
+		}
+		db.LevelDB = ldb
 		return db
 	}
 	// 文件数据库，数据长度

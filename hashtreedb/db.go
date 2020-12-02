@@ -164,7 +164,6 @@ func (db *HashTreeDB) Close() error {
 	db.filesWriteLock.Range(func(key, value interface{}) bool {
 		var item = value.(*lockFilePkgItem)
 		item.targetFilePackageCache.Destroy()
-		item.targetFilePackageCache = nil
 		return true
 	})
 	db.filesWriteLock = sync.Map{}

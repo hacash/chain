@@ -136,10 +136,9 @@ func openCreateTargetFiles(fpfn string, targetfilepkg *TargetFilePackage) error 
 // 等待获取文件控制权
 func (db *HashTreeDB) releaseControlOfFile(ins *QueryInstance) error {
 	ins.targetFileItem.count -= 1
-	if ins.targetFileItem.count <= 0 {
+	if ins.targetFileItem.count == 0 {
 		// 已经无人采用，关闭所有文件
 		ins.targetFileItem.targetFilePackageCache.Destroy()
-		ins.targetFileItem.targetFilePackageCache = nil
 	}
 	ins.targetFileItem.lock.Unlock() // 释放文件锁
 

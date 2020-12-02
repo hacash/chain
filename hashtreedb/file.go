@@ -94,14 +94,15 @@ func (db *HashTreeDB) waitForTakeControlOfFile(ins *QueryInstance) (*lockFilePkg
 		}
 		db.filesWriteLock.Store(ins.fileKey, fileitem)
 	}
+	//db.existsFileKeys.Store(ins.fileKey, true) // 确定存在
+	// 给出文件包
+	ins.targetFilePackage = targetfilepkg
+
 	// 操作解锁
 	db.filesOptLock.Unlock()
 	// 目标文件加锁
 	fwlockptr.Lock()
 
-	//db.existsFileKeys.Store(ins.fileKey, true) // 确定存在
-	// 给出文件包
-	ins.targetFilePackage = targetfilepkg
 	// fwlockptr.Unlock()
 	return fileitem, nil
 }

@@ -163,7 +163,10 @@ func (db *HashTreeDB) freshRecordDataSize() {
 func (db *HashTreeDB) Close() error {
 	db.filesWriteLock.Range(func(key, value interface{}) bool {
 		var item = value.(*lockFilePkgItem)
+		item.lock.Lock()
+		item.count = 0
 		item.targetFilePackageCache.Destroy()
+		item.lock.Unlock()
 		return true
 	})
 	db.filesWriteLock = sync.Map{}

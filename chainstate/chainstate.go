@@ -83,7 +83,7 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 		blscnf.KeepDeleteMark = true
 		blscnf.SaveMarkBeforeValue = true
 	} else {
-		//blscnf.LevelDB = true // 使用 level db
+		blscnf.LevelDB = true // 使用 level db
 		blscnf.FileDividePartitionLevel = 2
 	}
 	balanceDB := hashtreedb.NewHashTreeDB(blscnf)
@@ -96,7 +96,7 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 		dmdcnf.KeepDeleteMark = true
 		dmdcnf.SaveMarkBeforeValue = true
 	} else {
-		//dmdcnf.LevelDB = true // 使用 level db
+		dmdcnf.LevelDB = true // 使用 level db
 		dmdcnf.FileDividePartitionLevel = 1
 	}
 	diamondDB := hashtreedb.NewHashTreeDB(dmdcnf)
@@ -108,7 +108,7 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 		chlcnf.KeepDeleteMark = true
 		chlcnf.SaveMarkBeforeValue = true
 	} else {
-		//chlcnf.LevelDB = true // 使用 level db
+		chlcnf.LevelDB = true // 使用 level db
 		chlcnf.FileDividePartitionLevel = 1
 	}
 	channelDB := hashtreedb.NewHashTreeDB(chlcnf)
@@ -134,7 +134,7 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 		mvbtcnf.KeepDeleteMark = true
 		mvbtcnf.SaveMarkBeforeValue = true
 	} else {
-		//mvbtcnf.LevelDB = true // 使用 level db
+		mvbtcnf.LevelDB = true // 使用 level db
 		mvbtcnf.FileDividePartitionLevel = 1
 	}
 	movebtcDB := hashtreedb.NewHashTreeDB(mvbtcnf)
@@ -147,7 +147,7 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 		lkblscnf.KeepDeleteMark = true
 		lkblscnf.SaveMarkBeforeValue = true
 	} else {
-		//lkblscnf.LevelDB = true // 使用 level db
+		lkblscnf.LevelDB = true // 使用 level db
 		lkblscnf.FileDividePartitionLevel = 1
 	}
 	lockblsDB := hashtreedb.NewHashTreeDB(lkblscnf)

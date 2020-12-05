@@ -6,6 +6,15 @@ import (
 )
 
 func (kv *TinyKVDB) Get(key []byte) ([]byte, error) {
+
+	if kv.UseLevelDB {
+		v, _ := kv.ldb.Get(key, nil)
+		if v != nil {
+			return v, nil
+		}
+		return nil, nil
+	}
+
 	hashkey := convertKeyToLen16Hash(key)
 	// query
 	query, e1 := kv.bashhashtreedb.CreateNewQueryInstance(hashkey)

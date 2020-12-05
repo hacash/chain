@@ -66,7 +66,7 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 		cnf.Datadir = temporaryDataDir
 	} else {
 		// laststatusDB
-		lsdb, lserr := tinykvdb.NewTinyKVDB(path.Join(cnf.Datadir, "laststatus"))
+		lsdb, lserr := tinykvdb.NewTinyKVDB(path.Join(cnf.Datadir, "laststatus"), true)
 		if lserr != nil {
 			return nil, lserr
 		}

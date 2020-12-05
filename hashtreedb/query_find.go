@@ -18,14 +18,13 @@ func (ins *QueryInstance) Exist() (bool, error) {
 	// LevelDB
 	if ins.db.config.LevelDB {
 		val, err := ins.db.LevelDB.Get(ins.key, nil)
-		if err != nil {
-			return false, err // error
-		}
-		if val == nil {
-			return false, nil
+		if err != nil || val == nil {
+			return false, nil // error
 		}
 		return true, nil
 	}
+
+	panic("NewHashTreeDB  must use LevelDB!")
 
 	// 文件数据库
 	ins.ClearSearchIndexCache()
@@ -74,11 +73,8 @@ func (ins *QueryInstance) Find() ([]byte, error) {
 	// LevelDB
 	if ins.db.config.LevelDB {
 		val, err := ins.db.LevelDB.Get(ins.key, nil)
-		if err != nil {
-			return nil, err // error
-		}
-		if val == nil {
-			return nil, nil
+		if err != nil || val == nil {
+			return nil, nil // error or not find
 		}
 		// copy
 		retdts := make([]byte, ins.db.config.MaxValueSize) // 补充不足的长度
@@ -86,6 +82,8 @@ func (ins *QueryInstance) Find() ([]byte, error) {
 		//fmt.Println("MemoryStorageDB Find", fields.Address(ins.key).ToReadable(), retdts)
 		return retdts, nil
 	}
+
+	panic("NewHashTreeDB  must use LevelDB!")
 
 	// 文件数据库
 	ins.ClearSearchIndexCache()

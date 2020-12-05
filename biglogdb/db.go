@@ -14,6 +14,7 @@ import (
  * config
  */
 type BigLogDBConfig struct {
+	UseLevelDB               bool
 	DataDir                  string
 	KeySize                  uint8
 	KeyReverse               bool
@@ -47,6 +48,8 @@ type storefilecache struct {
 type BigLogDB struct {
 	config *BigLogDBConfig
 
+	//////////////////////
+
 	bashhashtreedb *hashtreedb.HashTreeDB
 
 	headstat        *os.File
@@ -59,6 +62,7 @@ type BigLogDB struct {
 
 // create DataBase
 func NewBigLogDB(config *BigLogDBConfig) (*BigLogDB, error) {
+
 	os.MkdirAll(config.DataDir, os.ModePerm)
 	hsdbdir := path.Join(config.DataDir, "INDEXS")
 	hsdbcnf := hashtreedb.NewHashTreeDBConfig(
@@ -67,6 +71,7 @@ func NewBigLogDB(config *BigLogDBConfig) (*BigLogDB, error) {
 		config.KeySize,
 	)
 	// copy cnf con
+	hsdbcnf.LevelDB = config.UseLevelDB
 	hsdbcnf.KeyReverse = config.KeyReverse
 	hsdbcnf.FileDividePartitionLevel = config.FileDividePartitionLevel
 	// new tree db

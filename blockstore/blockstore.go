@@ -24,6 +24,7 @@ type BlockStore struct {
 func NewBlockStore(cnf *BlockStoreConfig) (*BlockStore, error) {
 	// create blockdataDB
 	blcnf := biglogdb.NewBigLogDBConfig(path.Join(cnf.Datadir, "blockdata"), 32)
+	blcnf.UseLevelDB = true
 	blcnf.LogHeadMaxSize = blocks.BlockHeadSize
 	blcnf.BlockPartFileMaxSize = 1024 * 1024 * 100 // 100MB
 	blcnf.FileDividePartitionLevel = 1
@@ -34,19 +35,23 @@ func NewBlockStore(cnf *BlockStoreConfig) (*BlockStore, error) {
 	}
 	// create trsdataptrDB
 	tdrcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "trsdataptr"), 5+biglogdb.LogFilePtrSeekSize, 32)
+	tdrcnf.LevelDB = true
 	tdrcnf.FileDividePartitionLevel = 2
 	trsdataptrDB := hashtreedb.NewHashTreeDB(tdrcnf)
 	// create blknumhashDB
 	bnhcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "blocknum"), 32, 8)
-	tdrcnf.KeyPrefixSupplement = 8
+	bnhcnf.LevelDB = true
+	bnhcnf.KeyPrefixSupplement = 8
 	blknumhashDB := hashtreedb.NewHashTreeDB(bnhcnf)
 	// create diamondDB
 	dmdcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "diamond"), stores.DiamondSmeltSize, 6)
-	tdrcnf.KeyPrefixSupplement = 11
+	dmdcnf.LevelDB = true
+	dmdcnf.KeyPrefixSupplement = 11
 	diamondDB := hashtreedb.NewHashTreeDB(dmdcnf)
 	// create diamondnumDB
 	dmdnumcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "diamondnum"), 6, 4)
-	tdrcnf.KeyPrefixSupplement = 4
+	dmdnumcnf.LevelDB = true
+	dmdnumcnf.KeyPrefixSupplement = 4
 	diamondnumDB := hashtreedb.NewHashTreeDB(dmdnumcnf)
 	// return ok
 	cs := &BlockStore{

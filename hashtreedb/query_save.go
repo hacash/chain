@@ -35,6 +35,8 @@ func (ins *QueryInstance) Save(valuedatas []byte) error {
 		return ins.db.LevelDB.Put(ins.key, valuedatas, nil)
 	}
 
+	panic("NewHashTreeDB  must use LevelDB!")
+
 	// 文件数据库
 	_, err := ins.saveEx(valuedatas, -1)
 	return err

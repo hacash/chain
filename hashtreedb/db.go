@@ -132,6 +132,9 @@ func NewHashTreeDB(config *HashTreeDBConfig) *HashTreeDB {
 		db.LevelDB = ldb
 		return db
 	}
+
+	panic("NewHashTreeDB  must use LevelDB!")
+
 	// 文件数据库，数据长度
 	db.freshRecordDataSize()
 	return db

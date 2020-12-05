@@ -22,6 +22,8 @@ func (ins *QueryInstance) Delete() error {
 		return nil
 	}
 
+	panic("NewHashTreeDB  must use LevelDB!")
+
 	// 文件数据库
 	ins.ClearSearchIndexCache()
 	ofstItem, err := ins.SearchIndex()

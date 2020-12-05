@@ -2,6 +2,7 @@ package tinykvdb
 
 import (
 	"github.com/hacash/chain/hashtreedb"
+	"github.com/hacash/chain/leveldb"
 	"os"
 	"strings"
 	"sync"
@@ -15,15 +16,30 @@ const (
  * small kv db
  */
 type TinyKVDB struct {
+	UseLevelDB bool
+	ldb        *leveldb.DB
+
+	///////////
 	bashhashtreedb *hashtreedb.HashTreeDB
-
-	storefile *os.File
-
-	wlock sync.Mutex
+	storefile      *os.File
+	wlock          sync.Mutex
 }
 
 // create DataBase
-func NewTinyKVDB(abspath string) (*TinyKVDB, error) {
+func NewTinyKVDB(abspath string, UseLevelDB bool) (*TinyKVDB, error) {
+
+	if UseLevelDB {
+		ldb, err := leveldb.OpenFile(abspath, nil)
+		if err != nil {
+			return nil, err
+		}
+		// 返回
+		return &TinyKVDB{
+			UseLevelDB: true,
+			ldb:        ldb,
+		}, nil
+	}
+
 	// create dir file
 	os.MkdirAll(abspath, os.ModePerm)
 	storefile, e1 := os.OpenFile(strings.TrimRight(abspath, "/")+"/storevalue.dat", os.O_RDWR|os.O_CREATE, 0777)
@@ -36,12 +52,12 @@ func NewTinyKVDB(abspath string) (*TinyKVDB, error) {
 	bashhashtreedb := hashtreedb.NewHashTreeDB(hxdbcnf)
 	// KVDB
 	db := &TinyKVDB{
+		UseLevelDB:     false,
 		storefile:      storefile,
 		bashhashtreedb: bashhashtreedb,
 	}
 	return db, nil
 }
-
 
 func (kv *TinyKVDB) Close() error {
 	if kv.bashhashtreedb != nil {

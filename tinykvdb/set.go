@@ -4,6 +4,10 @@ import "encoding/binary"
 
 func (kv *TinyKVDB) Set(key []byte, value []byte) error {
 
+	if kv.UseLevelDB {
+		return kv.ldb.Put(key, value, nil)
+	}
+
 	kv.wlock.Lock()
 	defer kv.wlock.Unlock()
 

@@ -61,6 +61,8 @@ func (this *HashTreeDB) TraversalCopy(target *HashTreeDB, datafilemustexist bool
 		return nil
 	}
 
+	panic("NewHashTreeDB  must use LevelDB!")
+
 	// 文件数据库
 	if target.config.FileDividePartitionLevel > 0 {
 		return fmt.Errorf("unsupported operations for TraversalCopy: config.FilePartitionLevel must be 0")

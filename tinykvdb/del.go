@@ -1,6 +1,11 @@
 package tinykvdb
 
 func (kv *TinyKVDB) Del(key []byte) error {
+
+	if kv.UseLevelDB {
+		return kv.ldb.Delete(key, nil)
+	}
+
 	hashkey := convertKeyToLen16Hash(key)
 	// query
 	query, e1 := kv.bashhashtreedb.CreateNewQueryInstance(hashkey)

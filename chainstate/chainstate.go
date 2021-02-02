@@ -87,6 +87,16 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 		blscnf.FileDividePartitionLevel = 2
 	}
 	balanceDB := hashtreedb.NewHashTreeDB(blscnf)
+
+	/////////////  TEST BEGIN /////////////
+	//go func() {
+	//	if !isSubBranchTemporary {
+	//		time.Sleep(time.Second * 5)
+	//		Test_print_all_address_balance(balanceDB)
+	//	}
+	//}()
+	/////////////  TEST END   /////////////
+
 	// diamondDB
 	dmdcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "diamond"), stores.DiamondSize, 6)
 	dmdcnf.KeyPrefixSupplement = 10
@@ -362,4 +372,35 @@ func (cs *ChainState) SubmitDataStoreWriteToInvariableDisk(block interfaces.Bloc
 	cs.submitStoreDiamond = nil
 	// ok
 	return nil
+}
+
+////////////////////////////////////////////////////
+
+func Test_print_all_address_balance(db *hashtreedb.HashTreeDB) {
+
+	total_address_count := int64(0)
+
+	total_hac := float64(0)
+	total_btc := int64(0)
+	total_hacd := int(0)
+
+	iter := db.LevelDB.NewIterator(nil, nil)
+	for iter.Next() {
+		//fmt.Printf("key:%s, value:%s\n", iter.Key(), iter.Value())
+		addr := fields.Address(iter.Key())
+		var bls = stores.Balance{}
+		bls.Parse(iter.Value(), 0)
+		hacfltn := bls.Hacash.ToMei()
+		if hacfltn == 0 && bls.Satoshi == 0 && bls.Diamond == 0 {
+			continue
+		}
+		fmt.Printf("% 4d %-34s % 12.4f % 6d %d\n", total_address_count+1, addr.ToReadable(), hacfltn, bls.Diamond, bls.Satoshi)
+		total_hac += float64(hacfltn)
+		total_btc += int64(bls.Satoshi)
+		total_hacd += int(bls.Diamond)
+		total_address_count++
+	}
+	iter.Release()
+
+	fmt.Println("------------------\n[TOTAL]", total_address_count, "address, HAC:", total_hac, "SAT:", total_btc, "HACD:", total_hacd)
 }

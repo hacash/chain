@@ -42,7 +42,7 @@ func Test_t1(t *testing.T) {
 	// create block
 	block1 := blocks.NewEmptyBlock_v1(genesis.GetGenesisBlock())
 	block1.Timestamp = 123456
-	coinbasetx1 := transactions.NewTransaction_0_Coinbase()
+	coinbasetx1 := transactions.NewTransaction_0_CoinbaseV0()
 	coinbasetx1.Address = account1.Address
 	coinbasetx1.Reward = *(fields.NewAmountNumSmallCoin(1))
 	coinbasetx1.Message = "firstcoinbase"

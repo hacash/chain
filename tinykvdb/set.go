@@ -8,6 +8,8 @@ func (kv *TinyKVDB) Set(key []byte, value []byte) error {
 		return kv.ldb.Put(key, value, nil)
 	}
 
+	panic("must use UseLevelDB.")
+
 	kv.wlock.Lock()
 	defer kv.wlock.Unlock()
 

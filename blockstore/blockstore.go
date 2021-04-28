@@ -3,6 +3,7 @@ package blockstore
 import (
 	"github.com/hacash/chain/biglogdb"
 	"github.com/hacash/chain/hashtreedb"
+	"github.com/hacash/chain/tinykvdb"
 	"github.com/hacash/core/blocks"
 	"github.com/hacash/core/stores"
 	"path"
@@ -19,6 +20,10 @@ type BlockStore struct {
 	blknumhashDB *hashtreedb.HashTreeDB
 	diamondDB    *hashtreedb.HashTreeDB
 	diamondnumDB *hashtreedb.HashTreeDB
+
+	// btc move log
+	btcmovelogDB        *tinykvdb.TinyKVDB
+	btcmovelogTotalPage int // 最大数据页码
 }
 
 func NewBlockStore(cnf *BlockStoreConfig) (*BlockStore, error) {
@@ -53,14 +58,22 @@ func NewBlockStore(cnf *BlockStoreConfig) (*BlockStore, error) {
 	dmdnumcnf.LevelDB = true
 	dmdnumcnf.KeyPrefixSupplement = 4
 	diamondnumDB := hashtreedb.NewHashTreeDB(dmdnumcnf)
+	// btcmovelogsDB
+	lsdb, lserr := tinykvdb.NewTinyKVDB(path.Join(cnf.Datadir, "btcmovelog"), true)
+	if lserr != nil {
+		return nil, lserr
+	}
+	btcmovelogDB := lsdb
 	// return ok
 	cs := &BlockStore{
-		config:       cnf,
-		blockdataDB:  blockdataDB,
-		trsdataptrDB: trsdataptrDB,
-		blknumhashDB: blknumhashDB,
-		diamondDB:    diamondDB,
-		diamondnumDB: diamondnumDB,
+		config:              cnf,
+		blockdataDB:         blockdataDB,
+		trsdataptrDB:        trsdataptrDB,
+		blknumhashDB:        blknumhashDB,
+		diamondDB:           diamondDB,
+		diamondnumDB:        diamondnumDB,
+		btcmovelogDB:        btcmovelogDB,
+		btcmovelogTotalPage: -1, //
 	}
 	return cs, nil
 }

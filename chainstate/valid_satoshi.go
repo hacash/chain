@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/hacash/core/fields"
+	"github.com/hacash/core/interfaces"
 	"github.com/hacash/core/stores"
 	"github.com/hacash/mint/coinbase"
 	"io/ioutil"
@@ -54,7 +55,7 @@ func (cs *ChainState) ReadMoveBTCTxHashByNumber(number uint32) ([]byte, error) {
 		return nil, e3
 	}
 	if belongtxhash == nil && cs.base != nil {
-		// 递归查询
+		// 向上查询
 		return cs.base.ReadMoveBTCTxHashByNumber(number)
 	}
 
@@ -77,12 +78,52 @@ func (cs *ChainState) LoadValidatedSatoshiGenesis(trsno int64) (*stores.SatoshiG
 	//fmt.Println(cs.config.BTCMoveCheckEnable, cs.config.BTCMoveCheckLogsURL)
 	if cs.config.BTCMoveCheckEnable {
 		mustcheck = true
-		if len(cs.config.BTCMoveCheckLogsURL) > 0 {
-			genesis = readSatoshiGenesisByUrl(cs.config.BTCMoveCheckLogsURL, trsno)
+		// 先从日志读取转移记录
+		genesis = readSatoshiGenesisByLocalLogs(cs.BlockStore(), trsno)
+		if genesis == nil {
+			// 日志里没有，再从 URL 读取
+			if len(cs.config.BTCMoveCheckLogsURL) > 0 {
+				genesis = readSatoshiGenesisByUrl(cs.config.BTCMoveCheckLogsURL, trsno)
+			}
+		} else {
+			fmt.Printf("[Satoshi genesis] load from local database, Trsno: %d, BTC: %d, Address: %s.\n", genesis.TransferNo, genesis.BitcoinQuantity, genesis.OriginAddress.ToReadable())
 		}
 	}
 	// 返回
 	return genesis, mustcheck
+}
+
+// 读取缓存
+var btcMoveLocalLogsCachePage int = -1
+var btcMoveLocalLogsCachePageData []string = nil
+
+func readSatoshiGenesisByLocalLogs(store interfaces.BlockStore, trsno int64) *stores.SatoshiGenesis {
+	var limit = stores.SatoshiGenesisLogStorePageLimit // limit 100
+	var logitemstr string = ""
+	readpage := int((trsno-1)/int64(limit)) + 1
+	offset := int((trsno - 1) % int64(limit))
+	// 从缓存读取
+	if readpage == btcMoveLocalLogsCachePage {
+		logitemstr = btcMoveLocalLogsCachePageData[offset]
+		return parseSatoshiGenesisByItemString(logitemstr, trsno)
+	}
+	// 从日志读取
+	pagedata, err := store.GetBTCMoveLogPageData(readpage)
+	if err != nil {
+		return nil // 日志不存在
+	}
+	// 缓存
+	if len(pagedata) == limit {
+		btcMoveLocalLogsCachePage = readpage
+		btcMoveLocalLogsCachePageData = pagedata
+	}
+	// 获取
+	if offset >= len(pagedata) {
+		return nil // 超出范围
+	}
+	logitemstr = pagedata[offset]
+	// 解析
+	return parseSatoshiGenesisByItemString(logitemstr, trsno)
 }
 
 func readSatoshiGenesisByUrl(url string, trsno int64) *stores.SatoshiGenesis {
@@ -90,10 +131,10 @@ func readSatoshiGenesisByUrl(url string, trsno int64) *stores.SatoshiGenesis {
 		return nil // error
 	}
 	client := http.Client{
-		Timeout: time.Duration(5 * time.Second),
+		Timeout: time.Duration(10 * time.Second),
 	}
 	url += fmt.Sprintf("?trsno=%d", trsno)
-	fmt.Println("[satoshi genesis] load check:", url)
+	fmt.Println("[Satoshi genesis] load check url:", url)
 	resp, err := client.Get(url)
 	if err != nil {
 		//fmt.Println("read Validated SatoshiGenesisByUrl return error:", err.Error())
@@ -101,8 +142,18 @@ func readSatoshiGenesisByUrl(url string, trsno int64) *stores.SatoshiGenesis {
 	}
 	defer resp.Body.Close()
 	body, _ := ioutil.ReadAll(resp.Body)
-	fmt.Println("[satoshi genesis] got data:", string(body))
-	dts := strings.Split(string(body), ",")
+	logitemstr := string(body)
+	fmt.Println("[Satoshi genesis] got data by url:", logitemstr)
+
+	// 解析
+	return parseSatoshiGenesisByItemString(logitemstr, trsno)
+}
+
+// 解析日志
+func parseSatoshiGenesisByItemString(logitemstr string, trsno int64) *stores.SatoshiGenesis {
+	// 开始解析
+	logitemstr = strings.Replace(logitemstr, " ", "", -1)
+	dts := strings.Split(logitemstr, ",")
 	if len(dts) != 8 {
 		return nil
 	}

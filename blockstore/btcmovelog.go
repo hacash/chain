@@ -3,7 +3,7 @@ package blockstore
 import (
 	"encoding/binary"
 	"fmt"
-	"strings"
+	"github.com/hacash/core/stores"
 )
 
 // btc move log
@@ -27,7 +27,7 @@ func (cs *BlockStore) GetBTCMoveLogTotalPage() (int, error) {
 }
 
 // 获取数据页
-func (cs *BlockStore) GetBTCMoveLogPageData(page int) ([]string, error) {
+func (cs *BlockStore) GetBTCMoveLogPageData(page int) ([]*stores.SatoshiGenesis, error) {
 	realpage, e0 := cs.GetBTCMoveLogTotalPage()
 	if e0 != nil {
 		return nil, e0
@@ -37,14 +37,14 @@ func (cs *BlockStore) GetBTCMoveLogPageData(page int) ([]string, error) {
 	}
 	dtbts, e2 := cs.btcmovelogDB.Get([]byte(fmt.Sprintf("page_data_%d", page)))
 	if e2 != nil {
-		return []string{}, nil
+		return []*stores.SatoshiGenesis{}, nil
 	}
 	// 解析
-	return strings.Split(string(dtbts), "|"), nil
+	return stores.SatoshiGenesisPageParse(dtbts, 0), nil
 }
 
 // 保存数据页
-func (cs *BlockStore) SaveBTCMoveLogPageData(svpage int, list []string) error {
+func (cs *BlockStore) SaveBTCMoveLogPageData(svpage int, list []*stores.SatoshiGenesis) error {
 	// 保存页码
 	if svpage >= cs.btcmovelogTotalPage {
 		cs.btcmovelogTotalPage = svpage
@@ -55,7 +55,10 @@ func (cs *BlockStore) SaveBTCMoveLogPageData(svpage int, list []string) error {
 		cs.btcmovelogDB.Set(pgk, pgd)
 	}
 	// 保存内容
-	datas := strings.Join(list, "|")
+	datas := stores.SatoshiGenesisPageSerialize(list)
+	//fmt.Println(strings.Join(stores.SatoshiGenesisPageSerializeForShow(list), " | "))
+	//fmt.Println(stores.SatoshiGenesisPageParse(datas, 0))
+	//fmt.Println("-------cs.btcmovelogDB.Set(key, datas)------", len(datas), stores.SatoshiGenesisPageParse(datas, 0), strings.Join(stores.SatoshiGenesisPageSerializeForShow(list), " | "))
 	key := []byte(fmt.Sprintf("page_data_%d", svpage))
-	return cs.btcmovelogDB.Set(key, []byte(datas))
+	return cs.btcmovelogDB.Set(key, datas)
 }

@@ -25,7 +25,16 @@ func (cs *ChainState) ReadTotalSupply() (*stores.TotalSupply, error) {
 		return cs.totalSupply, nil
 	}
 	if cs.base != nil {
-		return cs.base.ReadTotalSupply()
+		parentObj, e1 := cs.base.ReadTotalSupply()
+		if e1 != nil {
+			return nil, e1
+		}
+		if parentObj == nil {
+			return nil, fmt.Errorf("not find TotalSupply from store.")
+		}
+		// copy obj, 避免重复添加到
+		cs.totalSupply = parentObj.Clone()
+		return cs.totalSupply, nil
 	}
 	// read from status db
 	vdatas, e2 := cs.laststatusDB.Get([]byte(LastestStatusKeyName_total_supply))

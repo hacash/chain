@@ -185,3 +185,12 @@ func (db *BigLogDB) SetFileNum(newnum uint32) error {
 	db.headstatFileNum = newnum
 	return nil
 }
+
+func (db *BigLogDB) Close() {
+	if db.bashhashtreedb != nil {
+		db.bashhashtreedb.Close()
+	}
+	if db.headstat != nil {
+		db.headstat.Close()
+	}
+}

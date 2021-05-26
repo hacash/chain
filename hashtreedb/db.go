@@ -127,6 +127,7 @@ func NewHashTreeDB(config *HashTreeDBConfig) *HashTreeDB {
 		//fmt.Println("config.LevelDB file path: ", config.FileAbsPath)
 		ldb, err := leveldb.OpenFile(config.FileAbsPath, nil)
 		if err != nil {
+			fmt.Println("NewHashTreeDB leveldb.OpenFile Error:", err.Error())
 			panic(err)
 		}
 		db.LevelDB = ldb
@@ -164,6 +165,11 @@ func (db *HashTreeDB) freshRecordDataSize() {
 
 // close
 func (db *HashTreeDB) Close() error {
+	// 关闭 leveldb
+	if db.LevelDB != nil {
+		db.LevelDB.Close()
+	}
+	// 其他
 	db.filesWriteLock.Range(func(key, value interface{}) bool {
 		var item = value.(*lockFilePkgItem)
 		item.lock.Lock()

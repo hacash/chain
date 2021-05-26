@@ -15,6 +15,7 @@ func (cs *BlockStore) ReadBlockBytesByHash(blkhash fields.Hash, readlen uint32) 
 }
 
 // block data store
+// return: hash body error
 func (cs *BlockStore) ReadBlockBytesByHeight(height uint64, readlen uint32) ([]byte, []byte, error) {
 	numhash := make([]byte, 8)
 	binary.BigEndian.PutUint64(numhash, height)

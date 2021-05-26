@@ -69,6 +69,7 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 		// laststatusDB
 		lsdb, lserr := tinykvdb.NewTinyKVDB(path.Join(cnf.Datadir, "laststatus"), true)
 		if lserr != nil {
+			fmt.Println("tinykvdb.NewTinyKVDB Error", lserr)
 			return nil, lserr
 		}
 		laststatusDB = lsdb
@@ -173,11 +174,7 @@ func (cs *ChainState) Destory() {
 	cs.DestoryTemporary()
 }
 
-// destory temporary
-func (cs *ChainState) DestoryTemporary() {
-	if len(cs.temporaryDataDir) == 0 || cs.base == nil {
-		return
-	}
+func (cs *ChainState) Close() {
 	if cs.laststatusDB != nil {
 		cs.laststatusDB.Close()
 	}
@@ -195,6 +192,18 @@ func (cs *ChainState) DestoryTemporary() {
 	}
 	if cs.lockblsDB != nil {
 		cs.lockblsDB.Close()
+	}
+	// close store
+	if cs.datastore != nil {
+		cs.datastore.Close()
+	}
+}
+
+// destory temporary
+func (cs *ChainState) DestoryTemporary() {
+	cs.Close()
+	if len(cs.temporaryDataDir) == 0 || cs.base == nil {
+		return
 	}
 	// remove temp data dir
 	e1 := os.RemoveAll(cs.temporaryDataDir)
@@ -288,6 +297,10 @@ func (cs *ChainState) MergeCoverWriteChainState(src *ChainState) error {
 // interface api
 func (cs *ChainState) Fork() (interfaces.ChainState, error) {
 	return cs.NewSubBranchTemporaryChainState()
+}
+
+func (cs *ChainState) IsDatabaseVersionRebuildMode() bool {
+	return cs.config.DatabaseVersionRebuildMode
 }
 
 // fork sub

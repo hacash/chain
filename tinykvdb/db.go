@@ -1,6 +1,7 @@
 package tinykvdb
 
 import (
+	"fmt"
 	"github.com/hacash/chain/hashtreedb"
 	"github.com/hacash/chain/leveldb"
 	"os"
@@ -31,6 +32,7 @@ func NewTinyKVDB(abspath string, UseLevelDB bool) (*TinyKVDB, error) {
 	if UseLevelDB {
 		ldb, err := leveldb.OpenFile(abspath, nil)
 		if err != nil {
+			fmt.Println("NewTinyKVDB leveldb.OpenFile Error", err)
 			return nil, err
 		}
 		// 返回
@@ -60,8 +62,14 @@ func NewTinyKVDB(abspath string, UseLevelDB bool) (*TinyKVDB, error) {
 }
 
 func (kv *TinyKVDB) Close() error {
+	if kv.storefile != nil {
+		kv.storefile.Close()
+	}
+	if kv.ldb != nil {
+		kv.ldb.Close()
+	}
 	if kv.bashhashtreedb != nil {
-		return kv.bashhashtreedb.Close()
+		kv.bashhashtreedb.Close()
 	}
 	return nil
 }

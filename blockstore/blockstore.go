@@ -26,15 +26,20 @@ type BlockStore struct {
 	btcmovelogTotalPage int // 最大数据页码
 }
 
-func NewBlockStore(cnf *BlockStoreConfig) (*BlockStore, error) {
-	// create blockdataDB
-	blcnf := biglogdb.NewBigLogDBConfig(path.Join(cnf.Datadir, "blockdata"), 32)
+func NewBlockStoreOfBlockDataDB(basedir string) (*biglogdb.BigLogDB, error) {
+	blcnf := biglogdb.NewBigLogDBConfig(path.Join(basedir, "blockdata"), 32)
 	blcnf.UseLevelDB = true
 	blcnf.LogHeadMaxSize = blocks.BlockHeadSize
 	blcnf.BlockPartFileMaxSize = 1024 * 1024 * 100 // 100MB
 	blcnf.FileDividePartitionLevel = 1
 	blcnf.KeyReverse = true // reverse key
-	blockdataDB, e0 := biglogdb.NewBigLogDB(blcnf)
+	//blockdataDB, e0 := biglogdb.NewBigLogDB(blcnf)
+	return biglogdb.NewBigLogDB(blcnf)
+}
+
+func NewBlockStore(cnf *BlockStoreConfig) (*BlockStore, error) {
+	// create blockdataDB
+	blockdataDB, e0 := NewBlockStoreOfBlockDataDB(cnf.Datadir)
 	if e0 != nil {
 		return nil, e0
 	}
@@ -76,4 +81,47 @@ func NewBlockStore(cnf *BlockStoreConfig) (*BlockStore, error) {
 		btcmovelogTotalPage: -1, //
 	}
 	return cs, nil
+}
+
+// 创建一个用于更新数据库版本的区块存储器
+func NewBlockStoreForUpdateDatabaseVersion(cnf *BlockStoreConfig) (*BlockStore, error) {
+	// create blockdataDB
+	blockdataDB, e0 := NewBlockStoreOfBlockDataDB(cnf.Datadir)
+	if e0 != nil {
+		return nil, e0
+	}
+	// create blknumhashDB
+	bnhcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "blocknum"), 32, 8)
+	bnhcnf.LevelDB = true
+	bnhcnf.KeyPrefixSupplement = 8
+	blknumhashDB := hashtreedb.NewHashTreeDB(bnhcnf)
+	// return ok
+	cs := &BlockStore{
+		config:              cnf,
+		blockdataDB:         blockdataDB,
+		blknumhashDB:        blknumhashDB,
+		btcmovelogTotalPage: -1, //
+	}
+	return cs, nil
+}
+
+func (cs *BlockStore) Close() {
+	if cs.blockdataDB != nil {
+		cs.blockdataDB.Close()
+	}
+	if cs.trsdataptrDB != nil {
+		cs.trsdataptrDB.Close()
+	}
+	if cs.blknumhashDB != nil {
+		cs.blknumhashDB.Close()
+	}
+	if cs.diamondDB != nil {
+		cs.diamondDB.Close()
+	}
+	if cs.diamondnumDB != nil {
+		cs.diamondnumDB.Close()
+	}
+	if cs.btcmovelogDB != nil {
+		cs.btcmovelogDB.Close()
+	}
 }

@@ -10,6 +10,9 @@ type ChainStateConfig struct {
 
 	BTCMoveCheckEnable  bool
 	BTCMoveCheckLogsURL string
+
+	// 数据库重建模式
+	DatabaseVersionRebuildMode bool
 }
 
 func NewEmptyChainStateConfig() *ChainStateConfig {

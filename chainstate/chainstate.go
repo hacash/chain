@@ -7,14 +7,11 @@ import (
 	"github.com/hacash/core/fields"
 	"github.com/hacash/core/interfaces"
 	"github.com/hacash/core/stores"
-	"math/rand"
-	"os"
 	"path"
-	"strconv"
 )
 
 type ChainState struct {
-	temporaryDataDir string
+	//temporaryDataDir string
 
 	// parent state
 	base *ChainState
@@ -30,10 +27,12 @@ type ChainState struct {
 	diamondDB *hashtreedb.HashTreeDB
 	channelDB *hashtreedb.HashTreeDB
 	movebtcDB *hashtreedb.HashTreeDB // 转移BTC记录
-	lockblsDB *hashtreedb.HashTreeDB // 线性锁仓地址 key len = 24
+	lockblsDB *hashtreedb.HashTreeDB // 线性锁仓地址 key len = 18
+	dmdlendDB *hashtreedb.HashTreeDB // 钻石系统借贷 key len = 14
 
 	// store
-	datastore interfaces.BlockStore
+	datastore          interfaces.BlockStore
+	datastore_mycreate interfaces.BlockStore
 
 	// data hold
 	pendingBlockHeight *uint64
@@ -60,11 +59,11 @@ func NewChainState(cnf *ChainStateConfig) (*ChainState, error) {
 func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainState, error) {
 	var laststatusDB *tinykvdb.TinyKVDB = nil
 	// is temp state
-	var temporaryDataDir string
+	//var temporaryDataDir string
 	if isSubBranchTemporary {
-		randstr := strconv.FormatUint(uint64(rand.Uint32()), 10)
-		temporaryDataDir = path.Join(os.TempDir(), "hacash_state_temp_"+randstr)
-		cnf.Datadir = temporaryDataDir
+		//randstr := strconv.FormatUint(uint64(rand.Uint32()), 10)
+		//temporaryDataDir = path.Join(os.TempDir(), "hacash_state_temp_"+randstr)
+		//cnf.Datadir = temporaryDataDir
 	} else {
 		// laststatusDB
 		lsdb, lserr := tinykvdb.NewTinyKVDB(path.Join(cnf.Datadir, "laststatus"), true)
@@ -78,15 +77,13 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 	// fmt.Println("balanceDB dir:", path.Join(cnf.Datadir, "balance"))
 	// os.MkdirAll(path.Join(cnf.Datadir, "balance"), os.ModePerm)
 	blscnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "balance"), stores.BalanceSize, 21)
-	blscnf.KeyReverse = true
+	//blscnf.KeyReverse = true
 	if isSubBranchTemporary {
 		blscnf.MemoryStorage = true // 内存数据库
-		blscnf.ForbidGC = true
-		blscnf.KeepDeleteMark = true
-		blscnf.SaveMarkBeforeValue = true
+		//blscnf.KeepDeleteMark = true
+		//blscnf.SaveMarkBeforeValue = true
 	} else {
 		blscnf.LevelDB = true // 使用 level db
-		blscnf.FileDividePartitionLevel = 2
 	}
 	balanceDB := hashtreedb.NewHashTreeDB(blscnf)
 
@@ -101,59 +98,67 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 
 	// diamondDB
 	dmdcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "diamond"), stores.DiamondSize, 6)
-	dmdcnf.KeyPrefixSupplement = 10
+	//dmdcnf.KeyPrefixSupplement = 10
 	if isSubBranchTemporary {
 		dmdcnf.MemoryStorage = true // 内存数据库
-		dmdcnf.ForbidGC = true
-		dmdcnf.KeepDeleteMark = true
-		dmdcnf.SaveMarkBeforeValue = true
+		// dmdcnf.ForbidGC = true
+		//dmdcnf.KeepDeleteMark = true
+		//dmdcnf.SaveMarkBeforeValue = true
 	} else {
 		dmdcnf.LevelDB = true // 使用 level db
-		dmdcnf.FileDividePartitionLevel = 1
+		//dmdcnf.FileDividePartitionLevel = 1
 	}
 	diamondDB := hashtreedb.NewHashTreeDB(dmdcnf)
 	// channelDB
 	chlcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "channel"), stores.ChannelSize, 16)
 	if isSubBranchTemporary {
 		chlcnf.MemoryStorage = true // 内存数据库
-		chlcnf.ForbidGC = true
-		chlcnf.KeepDeleteMark = true
-		chlcnf.SaveMarkBeforeValue = true
+		//chlcnf.ForbidGC = true
+		//chlcnf.KeepDeleteMark = true
+		//chlcnf.SaveMarkBeforeValue = true
 	} else {
 		chlcnf.LevelDB = true // 使用 level db
-		chlcnf.FileDividePartitionLevel = 1
+		//chlcnf.FileDividePartitionLevel = 1
 	}
 	channelDB := hashtreedb.NewHashTreeDB(chlcnf)
 	// movebtcDB
 	mvbtcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "movebtc"), 32, 4)
-	mvbtcnf.KeyPrefixSupplement = 4
+	//mvbtcnf.KeyPrefixSupplement = 4
 	if isSubBranchTemporary {
 		mvbtcnf.MemoryStorage = true // 内存数据库
-		mvbtcnf.ForbidGC = true
-		mvbtcnf.KeepDeleteMark = true
-		mvbtcnf.SaveMarkBeforeValue = true
+		//mvbtcnf.ForbidGC = true
+		//mvbtcnf.KeepDeleteMark = true
+		//mvbtcnf.SaveMarkBeforeValue = true
 	} else {
 		mvbtcnf.LevelDB = true // 使用 level db
-		mvbtcnf.FileDividePartitionLevel = 1
+		//mvbtcnf.FileDividePartitionLevel = 1
 	}
 	movebtcDB := hashtreedb.NewHashTreeDB(mvbtcnf)
 	// lockblsDB
 	lkblscnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "lockbls"), stores.LockblsSize, stores.LockblsIdLength)
-	blscnf.KeyReverse = true // 倒排key
+	//blscnf.KeyReverse = true // 倒排key
 	if isSubBranchTemporary {
 		lkblscnf.MemoryStorage = true // 内存数据库
-		lkblscnf.ForbidGC = true
-		lkblscnf.KeepDeleteMark = true
-		lkblscnf.SaveMarkBeforeValue = true
+		//lkblscnf.ForbidGC = true
+		//lkblscnf.KeepDeleteMark = true
+		//lkblscnf.SaveMarkBeforeValue = true
 	} else {
 		lkblscnf.LevelDB = true // 使用 level db
-		lkblscnf.FileDividePartitionLevel = 1
+		//lkblscnf.FileDividePartitionLevel = 1
 	}
 	lockblsDB := hashtreedb.NewHashTreeDB(lkblscnf)
+	// lockblsDB
+	dmdlendcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "dmdlend"), 0, stores.DiamondLendingIdLength)
+	if isSubBranchTemporary {
+		dmdlendcnf.MemoryStorage = true // 内存数据库
+	} else {
+		dmdlendcnf.LevelDB = true // 使用 level db
+	}
+	dmdlendDB := hashtreedb.NewHashTreeDB(dmdlendcnf)
 	// return ok
 	cs := &ChainState{
-		config:                cnf,
-		temporaryDataDir:      temporaryDataDir,
+		config: cnf,
+		// temporaryDataDir:      temporaryDataDir,
 		base:                  nil,
 		laststatusDB:          laststatusDB,
 		balanceDB:             balanceDB,
@@ -161,6 +166,7 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 		channelDB:             channelDB,
 		movebtcDB:             movebtcDB,
 		lockblsDB:             lockblsDB,
+		dmdlendDB:             dmdlendDB,
 		prev288BlockTimestamp: 0,
 		pendingBlockHeight:    nil,
 		pendingBlockHash:      nil,
@@ -193,23 +199,25 @@ func (cs *ChainState) Close() {
 	if cs.lockblsDB != nil {
 		cs.lockblsDB.Close()
 	}
-	// close store
-	if cs.datastore != nil {
-		cs.datastore.Close()
+	if cs.dmdlendDB != nil {
+		cs.dmdlendDB.Close()
+	}
+	// close mycreate store
+	if cs.datastore_mycreate != nil {
+		cs.datastore_mycreate.Close()
 	}
 }
 
 // destory temporary
 func (cs *ChainState) DestoryTemporary() {
-	cs.Close()
-	if len(cs.temporaryDataDir) == 0 || cs.base == nil {
-		return
-	}
-	// remove temp data dir
-	e1 := os.RemoveAll(cs.temporaryDataDir)
-	if e1 != nil {
-		fmt.Println(e1)
-	}
+	//cs.Close()
+	/*
+		// remove temp data dir
+		e1 := os.RemoveAll(cs.temporaryDataDir)
+		if e1 != nil {
+			fmt.Println(e1)
+		}
+	*/
 }
 
 // chain data store
@@ -229,6 +237,7 @@ func (cs *ChainState) SetBlockStore(store interfaces.BlockStore) error {
 		return fmt.Errorf("Can only be set chainstore in the final state.")
 	}
 	cs.datastore = store
+	cs.datastore_mycreate = store // 我创建的
 	return nil
 }
 
@@ -268,25 +277,29 @@ func (cs *ChainState) MergeCoverWriteChainState(src *ChainState) error {
 
 	//  COPY COVER WRITE STATE
 
-	e1 := cs.balanceDB.TraversalCopy(src.balanceDB, false)
+	e1 := cs.balanceDB.TraversalCopy(src.balanceDB)
 	if e1 != nil {
 		return e1
 	}
-	e2 := cs.diamondDB.TraversalCopy(src.diamondDB, false)
+	e2 := cs.diamondDB.TraversalCopy(src.diamondDB)
 	if e2 != nil {
 		return e2
 	}
-	e3 := cs.channelDB.TraversalCopy(src.channelDB, false)
+	e3 := cs.channelDB.TraversalCopy(src.channelDB)
 	if e3 != nil {
 		return e3
 	}
-	e5 := cs.movebtcDB.TraversalCopy(src.movebtcDB, false)
+	e5 := cs.movebtcDB.TraversalCopy(src.movebtcDB)
 	if e5 != nil {
 		return e5
 	}
-	e6 := cs.lockblsDB.TraversalCopy(src.lockblsDB, false)
+	e6 := cs.lockblsDB.TraversalCopy(src.lockblsDB)
 	if e6 != nil {
 		return e6
+	}
+	e7 := cs.dmdlendDB.TraversalCopy(src.dmdlendDB)
+	if e7 != nil {
+		return e7
 	}
 
 	// copy ok
@@ -300,6 +313,11 @@ func (cs *ChainState) Fork() (interfaces.ChainState, error) {
 }
 
 func (cs *ChainState) IsDatabaseVersionRebuildMode() bool {
+	if cs.base != nil {
+		// 递归向上
+		return cs.base.IsDatabaseVersionRebuildMode()
+	}
+	// 返回最终配置
 	return cs.config.DatabaseVersionRebuildMode
 }
 

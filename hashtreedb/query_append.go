@@ -1,13 +1,8 @@
 package hashtreedb
 
-import (
-	"bytes"
-	"fmt"
-)
-
 /**
  * append value to file
- */
+ *
 func (ins *QueryInstance) append(searchitem *FindValueOffsetItem, valuedatas []byte, SaveValueSegmentOffset int64) (ValueSegmentOffset uint32, err error) {
 	// write data
 	segmentOffset := uint32(0)
@@ -34,10 +29,10 @@ func (ins *QueryInstance) append(searchitem *FindValueOffsetItem, valuedatas []b
 		return 0, fmt.Errorf("searchitem.Type error, index file breakdown.")
 	}
 }
+*/
 
-/**
- * insert index branch
- */
+/*
+//insert index branch
 func (ins *QueryInstance) insertIndexBranch(searchitem *FindValueOffsetItem, valueSegmentOffset uint32) (ValueSegmentOffset uint32, err error) {
 	doSaveSearchHash := ins.searchHash
 	existSearchHash, _, _ := ins.db.spreadHashToIndexPath(ins.db.convertKeyToHash(searchitem.ValueKey))
@@ -93,6 +88,7 @@ func (ins *QueryInstance) insertIndexBranch(searchitem *FindValueOffsetItem, val
 	brhwriteitem.ValueSegmentOffset = uint32(indexoldsngofst) // start pos
 	return ins.updateSearchItem(brhwriteitem)
 }
+*/
 
 /**
  * insert index branch

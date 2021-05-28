@@ -225,23 +225,23 @@ func Test_create_query_ins_t1(t *testing.T) {
 	fmt.Println(len(key1), key1)
 
 	cnf := NewHashTreeDBConfig(TestDir, 80, 32)
-	cnf.FileDividePartitionLevel = 3
+	//cnf.FileDividePartitionLevel = 3
 	db := NewHashTreeDB(cnf)
 
-	hash := db.convertKeyToHash(key1)
+	//hash := db.convertKeyToHash(key1)
 
-	fpath, fk, usehash := db.locateTargetFilePath(hash)
-
-	fmt.Println(fpath)
-	fmt.Println(fk)
-	fmt.Println(usehash)
+	//fpath, fk, usehash := db.locateTargetFilePath(hash)
+	//
+	//fmt.Println(fpath)
+	//fmt.Println(fk)
+	//fmt.Println(usehash)
 
 	qins, err := db.CreateNewQueryInstance(key1)
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println(qins.filePath)
+	//fmt.Println(qins.filePath)
 
 	// 关闭查询
 	qins.Destroy()

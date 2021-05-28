@@ -1,11 +1,5 @@
 package hashtreedb
 
-import (
-	"bytes"
-	"encoding/binary"
-	"fmt"
-)
-
 /**
  * clear search index cache
  */
@@ -24,54 +18,57 @@ func (ins *QueryInstance) Delete() error {
 
 	panic("NewHashTreeDB  must use LevelDB!")
 
-	// 文件数据库
-	ins.ClearSearchIndexCache()
-	ofstItem, err := ins.SearchIndex()
-	if err != nil {
-		return err // error
-	}
-	if ofstItem == nil {
-		return nil // not find ok
-	}
-	if ofstItem.Type == IndexItemTypeValueDelete {
-		return nil // already deleted
-	}
-	if ofstItem.Type != IndexItemTypeValue {
-		return nil // not value
-	}
-	e2 := ins.readSegmentDataFillItem(ofstItem, false)
-	if e2 != nil {
-		return e2 // error
-	}
-	if bytes.Compare(ins.key, ofstItem.ValueKey) != 0 {
-		// read target ok other one
-		return nil
-	}
-	if ins.db.config.KeepDeleteMark {
-		ofstItem.Type = IndexItemTypeValueDelete // mark delete
-	} else {
-		ofstItem.Type = 0 // nothing
-	}
-	var valueSegmentOffset = ofstItem.ValueSegmentOffset
-	if !ins.db.config.ForbidGC && !ins.db.config.KeepDeleteMark {
-		e := ins.collecteGarbageSpace(ofstItem) // Collecte Garbage Space
+	/*
+		// 文件数据库
+		ins.ClearSearchIndexCache()
+		ofstItem, err := ins.SearchIndex()
+		if err != nil {
+			return err // error
+		}
+		if ofstItem == nil {
+			return nil // not find ok
+		}
+		if ofstItem.Type == IndexItemTypeValueDelete {
+			return nil // already deleted
+		}
+		if ofstItem.Type != IndexItemTypeValue {
+			return nil // not value
+		}
+		e2 := ins.readSegmentDataFillItem(ofstItem, false)
+		if e2 != nil {
+			return e2 // error
+		}
+		if bytes.Compare(ins.key, ofstItem.ValueKey) != 0 {
+			// read target ok other one
+			return nil
+		}
+		if ins.db.config.KeepDeleteMark {
+			ofstItem.Type = IndexItemTypeValueDelete // mark delete
+		} else {
+			ofstItem.Type = 0 // nothing
+		}
+		var valueSegmentOffset = ofstItem.ValueSegmentOffset
+		if !ins.db.config.ForbidGC && !ins.db.config.KeepDeleteMark {
+			e := ins.collecteGarbageSpace(ofstItem) // Collecte Garbage Space
+			if e != nil {
+				return e
+			}
+			ofstItem.ValueSegmentOffset = 0
+		}
+		_, e := ins.updateSearchItem(ofstItem) // update index
 		if e != nil {
 			return e
 		}
-		ofstItem.ValueSegmentOffset = 0
-	}
-	_, e := ins.updateSearchItem(ofstItem) // update index
-	if e != nil {
-		return e
-	}
-	// update value
-	if ins.db.config.SaveMarkBeforeValue {
-		// write delete mark
-		ins.writeSegmentDataEx(valueSegmentOffset, []byte{IndexItemTypeValueDelete})
-	}
+		// update value
+		if ins.db.config.SaveMarkBeforeValue {
+			// write delete mark
+			ins.writeSegmentDataEx(valueSegmentOffset, []byte{IndexItemTypeValueDelete})
+		}
+	*/
 	return nil
 }
 
+/*
 // get space
 func (ins *QueryInstance) releaseGarbageSpace() (uint32, error) {
 	if ins.db.config.ForbidGC {
@@ -101,7 +98,9 @@ func (ins *QueryInstance) releaseGarbageSpace() (uint32, error) {
 	// ok
 	return binary.BigEndian.Uint32(gcptr), nil
 }
+*/
 
+/*
 // addspace
 func (ins *QueryInstance) collecteGarbageSpace(item *FindValueOffsetItem) error {
 	if ins.db.config.ForbidGC {
@@ -120,3 +119,4 @@ func (ins *QueryInstance) collecteGarbageSpace(item *FindValueOffsetItem) error 
 	}
 	return nil
 }
+*/

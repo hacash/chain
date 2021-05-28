@@ -1,12 +1,6 @@
 package hashtreedb
 
-import (
-	"bytes"
-	"os"
-	"path"
-	"sync"
-)
-
+/*
 type TargetFilePackage struct {
 	fileKey  string // 当前正在使用的文件 key
 	filePath string // 当前正在使用的文件 完整路径但不带后缀名
@@ -19,7 +13,9 @@ type TargetFilePackage struct {
 	//isStoreKeySize  uint32 // 如果储存了key，则key的尺寸   未储存则为0
 
 }
+*/
 
+/*
 // close and not use any more
 func (tf *TargetFilePackage) Destroy() {
 	tf.fileKey = ""
@@ -38,7 +34,9 @@ func (tf *TargetFilePackage) Destroy() {
 		tf.dataFile = nil
 	}
 }
+*/
 
+/*
 // 等待获取文件控制权（锁）
 func (db *HashTreeDB) waitForTakeControlOfFile(ins *QueryInstance) (*lockFilePkgItem, error) {
 	if len(ins.fileKey) == 0 {
@@ -147,5 +145,7 @@ func (db *HashTreeDB) releaseControlOfFile(ins *QueryInstance) error {
 
 	return nil
 }
+
+*/
 
 ///////////////////////////////////////////////////////////////////////////////////

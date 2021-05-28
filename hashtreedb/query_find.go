@@ -1,10 +1,6 @@
 package hashtreedb
 
-import (
-	"bytes"
-	"encoding/binary"
-	"fmt"
-)
+import ()
 
 /**
  * search index exist
@@ -26,31 +22,33 @@ func (ins *QueryInstance) Exist() (bool, error) {
 
 	panic("NewHashTreeDB  must use LevelDB!")
 
-	// 文件数据库
-	ins.ClearSearchIndexCache()
-	ofstItem, err := ins.SearchIndex()
-	if err != nil {
-		return false, err // error
-	}
-	if ofstItem == nil {
-		//fmt.Println("ofstItem == nil return false, nil // not find")
-		return false, nil // not find
-	}
-	if ofstItem.Type == 0 {
-		return false, nil // not find
-	}
-	e2 := ins.readSegmentDataFillItem(ofstItem, false)
-	if e2 != nil {
-		return false, e2 // error
-	}
-	//fmt.Println("bytes.Compare(ins.key, ofstItem.ValueKey)", ins.key, ofstItem.ValueKey)
-	if bytes.Compare(ins.key, ofstItem.ValueKey) == 0 {
-		// find ok
-		return true, nil
-	} else {
-		// other one
-		return false, nil
-	}
+	/*
+		// 文件数据库
+		ins.ClearSearchIndexCache()
+		ofstItem, err := ins.SearchIndex()
+		if err != nil {
+			return false, err // error
+		}
+		if ofstItem == nil {
+			//fmt.Println("ofstItem == nil return false, nil // not find")
+			return false, nil // not find
+		}
+		if ofstItem.Type == 0 {
+			return false, nil // not find
+		}
+		e2 := ins.readSegmentDataFillItem(ofstItem, false)
+		if e2 != nil {
+			return false, e2 // error
+		}
+		//fmt.Println("bytes.Compare(ins.key, ofstItem.ValueKey)", ins.key, ofstItem.ValueKey)
+		if bytes.Compare(ins.key, ofstItem.ValueKey) == 0 {
+			// find ok
+			return true, nil
+		} else {
+			// other one
+			return false, nil
+		}
+	*/
 }
 
 /**
@@ -59,15 +57,19 @@ func (ins *QueryInstance) Exist() (bool, error) {
 func (ins *QueryInstance) Find() ([]byte, error) {
 	// 内存数据库
 	if ins.db.config.MemoryStorage {
-		v, ok := ins.db.MemoryStorageDB.Read(ins.key)
-		if !ok || v == nil {
+		val, ok := ins.db.MemoryStorageDB.Read(ins.key)
+		if !ok || val == nil {
 			return nil, nil
 		}
 		// copy
-		retdts := make([]byte, ins.db.config.MaxValueSize) // 补充不足的长度
-		copy(retdts, v)
-		//fmt.Println("MemoryStorageDB Find", fields.Address(ins.key).ToReadable(), retdts)
-		return retdts, nil
+		if ins.db.config.MaxValueSize > 0 {
+			retdts := make([]byte, ins.db.config.MaxValueSize) // 补充不足的长度
+			copy(retdts, val)
+			//fmt.Println("MemoryStorageDB Find", fields.Address(ins.key).ToReadable(), retdts)
+			return retdts, nil
+		}
+		// 原始存入数据
+		return val, nil
 	}
 
 	// LevelDB
@@ -77,41 +79,47 @@ func (ins *QueryInstance) Find() ([]byte, error) {
 			return nil, nil // error or not find
 		}
 		// copy
-		retdts := make([]byte, ins.db.config.MaxValueSize) // 补充不足的长度
-		copy(retdts, val)
-		//fmt.Println("MemoryStorageDB Find", fields.Address(ins.key).ToReadable(), retdts)
-		return retdts, nil
+		if ins.db.config.MaxValueSize > 0 {
+			retdts := make([]byte, ins.db.config.MaxValueSize) // 补充不足的长度
+			copy(retdts, val)
+			//fmt.Println("LevelDB Find", fields.Address(ins.key).ToReadable(), retdts)
+			return retdts, nil
+		}
+		// 原始存入数据
+		return val, nil
 	}
 
-	panic("NewHashTreeDB  must use LevelDB!")
+	panic("NewHashTreeDB must use LevelDB!")
 
-	// 文件数据库
-	ins.ClearSearchIndexCache()
-	ofstItem, err := ins.SearchIndex()
-	if err != nil {
-		return nil, err // error
-	}
-	if ofstItem == nil {
-		return nil, nil // not find
-	}
-	if ofstItem.Type == 0 {
-		return nil, nil // not find
-	}
-	e2 := ins.readSegmentDataFillItem(ofstItem, true)
-	if e2 != nil {
-		return nil, e2 // error
-	}
-	if bytes.Compare(ins.key, ofstItem.ValueKey) == 0 {
-		// read target ok
-		return ofstItem.ValueBody, nil
-	} else {
-		return nil, nil // other one not find
-	}
+	/*
+		// 文件数据库
+		ins.ClearSearchIndexCache()
+		ofstItem, err := ins.SearchIndex()
+		if err != nil {
+			return nil, err // error
+		}
+		if ofstItem == nil {
+			return nil, nil // not find
+		}
+		if ofstItem.Type == 0 {
+			return nil, nil // not find
+		}
+		e2 := ins.readSegmentDataFillItem(ofstItem, true)
+		if e2 != nil {
+			return nil, e2 // error
+		}
+		if bytes.Compare(ins.key, ofstItem.ValueKey) == 0 {
+			// read target ok
+			return ofstItem.ValueBody, nil
+		} else {
+			return nil, nil // other one not find
+		}
+	*/
 }
 
 /**
  * search index file and get the item part
- */
+ *
 func (ins *QueryInstance) readSegmentDataFillItem(fditem *FindValueOffsetItem, isreadvalue bool) error {
 	// read data from file
 	readsz := int(ins.db.config.segmentValueSize)
@@ -140,17 +148,19 @@ func (ins *QueryInstance) readSegmentDataFillItem(fditem *FindValueOffsetItem, i
 	}
 	return nil
 }
+*/
 
 /**
  * clear search index cache
- */
+ *
 func (ins *QueryInstance) ClearSearchIndexCache() {
 	ins.searchResultCache = nil
 }
+*/
 
 /**
  * search index file and get the item part
- */
+ *
 func (ins *QueryInstance) SearchIndex() (*FindValueOffsetItem, error) {
 	//
 	if len(ins.searchHash) == 0 {
@@ -210,3 +220,4 @@ func (ins *QueryInstance) SearchIndex() (*FindValueOffsetItem, error) {
 	}
 	return nil, nil
 }
+*/

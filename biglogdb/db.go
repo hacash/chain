@@ -14,26 +14,27 @@ import (
  * config
  */
 type BigLogDBConfig struct {
-	UseLevelDB               bool
-	DataDir                  string
-	KeySize                  uint8
-	KeyReverse               bool
-	LogHeadMaxSize           int
-	BlockPartFileMaxSize     int64
-	FileDividePartitionLevel uint8
+	UseLevelDB bool
+	DataDir    string
+	KeySize    uint8
+	//KeyReverse               bool
+	LogHeadMaxSize       int
+	BlockPartFileMaxSize int64
+	//FileDividePartitionLevel uint8
 }
 
 func NewBigLogDBConfig(
 	DataDir string,
 	keySize uint8,
+	partFileSize int64,
 ) *BigLogDBConfig {
 	return &BigLogDBConfig{
-		DataDir:                  DataDir,
-		KeySize:                  keySize,
-		KeyReverse:               false,
-		LogHeadMaxSize:           0,
-		FileDividePartitionLevel: 1,
-		BlockPartFileMaxSize:     1024 * 1024 * 20, // 20MB
+		DataDir: DataDir,
+		KeySize: keySize,
+		//KeyReverse:               false,
+		LogHeadMaxSize: 0,
+		//FileDividePartitionLevel: 1,
+		BlockPartFileMaxSize: partFileSize,
 	}
 }
 
@@ -72,8 +73,8 @@ func NewBigLogDB(config *BigLogDBConfig) (*BigLogDB, error) {
 	)
 	// copy cnf con
 	hsdbcnf.LevelDB = config.UseLevelDB
-	hsdbcnf.KeyReverse = config.KeyReverse
-	hsdbcnf.FileDividePartitionLevel = config.FileDividePartitionLevel
+	//hsdbcnf.KeyReverse = config.KeyReverse
+	//hsdbcnf.FileDividePartitionLevel = config.FileDividePartitionLevel
 	// new tree db
 	basedb := hashtreedb.NewHashTreeDB(hsdbcnf)
 	db := &BigLogDB{

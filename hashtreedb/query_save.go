@@ -1,8 +1,6 @@
 package hashtreedb
 
 import (
-	"bytes"
-	"encoding/binary"
 	"fmt"
 )
 
@@ -32,19 +30,25 @@ func (ins *QueryInstance) Save(valuedatas []byte) error {
 
 	// LevelDB
 	if ins.db.config.LevelDB {
-		return ins.db.LevelDB.Put(ins.key, valuedatas, nil)
+		err := ins.db.LevelDB.Put(ins.key, valuedatas, nil)
+		if err != nil {
+			return fmt.Errorf("QueryInstance.LevelDB.Save Error: %s", err.Error())
+		}
+		return nil
 	}
 
 	panic("NewHashTreeDB  must use LevelDB!")
 
-	// 文件数据库
-	_, err := ins.saveEx(valuedatas, -1)
-	return err
+	/*
+		// 文件数据库
+		_, err := ins.saveEx(valuedatas, -1)
+	*/
+	return nil
 }
 
 /**
  * Save Value
- */
+ *
 func (ins *QueryInstance) saveEx(valuedatas []byte, SaveValueSegmentOffset int64) (ValueSegmentOffset uint32, err error) {
 	if valuedatas == nil && SaveValueSegmentOffset < 0 {
 		return 0, fmt.Errorf("valuedatas or SaveValueSegmentOffset must give one.")
@@ -81,11 +85,11 @@ func (ins *QueryInstance) saveEx(valuedatas []byte, SaveValueSegmentOffset int64
 	// add new value
 	return ins.append(ofstitem, valuedatas, SaveValueSegmentOffset)
 }
+*/
 
 /**
  * update search item
- */
-
+ *
 func (ins *QueryInstance) updateSearchItem(sitem *FindValueOffsetItem) (ValueSegmentOffset uint32, err error) {
 	atpos := sitem.IndexMenuSelfSegmentOffset*uint32(IndexMenuSize) + sitem.IndexItemSelfAlignment
 	itbytes := sitem.Serialize()
@@ -98,11 +102,11 @@ func (ins *QueryInstance) updateSearchItem(sitem *FindValueOffsetItem) (ValueSeg
 	}
 	return sitem.ValueSegmentOffset, nil
 }
+*/
 
 /**
  * update search item
- */
-
+ *
 func (ins *QueryInstance) parseSearchMenu(char1 int, mark1 byte, segofst1 uint32, char2 int, mark2 byte, segofst2 uint32) []byte {
 	chars := []int{char1, char2}
 	marks := []byte{mark1, mark2}
@@ -142,10 +146,11 @@ func (ins *QueryInstance) appendSearchMenu(char1 int, mark1 byte, segofst1 uint3
 	}
 	return wtatsz + int64(IndexMenuSize), nil
 }
+*/
 
 /**
  * Save data
- */
+ *
 func (ins *QueryInstance) writeSegmentDataEx(segmentOffset uint32, segdatas []byte) (ValueSegmentOffset uint32, err error) {
 	// write to the file
 	wtpos := int64(segmentOffset * ins.db.config.segmentValueSize)
@@ -158,10 +163,11 @@ func (ins *QueryInstance) writeSegmentDataEx(segmentOffset uint32, segdatas []by
 	}
 	return segmentOffset, nil
 }
+*/
 
 /**
  * Save data
- */
+ *
 func (ins *QueryInstance) writeSegmentData(segmentOffset uint32, valuedatas []byte) (ValueSegmentOffset uint32, err error) {
 	// write to the file
 	var datas = bytes.NewBuffer([]byte{})
@@ -174,10 +180,11 @@ func (ins *QueryInstance) writeSegmentData(segmentOffset uint32, valuedatas []by
 	segdatas := datas.Bytes()
 	return ins.writeSegmentDataEx(segmentOffset, segdatas)
 }
+*/
 
 /**
  * Save data
- */
+ *
 func (ins *QueryInstance) writeValueDataToFileWithGC(searchitem *FindValueOffsetItem, valuedatas []byte) (valueSegmentOffset uint32, err error) {
 	var segmentwtat int64 = -1
 	if searchitem.Type == IndexItemTypeValueDelete {
@@ -209,3 +216,4 @@ func (ins *QueryInstance) writeValueDataToFileWithGC(searchitem *FindValueOffset
 	segmentOffset := uint32(segmentwtat) / ins.db.config.segmentValueSize
 	return ins.writeSegmentData(segmentOffset, valuedatas)
 }
+*/

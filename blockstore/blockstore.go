@@ -27,12 +27,12 @@ type BlockStore struct {
 }
 
 func NewBlockStoreOfBlockDataDB(basedir string) (*biglogdb.BigLogDB, error) {
-	blcnf := biglogdb.NewBigLogDBConfig(path.Join(basedir, "blockdata"), 32)
+	var blockPartFileMaxSize int64 = 1024 * 1024 * 100 // 100MB
+	blcnf := biglogdb.NewBigLogDBConfig(path.Join(basedir, "blockdata"), 32, blockPartFileMaxSize)
 	blcnf.UseLevelDB = true
 	blcnf.LogHeadMaxSize = blocks.BlockHeadSize
-	blcnf.BlockPartFileMaxSize = 1024 * 1024 * 100 // 100MB
-	blcnf.FileDividePartitionLevel = 1
-	blcnf.KeyReverse = true // reverse key
+	//blcnf.FileDividePartitionLevel = 1
+	//blcnf.KeyReverse = true // reverse key
 	//blockdataDB, e0 := biglogdb.NewBigLogDB(blcnf)
 	return biglogdb.NewBigLogDB(blcnf)
 }
@@ -46,22 +46,22 @@ func NewBlockStore(cnf *BlockStoreConfig) (*BlockStore, error) {
 	// create trsdataptrDB
 	tdrcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "trsdataptr"), 5+biglogdb.LogFilePtrSeekSize, 32)
 	tdrcnf.LevelDB = true
-	tdrcnf.FileDividePartitionLevel = 2
+	//tdrcnf.FileDividePartitionLevel = 2
 	trsdataptrDB := hashtreedb.NewHashTreeDB(tdrcnf)
 	// create blknumhashDB
 	bnhcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "blocknum"), 32, 8)
 	bnhcnf.LevelDB = true
-	bnhcnf.KeyPrefixSupplement = 8
+	//bnhcnf.KeyPrefixSupplement = 8
 	blknumhashDB := hashtreedb.NewHashTreeDB(bnhcnf)
 	// create diamondDB
 	dmdcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "diamond"), stores.DiamondSmeltSize, 6)
 	dmdcnf.LevelDB = true
-	dmdcnf.KeyPrefixSupplement = 11
+	//dmdcnf.KeyPrefixSupplement = 11
 	diamondDB := hashtreedb.NewHashTreeDB(dmdcnf)
 	// create diamondnumDB
 	dmdnumcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "diamondnum"), 6, 4)
 	dmdnumcnf.LevelDB = true
-	dmdnumcnf.KeyPrefixSupplement = 4
+	//dmdnumcnf.KeyPrefixSupplement = 4
 	diamondnumDB := hashtreedb.NewHashTreeDB(dmdnumcnf)
 	// btcmovelogsDB
 	lsdb, lserr := tinykvdb.NewTinyKVDB(path.Join(cnf.Datadir, "btcmovelog"), true)
@@ -93,7 +93,7 @@ func NewBlockStoreForUpdateDatabaseVersion(cnf *BlockStoreConfig) (*BlockStore, 
 	// create blknumhashDB
 	bnhcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "blocknum"), 32, 8)
 	bnhcnf.LevelDB = true
-	bnhcnf.KeyPrefixSupplement = 8
+	//bnhcnf.KeyPrefixSupplement = 8
 	blknumhashDB := hashtreedb.NewHashTreeDB(bnhcnf)
 	// return ok
 	cs := &BlockStore{

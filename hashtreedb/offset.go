@@ -1,10 +1,8 @@
 package hashtreedb
 
-import (
-	"bytes"
-	"encoding/binary"
-)
+import ()
 
+/*
 //var FindValueOffsetItemSize = uint32(5) // 索引项宽度
 
 type FindValueOffsetItem struct {
@@ -59,3 +57,4 @@ func (this *FindValueOffsetItem) Serialize() []byte {
 	buffer.Write(byt1)
 	return buffer.Bytes()
 }
+*/

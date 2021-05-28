@@ -1,13 +1,8 @@
 package hashtreedb
 
-import (
-	"bytes"
-	"crypto/sha256"
-	"encoding/hex"
-	"strconv"
-	"strings"
-)
+import ()
 
+/*
 // find target file
 func (db *HashTreeDB) locateTargetFilePath(hash []byte) (string, string, []byte) {
 	use_hash, _, pathary := db.spreadHashToIndexPath(hash)
@@ -64,3 +59,5 @@ func (db *HashTreeDB) convertKeyToHash(key []byte) []byte {
 	//fmt.Println(realusekey)
 	return realusekey
 }
+
+*/

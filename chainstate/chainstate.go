@@ -396,6 +396,9 @@ func (cs *ChainState) SubmitDataStoreWriteToInvariableDisk(block interfaces.Bloc
 func Test_print_all_address_balance(db *hashtreedb.HashTreeDB) {
 
 	total_address_count := int64(0)
+	total_hac_address_count := int64(0)
+	total_btc_address_count := int64(0)
+	total_hacd_address_count := int64(0)
 
 	total_hac := float64(0)
 	total_btc := int64(0)
@@ -415,9 +418,19 @@ func Test_print_all_address_balance(db *hashtreedb.HashTreeDB) {
 		total_hac += float64(hacfltn)
 		total_btc += int64(bls.Satoshi)
 		total_hacd += int(bls.Diamond)
+		if float64(hacfltn) > 0 {
+			total_hac_address_count++
+		}
+		if int64(bls.Satoshi) > 0 {
+			total_btc_address_count++
+		}
+		if int(bls.Diamond) > 0 {
+			total_hacd_address_count++
+		}
 		total_address_count++
+
 	}
 	iter.Release()
 
-	fmt.Println("------------------\n[TOTAL]", total_address_count, "address, HAC:", total_hac, "SAT:", total_btc, "HACD:", total_hacd)
+	fmt.Printf("------------------\n[ADDRESS] %d address, hac: %d, btc: %d, hacd: %d \n[AMOUNT] HAC: %f, SAT: %d, HACD: %d", total_address_count, total_hac_address_count, total_btc_address_count, total_hacd_address_count, total_hac, total_btc, total_hacd)
 }

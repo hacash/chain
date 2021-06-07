@@ -6,8 +6,8 @@ import (
 )
 
 // DiamondLending 查询
-func (cs *ChainState) DiamondLending(dmdid fields.Bytes14) *stores.DiamondLending {
-	query, e1 := cs.dmdlendDB.CreateNewQueryInstance(dmdid)
+func (cs *ChainState) BitcoinLending(lendid fields.Bytes15) *stores.BitcoinLending {
+	query, e1 := cs.btclendDB.CreateNewQueryInstance(lendid)
 	if e1 != nil {
 		return nil // error
 	}
@@ -18,12 +18,12 @@ func (cs *ChainState) DiamondLending(dmdid fields.Bytes14) *stores.DiamondLendin
 	}
 	if vdatas == nil {
 		if cs.base != nil {
-			return cs.base.DiamondLending(dmdid) // check base
+			return cs.base.BitcoinLending(lendid) // check base
 		} else {
 			return nil // not find
 		}
 	}
-	var stoitem stores.DiamondLending
+	var stoitem stores.BitcoinLending
 	_, e3 := stoitem.Parse(vdatas, 0)
 	if e3 != nil {
 		return nil // error
@@ -33,8 +33,8 @@ func (cs *ChainState) DiamondLending(dmdid fields.Bytes14) *stores.DiamondLendin
 }
 
 // 创建 Diamond Lending
-func (cs *ChainState) DiamondLendingCreate(dmdid fields.Bytes14, stoitem *stores.DiamondLending) error {
-	query, e1 := cs.dmdlendDB.CreateNewQueryInstance(dmdid)
+func (cs *ChainState) BitcoinLendingCreate(lendid fields.Bytes15, stoitem *stores.BitcoinLending) error {
+	query, e1 := cs.btclendDB.CreateNewQueryInstance(lendid)
 	if e1 != nil {
 		return e1 // error
 	}
@@ -52,13 +52,13 @@ func (cs *ChainState) DiamondLendingCreate(dmdid fields.Bytes14, stoitem *stores
 }
 
 // 更新
-func (cs *ChainState) DiamondLendingUpdate(dmdid fields.Bytes14, stoitem *stores.DiamondLending) error {
-	return cs.DiamondLendingCreate(dmdid, stoitem)
+func (cs *ChainState) BitcoinLendingUpdate(lendid fields.Bytes15, stoitem *stores.BitcoinLending) error {
+	return cs.BitcoinLendingCreate(lendid, stoitem)
 }
 
 // 删除
-func (cs *ChainState) DiamondLendingDelete(dmdid fields.Bytes14) error {
-	query, e1 := cs.dmdlendDB.CreateNewQueryInstance(dmdid)
+func (cs *ChainState) BitcoinLendingDelete(lendid fields.Bytes15) error {
+	query, e1 := cs.btclendDB.CreateNewQueryInstance(lendid)
 	if e1 != nil {
 		return e1 // error
 	}

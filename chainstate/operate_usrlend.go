@@ -6,8 +6,8 @@ import (
 )
 
 // DiamondLending 查询
-func (cs *ChainState) DiamondLending(dmdid fields.Bytes14) *stores.DiamondLending {
-	query, e1 := cs.dmdlendDB.CreateNewQueryInstance(dmdid)
+func (cs *ChainState) UserLending(lendid fields.Bytes17) *stores.UserLending {
+	query, e1 := cs.usrlendDB.CreateNewQueryInstance(lendid)
 	if e1 != nil {
 		return nil // error
 	}
@@ -18,12 +18,12 @@ func (cs *ChainState) DiamondLending(dmdid fields.Bytes14) *stores.DiamondLendin
 	}
 	if vdatas == nil {
 		if cs.base != nil {
-			return cs.base.DiamondLending(dmdid) // check base
+			return cs.base.UserLending(lendid) // check base
 		} else {
 			return nil // not find
 		}
 	}
-	var stoitem stores.DiamondLending
+	var stoitem stores.UserLending
 	_, e3 := stoitem.Parse(vdatas, 0)
 	if e3 != nil {
 		return nil // error
@@ -33,8 +33,8 @@ func (cs *ChainState) DiamondLending(dmdid fields.Bytes14) *stores.DiamondLendin
 }
 
 // 创建 Diamond Lending
-func (cs *ChainState) DiamondLendingCreate(dmdid fields.Bytes14, stoitem *stores.DiamondLending) error {
-	query, e1 := cs.dmdlendDB.CreateNewQueryInstance(dmdid)
+func (cs *ChainState) UserLendingCreate(lendid fields.Bytes17, stoitem *stores.UserLending) error {
+	query, e1 := cs.usrlendDB.CreateNewQueryInstance(lendid)
 	if e1 != nil {
 		return e1 // error
 	}
@@ -52,13 +52,13 @@ func (cs *ChainState) DiamondLendingCreate(dmdid fields.Bytes14, stoitem *stores
 }
 
 // 更新
-func (cs *ChainState) DiamondLendingUpdate(dmdid fields.Bytes14, stoitem *stores.DiamondLending) error {
-	return cs.DiamondLendingCreate(dmdid, stoitem)
+func (cs *ChainState) UserLendingUpdate(lendid fields.Bytes17, stoitem *stores.UserLending) error {
+	return cs.UserLendingCreate(lendid, stoitem)
 }
 
 // 删除
-func (cs *ChainState) DiamondLendingDelete(dmdid fields.Bytes14) error {
-	query, e1 := cs.dmdlendDB.CreateNewQueryInstance(dmdid)
+func (cs *ChainState) UserLendingDelete(lendid fields.Bytes17) error {
+	query, e1 := cs.usrlendDB.CreateNewQueryInstance(lendid)
 	if e1 != nil {
 		return e1 // error
 	}

@@ -25,10 +25,12 @@ type ChainState struct {
 	// state
 	balanceDB *hashtreedb.HashTreeDB
 	diamondDB *hashtreedb.HashTreeDB
-	channelDB *hashtreedb.HashTreeDB
+	channelDB *hashtreedb.HashTreeDB // key len = 16
 	movebtcDB *hashtreedb.HashTreeDB // 转移BTC记录
 	lockblsDB *hashtreedb.HashTreeDB // 线性锁仓地址 key len = 18
 	dmdlendDB *hashtreedb.HashTreeDB // 钻石系统借贷 key len = 14
+	btclendDB *hashtreedb.HashTreeDB // 钻石系统借贷 key len = 15
+	usrlendDB *hashtreedb.HashTreeDB // 钻石系统借贷 key len = 17
 
 	// store
 	datastore          interfaces.BlockStore
@@ -147,7 +149,7 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 		//lkblscnf.FileDividePartitionLevel = 1
 	}
 	lockblsDB := hashtreedb.NewHashTreeDB(lkblscnf)
-	// lockblsDB
+	// dmdlendDB
 	dmdlendcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "dmdlend"), 0, stores.DiamondLendingIdLength)
 	if isSubBranchTemporary {
 		dmdlendcnf.MemoryStorage = true // 内存数据库
@@ -155,6 +157,22 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 		dmdlendcnf.LevelDB = true // 使用 level db
 	}
 	dmdlendDB := hashtreedb.NewHashTreeDB(dmdlendcnf)
+	// btclendDB
+	btclendcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "btclend"), 0, stores.BitcoinLendingIdLength)
+	if isSubBranchTemporary {
+		btclendcnf.MemoryStorage = true // 内存数据库
+	} else {
+		btclendcnf.LevelDB = true // 使用 level db
+	}
+	btclendDB := hashtreedb.NewHashTreeDB(btclendcnf)
+	// btclendDB
+	usrlendcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "usrlend"), 0, stores.UserLendingIdLength)
+	if isSubBranchTemporary {
+		usrlendcnf.MemoryStorage = true // 内存数据库
+	} else {
+		usrlendcnf.LevelDB = true // 使用 level db
+	}
+	usrlendDB := hashtreedb.NewHashTreeDB(usrlendcnf)
 	// return ok
 	cs := &ChainState{
 		config: cnf,
@@ -167,6 +185,8 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 		movebtcDB:             movebtcDB,
 		lockblsDB:             lockblsDB,
 		dmdlendDB:             dmdlendDB,
+		btclendDB:             btclendDB,
+		usrlendDB:             usrlendDB,
 		prev288BlockTimestamp: 0,
 		pendingBlockHeight:    nil,
 		pendingBlockHash:      nil,
@@ -201,6 +221,12 @@ func (cs *ChainState) Close() {
 	}
 	if cs.dmdlendDB != nil {
 		cs.dmdlendDB.Close()
+	}
+	if cs.btclendDB != nil {
+		cs.btclendDB.Close()
+	}
+	if cs.usrlendDB != nil {
+		cs.usrlendDB.Close()
 	}
 	// close mycreate store
 	if cs.datastore_mycreate != nil {
@@ -300,6 +326,14 @@ func (cs *ChainState) MergeCoverWriteChainState(src *ChainState) error {
 	e7 := cs.dmdlendDB.TraversalCopy(src.dmdlendDB)
 	if e7 != nil {
 		return e7
+	}
+	e8 := cs.btclendDB.TraversalCopy(src.btclendDB)
+	if e8 != nil {
+		return e8
+	}
+	e9 := cs.usrlendDB.TraversalCopy(src.usrlendDB)
+	if e9 != nil {
+		return e9
 	}
 
 	// copy ok

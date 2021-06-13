@@ -6,7 +6,7 @@ import (
 )
 
 // DiamondLending 查询
-func (cs *ChainState) DiamondLending(dmdid fields.Bytes14) *stores.DiamondLending {
+func (cs *ChainState) DiamondSystemLending(dmdid fields.Bytes14) *stores.DiamondSystemLending {
 	query, e1 := cs.dmdlendDB.CreateNewQueryInstance(dmdid)
 	if e1 != nil {
 		return nil // error
@@ -18,12 +18,12 @@ func (cs *ChainState) DiamondLending(dmdid fields.Bytes14) *stores.DiamondLendin
 	}
 	if vdatas == nil {
 		if cs.base != nil {
-			return cs.base.DiamondLending(dmdid) // check base
+			return cs.base.DiamondSystemLending(dmdid) // check base
 		} else {
 			return nil // not find
 		}
 	}
-	var stoitem stores.DiamondLending
+	var stoitem stores.DiamondSystemLending
 	_, e3 := stoitem.Parse(vdatas, 0)
 	if e3 != nil {
 		return nil // error
@@ -33,7 +33,7 @@ func (cs *ChainState) DiamondLending(dmdid fields.Bytes14) *stores.DiamondLendin
 }
 
 // 创建 Diamond Lending
-func (cs *ChainState) DiamondLendingCreate(dmdid fields.Bytes14, stoitem *stores.DiamondLending) error {
+func (cs *ChainState) DiamondLendingCreate(dmdid fields.Bytes14, stoitem *stores.DiamondSystemLending) error {
 	query, e1 := cs.dmdlendDB.CreateNewQueryInstance(dmdid)
 	if e1 != nil {
 		return e1 // error
@@ -52,7 +52,7 @@ func (cs *ChainState) DiamondLendingCreate(dmdid fields.Bytes14, stoitem *stores
 }
 
 // 更新
-func (cs *ChainState) DiamondLendingUpdate(dmdid fields.Bytes14, stoitem *stores.DiamondLending) error {
+func (cs *ChainState) DiamondLendingUpdate(dmdid fields.Bytes14, stoitem *stores.DiamondSystemLending) error {
 	return cs.DiamondLendingCreate(dmdid, stoitem)
 }
 

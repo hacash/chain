@@ -35,6 +35,8 @@ func (this *HashTreeDB) TraversalCopy(target *HashTreeDB) error {
 		return nil
 	}
 
+	panic("NewHashTreeDB TraversalCopy cannot must use LevelDB!")
+
 	// LevelDB
 	if target.config.LevelDB {
 		// 遍历

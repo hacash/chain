@@ -6,7 +6,7 @@ import (
 )
 
 // DiamondLending 查询
-func (cs *ChainState) BitcoinLending(lendid fields.Bytes15) *stores.BitcoinLending {
+func (cs *ChainState) BitcoinSystemLending(lendid fields.Bytes15) *stores.BitcoinSystemLending {
 	query, e1 := cs.btclendDB.CreateNewQueryInstance(lendid)
 	if e1 != nil {
 		return nil // error
@@ -18,12 +18,12 @@ func (cs *ChainState) BitcoinLending(lendid fields.Bytes15) *stores.BitcoinLendi
 	}
 	if vdatas == nil {
 		if cs.base != nil {
-			return cs.base.BitcoinLending(lendid) // check base
+			return cs.base.BitcoinSystemLending(lendid) // check base
 		} else {
 			return nil // not find
 		}
 	}
-	var stoitem stores.BitcoinLending
+	var stoitem stores.BitcoinSystemLending
 	_, e3 := stoitem.Parse(vdatas, 0)
 	if e3 != nil {
 		return nil // error
@@ -33,7 +33,7 @@ func (cs *ChainState) BitcoinLending(lendid fields.Bytes15) *stores.BitcoinLendi
 }
 
 // 创建 Diamond Lending
-func (cs *ChainState) BitcoinLendingCreate(lendid fields.Bytes15, stoitem *stores.BitcoinLending) error {
+func (cs *ChainState) BitcoinLendingCreate(lendid fields.Bytes15, stoitem *stores.BitcoinSystemLending) error {
 	query, e1 := cs.btclendDB.CreateNewQueryInstance(lendid)
 	if e1 != nil {
 		return e1 // error
@@ -52,7 +52,7 @@ func (cs *ChainState) BitcoinLendingCreate(lendid fields.Bytes15, stoitem *store
 }
 
 // 更新
-func (cs *ChainState) BitcoinLendingUpdate(lendid fields.Bytes15, stoitem *stores.BitcoinLending) error {
+func (cs *ChainState) BitcoinLendingUpdate(lendid fields.Bytes15, stoitem *stores.BitcoinSystemLending) error {
 	return cs.BitcoinLendingCreate(lendid, stoitem)
 }
 

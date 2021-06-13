@@ -10,7 +10,7 @@ func (ins *QueryInstance) Delete() error {
 		ins.db.MemoryStorageDB.Delete(ins.key)
 		return nil
 	}
-	// 内存数据库
+	// 磁盘数据库
 	if ins.db.config.LevelDB {
 		ins.db.LevelDB.Delete(ins.key, nil)
 		return nil

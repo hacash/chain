@@ -150,7 +150,7 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 	}
 	lockblsDB := hashtreedb.NewHashTreeDB(lkblscnf)
 	// dmdlendDB
-	dmdlendcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "dmdlend"), 0, stores.DiamondLendingIdLength)
+	dmdlendcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "dmdlend"), 0, stores.DiamondSyslendIdLength)
 	if isSubBranchTemporary {
 		dmdlendcnf.MemoryStorage = true // 内存数据库
 	} else {
@@ -158,7 +158,7 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 	}
 	dmdlendDB := hashtreedb.NewHashTreeDB(dmdlendcnf)
 	// btclendDB
-	btclendcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "btclend"), 0, stores.BitcoinLendingIdLength)
+	btclendcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "btclend"), 0, stores.BitcoinSyslendIdLength)
 	if isSubBranchTemporary {
 		btclendcnf.MemoryStorage = true // 内存数据库
 	} else {

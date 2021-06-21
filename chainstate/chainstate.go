@@ -8,6 +8,7 @@ import (
 	"github.com/hacash/core/interfaces"
 	"github.com/hacash/core/stores"
 	"path"
+	"time"
 )
 
 type ChainState struct {
@@ -429,6 +430,8 @@ func (cs *ChainState) SubmitDataStoreWriteToInvariableDisk(block interfaces.Bloc
 
 func Test_print_all_address_balance(db *hashtreedb.HashTreeDB) {
 
+	time.Sleep(time.Microsecond)
+
 	total_address_count := int64(0)
 	total_hac_address_count := int64(0)
 	total_btc_address_count := int64(0)
@@ -466,5 +469,5 @@ func Test_print_all_address_balance(db *hashtreedb.HashTreeDB) {
 	}
 	iter.Release()
 
-	fmt.Printf("------------------\n[ADDRESS] %d address, hac: %d, btc: %d, hacd: %d \n[AMOUNT] HAC: %f, SAT: %d, HACD: %d", total_address_count, total_hac_address_count, total_btc_address_count, total_hacd_address_count, total_hac, total_btc, total_hacd)
+	fmt.Printf("------------------\n[ADDRESS] %d address, hac: %d, btc: %d, hacd: %d \n[AMOUNT] HAC: %f, SAT: %d, HACD: %d\n", total_address_count, total_hac_address_count, total_btc_address_count, total_hacd_address_count, total_hac, total_btc, total_hacd)
 }

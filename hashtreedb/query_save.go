@@ -30,7 +30,7 @@ func (ins *QueryInstance) Save(valuedatas []byte) error {
 
 	// LevelDB
 	if ins.db.config.LevelDB {
-		err := ins.db.LevelDB.Put(ins.key, valuedatas, nil)
+		err := ins.db.GetOrCreateLevelDBwithPanic().Put(ins.key, valuedatas, nil)
 		if err != nil {
 			return fmt.Errorf("QueryInstance.LevelDB.Save Error: %s", err.Error())
 		}

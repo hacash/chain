@@ -5,7 +5,7 @@ import "encoding/binary"
 func (kv *TinyKVDB) Set(key []byte, value []byte) error {
 
 	if kv.UseLevelDB {
-		return kv.ldb.Put(key, value, nil)
+		return kv.GetOrCreateLevelDBwithPanic().Put(key, value, nil)
 	}
 
 	panic("must use UseLevelDB.")

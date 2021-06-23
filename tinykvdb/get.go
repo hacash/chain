@@ -8,7 +8,7 @@ import (
 func (kv *TinyKVDB) Get(key []byte) ([]byte, error) {
 
 	if kv.UseLevelDB {
-		v, _ := kv.ldb.Get(key, nil)
+		v, _ := kv.GetOrCreateLevelDBwithPanic().Get(key, nil)
 		if v != nil {
 			return v, nil
 		}

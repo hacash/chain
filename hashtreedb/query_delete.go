@@ -12,7 +12,7 @@ func (ins *QueryInstance) Delete() error {
 	}
 	// 磁盘数据库
 	if ins.db.config.LevelDB {
-		ins.db.LevelDB.Delete(ins.key, nil)
+		ins.db.GetOrCreateLevelDBwithPanic().Delete(ins.key, nil)
 		return nil
 	}
 

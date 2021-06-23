@@ -441,7 +441,7 @@ func Test_print_all_address_balance(db *hashtreedb.HashTreeDB) {
 	total_btc := int64(0)
 	total_hacd := int(0)
 
-	iter := db.LevelDB.NewIterator(nil, nil)
+	iter := db.GetOrCreateLevelDBwithPanic().NewIterator(nil, nil)
 	for iter.Next() {
 		//fmt.Printf("key:%s, value:%s\n", iter.Key(), iter.Value())
 		addr := fields.Address(iter.Key())

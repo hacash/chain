@@ -3,7 +3,7 @@ package tinykvdb
 func (kv *TinyKVDB) Del(key []byte) error {
 
 	if kv.UseLevelDB {
-		return kv.ldb.Delete(key, nil)
+		return kv.GetOrCreateLevelDBwithPanic().Delete(key, nil)
 	}
 
 	hashkey := convertKeyToLen16Hash(key)

@@ -13,7 +13,7 @@ func (ins *QueryInstance) Exist() (bool, error) {
 
 	// LevelDB
 	if ins.db.config.LevelDB {
-		val, err := ins.db.LevelDB.Get(ins.key, nil)
+		val, err := ins.db.GetOrCreateLevelDBwithPanic().Get(ins.key, nil)
 		if err != nil || val == nil {
 			return false, nil // error
 		}
@@ -74,7 +74,7 @@ func (ins *QueryInstance) Find() ([]byte, error) {
 
 	// LevelDB
 	if ins.db.config.LevelDB {
-		val, err := ins.db.LevelDB.Get(ins.key, nil)
+		val, err := ins.db.GetOrCreateLevelDBwithPanic().Get(ins.key, nil)
 		if err != nil || val == nil {
 			return nil, nil // error or not find
 		}

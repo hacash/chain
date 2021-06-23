@@ -17,8 +17,10 @@ const (
  * small kv db
  */
 type TinyKVDB struct {
-	UseLevelDB bool
-	ldb        *leveldb.DB
+	abspath          string
+	UseLevelDB       bool
+	ldb              *leveldb.DB
+	levelDBCreateMux sync.Mutex
 
 	///////////
 	bashhashtreedb *hashtreedb.HashTreeDB
@@ -30,17 +32,16 @@ type TinyKVDB struct {
 func NewTinyKVDB(abspath string, UseLevelDB bool) (*TinyKVDB, error) {
 
 	if UseLevelDB {
-		ldb, err := leveldb.OpenFile(abspath, nil)
-		if err != nil {
-			fmt.Println("NewTinyKVDB leveldb.OpenFile Error", err)
-			return nil, err
-		}
+
 		// 返回
 		return &TinyKVDB{
+			abspath:    abspath,
 			UseLevelDB: true,
-			ldb:        ldb,
+			ldb:        nil, // 按需创建
 		}, nil
 	}
+
+	panic("must use level db!")
 
 	// create dir file
 	os.MkdirAll(abspath, os.ModePerm)
@@ -59,6 +60,25 @@ func NewTinyKVDB(abspath string, UseLevelDB bool) (*TinyKVDB, error) {
 		bashhashtreedb: bashhashtreedb,
 	}
 	return db, nil
+}
+
+// 获取或创建 level db 对象
+func (db *TinyKVDB) GetOrCreateLevelDBwithPanic() *leveldb.DB {
+	if db.ldb != nil {
+		return db.ldb
+	}
+	db.levelDBCreateMux.Lock()
+	defer db.levelDBCreateMux.Unlock()
+	if db.ldb != nil {
+		return db.ldb
+	}
+	leveldbobj, err := leveldb.OpenFile(db.abspath, nil)
+	if err != nil {
+		fmt.Println("NewTinyKVDB leveldb.OpenFile Error", err)
+		panic(err)
+	}
+	db.ldb = leveldbobj
+	return db.ldb
 }
 
 func (kv *TinyKVDB) Close() error {

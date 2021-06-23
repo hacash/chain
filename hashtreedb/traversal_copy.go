@@ -40,7 +40,7 @@ func (this *HashTreeDB) TraversalCopy(target *HashTreeDB) error {
 	// LevelDB
 	if target.config.LevelDB {
 		// 遍历
-		iter := target.LevelDB.NewIterator(nil, nil)
+		iter := target.GetOrCreateLevelDBwithPanic().NewIterator(nil, nil)
 		for iter.Next() {
 			//fmt.Printf("key:%s, value:%s\n", iter.Key(), iter.Value())
 			distins, e0 := this.CreateNewQueryInstance(iter.Key())

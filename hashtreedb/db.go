@@ -3,6 +3,7 @@ package hashtreedb
 import (
 	"fmt"
 	"github.com/hacash/chain/leveldb"
+	"sync"
 )
 
 // 单个文件大小至少支持 256^4×5×8 MenuWide=8 时约 80GB
@@ -78,7 +79,8 @@ type HashTreeDB struct {
 	MemoryStorageDB *MemoryStorageDB
 
 	// db in memory
-	LevelDB *leveldb.DB
+	LevelDB          *leveldb.DB
+	levelDBCreateMux sync.Mutex
 
 	// file opt
 	//filesOptLock   sync.Mutex
@@ -127,12 +129,7 @@ func NewHashTreeDB(config *HashTreeDBConfig) *HashTreeDB {
 	// 使用 level db
 	if config.LevelDB {
 		//fmt.Println("config.LevelDB file path: ", config.FileAbsPath)
-		ldb, err := leveldb.OpenFile(config.FileAbsPath, nil)
-		if err != nil {
-			fmt.Println("NewHashTreeDB leveldb.OpenFile Error:", err.Error())
-			panic(err)
-		}
-		db.LevelDB = ldb
+		// 使用时再按需创建
 		return db
 	}
 
@@ -141,6 +138,25 @@ func NewHashTreeDB(config *HashTreeDBConfig) *HashTreeDB {
 	// 文件数据库，数据长度
 	// db.freshRecordDataSize()
 	return db
+}
+
+// 获取或创建 level db 对象
+func (db *HashTreeDB) GetOrCreateLevelDBwithPanic() *leveldb.DB {
+	if db.LevelDB != nil {
+		return db.LevelDB
+	}
+	db.levelDBCreateMux.Lock()
+	defer db.levelDBCreateMux.Unlock()
+	if db.LevelDB != nil {
+		return db.LevelDB
+	}
+	ldb, err := leveldb.OpenFile(db.config.FileAbsPath, nil)
+	if err != nil {
+		fmt.Println("NewHashTreeDB leveldb.OpenFile Error:", err.Error())
+		panic(err)
+	}
+	db.LevelDB = ldb
+	return db.LevelDB
 }
 
 // 创建执行单元

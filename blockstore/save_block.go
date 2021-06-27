@@ -115,7 +115,7 @@ func (cs *BlockStore) SaveBlockUniteTransactions(fullblock interfaces.Block) err
 		if e2 != nil {
 			return e2
 		}
-		blkhei := fields.VarUint5(fullblock.GetHeight())
+		blkhei := fields.BlockHeight(fullblock.GetHeight())
 		blkheibts, e3 := blkhei.Serialize()
 		if e3 != nil {
 			return e3

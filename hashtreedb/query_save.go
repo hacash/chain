@@ -55,7 +55,7 @@ func (ins *QueryInstance) saveEx(valuedatas []byte, SaveValueSegmentOffset int64
 	}
 	if valuedatas != nil {
 		dtleg := len(valuedatas)
-		mxvsz := int(ins.db.config.MaxValueSize)
+		mxvsz := int(ins.db.config.SupplementalMaxValueSize)
 		if dtleg > mxvsz {
 			return 0, fmt.Errorf("value size too much.")
 		} else if dtleg < mxvsz {

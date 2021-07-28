@@ -6,7 +6,7 @@ import (
 )
 
 //
-func (cs *ChainState) Diamond(diamond fields.Bytes6) *stores.Diamond {
+func (cs *ChainState) Diamond(diamond fields.DiamondName) *stores.Diamond {
 	query, e1 := cs.diamondDB.CreateNewQueryInstance(diamond)
 	if e1 != nil {
 		return nil // error
@@ -36,7 +36,7 @@ func (cs *ChainState) Diamond(diamond fields.Bytes6) *stores.Diamond {
 }
 
 //
-func (cs *ChainState) DiamondSet(diamond_name fields.Bytes6, diamond *stores.Diamond) error {
+func (cs *ChainState) DiamondSet(diamond_name fields.DiamondName, diamond *stores.Diamond) error {
 	query, e1 := cs.diamondDB.CreateNewQueryInstance(diamond_name)
 	if e1 != nil {
 		return e1 // error
@@ -55,7 +55,7 @@ func (cs *ChainState) DiamondSet(diamond_name fields.Bytes6, diamond *stores.Dia
 }
 
 //
-func (cs *ChainState) DiamondDel(diamond_name fields.Bytes6) error {
+func (cs *ChainState) DiamondDel(diamond_name fields.DiamondName) error {
 	query, e1 := cs.diamondDB.CreateNewQueryInstance(diamond_name)
 	if e1 != nil {
 		return e1 // error

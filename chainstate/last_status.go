@@ -121,7 +121,7 @@ func (cs *ChainState) ReadLastestDiamond() (*stores.DiamondSmelt, error) {
 		//fmt.Println("ReadLastestDiamond   return nil, nil // first one")
 		return nil, nil // first one
 	}
-	if len(vdatas) < stores.DiamondSmeltSize {
+	if len(vdatas) == 0 {
 		return nil, fmt.Errorf("lastest_diamond store file error.")
 	}
 	var diamond stores.DiamondSmelt

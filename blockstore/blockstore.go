@@ -5,7 +5,6 @@ import (
 	"github.com/hacash/chain/hashtreedb"
 	"github.com/hacash/chain/tinykvdb"
 	"github.com/hacash/core/blocks"
-	"github.com/hacash/core/stores"
 	"path"
 )
 
@@ -54,12 +53,12 @@ func NewBlockStore(cnf *BlockStoreConfig) (*BlockStore, error) {
 	//bnhcnf.KeyPrefixSupplement = 8
 	blknumhashDB := hashtreedb.NewHashTreeDB(bnhcnf)
 	// create diamondDB
-	dmdcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "diamond"), stores.DiamondSmeltSize, 6)
+	dmdcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "diamond"), 0, 6)
 	dmdcnf.LevelDB = true
 	//dmdcnf.KeyPrefixSupplement = 11
 	diamondDB := hashtreedb.NewHashTreeDB(dmdcnf)
 	// create diamondnumDB
-	dmdnumcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "diamondnum"), 6, 4)
+	dmdnumcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "diamondnum"), 0, 4)
 	dmdnumcnf.LevelDB = true
 	//dmdnumcnf.KeyPrefixSupplement = 4
 	diamondnumDB := hashtreedb.NewHashTreeDB(dmdnumcnf)

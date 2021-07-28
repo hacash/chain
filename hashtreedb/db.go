@@ -29,8 +29,8 @@ type HashTreeDBConfig struct {
 	// LevelDB
 	LevelDB bool // 使用 level db 保存数据
 	// size
-	KeySize      uint8  // key值长度  <= 32
-	MaxValueSize uint32 // 数据内容长度
+	KeySize                  uint8  // key值长度  <= 32
+	SupplementalMaxValueSize uint32 // 数据内容长度
 	// key config
 	//KeyReverse          bool  // key值倒序
 	//KeyPrefixSupplement uint8 // key值前缀增补
@@ -54,13 +54,13 @@ type HashTreeDBConfig struct {
 
 func NewHashTreeDBConfig(
 	fileAbsPath string,
-	maxValueSize uint32,
+	mustMinValueSize uint32, // 必须补足的数据长度
 	keySize uint8,
 ) *HashTreeDBConfig {
 	return &HashTreeDBConfig{
-		FileAbsPath:  fileAbsPath,
-		MaxValueSize: maxValueSize,
-		KeySize:      keySize,
+		FileAbsPath:              fileAbsPath,
+		SupplementalMaxValueSize: mustMinValueSize,
+		KeySize:                  keySize,
 		//ForbidGC:                  false,
 		//SaveMarkBeforeValue:       false,
 		//TargetFilePackagePoolSize: 1,
@@ -95,7 +95,7 @@ type HashTreeDB struct {
 	//HashSize   uint32 // 哈希大小 16,32,64,128,256
 	//KeyReverse bool   // key值倒序
 	//
-	//MaxValueSize uint32 // 最大数据尺寸大小 + hash32
+	//SupplementalMaxValueSize uint32 // 最大数据尺寸大小 + hash32
 	//
 	//MenuWide uint8 // 单层索引宽度数（不可超过256）
 	//
@@ -174,12 +174,12 @@ func (db *HashTreeDB) freshRecordDataSize() {
 		panic("KeyPrefixSupplement + KeySize not more than 32.")
 	}
 	db.config.hashSize = db.config.KeyPrefixSupplement + db.config.KeySize
-	// markSize? + KeySize + MaxValueSize
+	// markSize? + KeySize + SupplementalMaxValueSize
 	db.config.segmentValueSize = 0
 	if db.config.SaveMarkBeforeValue {
 		db.config.segmentValueSize += uint32(1)
 	}
-	db.config.segmentValueSize += uint32(db.config.KeySize) + db.config.MaxValueSize
+	db.config.segmentValueSize += uint32(db.config.KeySize) + db.config.SupplementalMaxValueSize
 }
 */
 // close

@@ -8,7 +8,7 @@ import (
 )
 
 // block data store
-func (cs *BlockStore) ReadDiamond(diamond_name fields.Bytes6) (*stores.DiamondSmelt, error) {
+func (cs *BlockStore) ReadDiamond(diamond_name fields.DiamondName) (*stores.DiamondSmelt, error) {
 	// find
 	query1, e1 := cs.diamondDB.CreateNewQueryInstance(diamond_name)
 	if e1 != nil {
@@ -19,7 +19,7 @@ func (cs *BlockStore) ReadDiamond(diamond_name fields.Bytes6) (*stores.DiamondSm
 	if e3 != nil {
 		return nil, e3
 	}
-	if len(diamonddatas) < stores.DiamondSmeltSize {
+	if len(diamonddatas) == 0 {
 		return nil, fmt.Errorf("diamond store file break.")
 	}
 	var diamond stores.DiamondSmelt

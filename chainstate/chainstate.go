@@ -79,7 +79,7 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 	// balanceDB
 	// fmt.Println("balanceDB dir:", path.Join(cnf.Datadir, "balance"))
 	// os.MkdirAll(path.Join(cnf.Datadir, "balance"), os.ModePerm)
-	blscnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "balance"), stores.BalanceSize, 21)
+	blscnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "balance"), 0, fields.AddressSize)
 	//blscnf.KeyReverse = true
 	if isSubBranchTemporary {
 		blscnf.MemoryStorage = true // 内存数据库
@@ -100,7 +100,7 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 	/////////////  TEST END   /////////////
 
 	// diamondDB
-	dmdcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "diamond"), stores.DiamondSize, 6)
+	dmdcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "diamond"), 0, fields.DiamondNameSize)
 	//dmdcnf.KeyPrefixSupplement = 10
 	if isSubBranchTemporary {
 		dmdcnf.MemoryStorage = true // 内存数据库
@@ -113,7 +113,7 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 	}
 	diamondDB := hashtreedb.NewHashTreeDB(dmdcnf)
 	// channelDB
-	chlcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "channel"), stores.ChannelSize, 16)
+	chlcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "channel"), 0, stores.ChannelIdLength)
 	if isSubBranchTemporary {
 		chlcnf.MemoryStorage = true // 内存数据库
 		//chlcnf.ForbidGC = true
@@ -138,7 +138,7 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 	}
 	movebtcDB := hashtreedb.NewHashTreeDB(mvbtcnf)
 	// lockblsDB
-	lkblscnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "lockbls"), stores.LockblsSize, stores.LockblsIdLength)
+	lkblscnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "lockbls"), 0, stores.LockblsIdLength)
 	//blscnf.KeyReverse = true // 倒排key
 	if isSubBranchTemporary {
 		lkblscnf.MemoryStorage = true // 内存数据库

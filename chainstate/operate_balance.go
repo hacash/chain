@@ -23,7 +23,7 @@ func (cs *ChainState) Balance(addr fields.Address) *stores.Balance {
 			return stores.NewEmptyBalance() // not find
 		}
 	}
-	if len(vdatas) < stores.BalanceSize {
+	if len(vdatas) == 0 {
 		return nil // error
 	}
 	var stoitem stores.Balance

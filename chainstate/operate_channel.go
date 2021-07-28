@@ -23,7 +23,7 @@ func (cs *ChainState) Channel(channelid fields.Bytes16) *stores.Channel {
 			return nil // not find
 		}
 	}
-	if len(vdatas) < stores.ChannelSize {
+	if len(vdatas) == 0 {
 		return nil // error
 	}
 	var stoitem stores.Channel

@@ -62,8 +62,8 @@ func (ins *QueryInstance) Find() ([]byte, error) {
 			return nil, nil
 		}
 		// copy
-		if ins.db.config.MaxValueSize > 0 {
-			retdts := make([]byte, ins.db.config.MaxValueSize) // 补充不足的长度
+		if ins.db.config.SupplementalMaxValueSize > 0 {
+			retdts := make([]byte, ins.db.config.SupplementalMaxValueSize) // 补充不足的长度
 			copy(retdts, val)
 			//fmt.Println("MemoryStorageDB Find", fields.Address(ins.key).ToReadable(), retdts)
 			return retdts, nil
@@ -79,8 +79,8 @@ func (ins *QueryInstance) Find() ([]byte, error) {
 			return nil, nil // error or not find
 		}
 		// copy
-		if ins.db.config.MaxValueSize > 0 {
-			retdts := make([]byte, ins.db.config.MaxValueSize) // 补充不足的长度
+		if ins.db.config.SupplementalMaxValueSize > 0 {
+			retdts := make([]byte, ins.db.config.SupplementalMaxValueSize) // 补充不足的长度
 			copy(retdts, val)
 			//fmt.Println("LevelDB Find", fields.Address(ins.key).ToReadable(), retdts)
 			return retdts, nil
@@ -124,7 +124,7 @@ func (ins *QueryInstance) readSegmentDataFillItem(fditem *FindValueOffsetItem, i
 	// read data from file
 	readsz := int(ins.db.config.segmentValueSize)
 	if !isreadvalue {
-		readsz -= int(ins.db.config.MaxValueSize)
+		readsz -= int(ins.db.config.SupplementalMaxValueSize)
 	}
 	var databytes = make([]byte, readsz)
 	var rdoffset = fditem.ValueSegmentOffset * ins.db.config.segmentValueSize

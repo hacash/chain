@@ -23,7 +23,7 @@ func (cs *ChainState) Lockbls(lkid fields.Bytes18) *stores.Lockbls {
 			return nil // not find
 		}
 	}
-	if len(vdatas) < stores.LockblsSize {
+	if len(vdatas) == 0 {
 		return nil // error
 	}
 	var stoitem stores.Lockbls

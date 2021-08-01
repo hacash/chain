@@ -32,6 +32,7 @@ type ChainState struct {
 	dmdlendDB *hashtreedb.HashTreeDB // 钻石系统借贷 key len = 14
 	btclendDB *hashtreedb.HashTreeDB // 钻石系统借贷 key len = 15
 	usrlendDB *hashtreedb.HashTreeDB // 钻石系统借贷 key len = 17
+	chaswapDB *hashtreedb.HashTreeDB // channel 和 chain 原子互换 key len = 16
 
 	// store
 	datastore          interfaces.BlockStore
@@ -174,6 +175,14 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 		usrlendcnf.LevelDB = true // 使用 level db
 	}
 	usrlendDB := hashtreedb.NewHashTreeDB(usrlendcnf)
+	// chaswapDB
+	chaswapcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "chaswap"), 0, fields.HashHalfCheckerSize)
+	if isSubBranchTemporary {
+		chaswapcnf.MemoryStorage = true // 内存数据库
+	} else {
+		chaswapcnf.LevelDB = true // 使用 level db
+	}
+	chaswapDB := hashtreedb.NewHashTreeDB(chaswapcnf)
 	// return ok
 	cs := &ChainState{
 		config: cnf,
@@ -188,6 +197,7 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 		dmdlendDB:             dmdlendDB,
 		btclendDB:             btclendDB,
 		usrlendDB:             usrlendDB,
+		chaswapDB:             chaswapDB,
 		prev288BlockTimestamp: 0,
 		pendingBlockHeight:    nil,
 		pendingBlockHash:      nil,
@@ -228,6 +238,9 @@ func (cs *ChainState) Close() {
 	}
 	if cs.usrlendDB != nil {
 		cs.usrlendDB.Close()
+	}
+	if cs.chaswapDB != nil {
+		cs.chaswapDB.Close()
 	}
 	// close mycreate store
 	if cs.datastore_mycreate != nil {
@@ -335,6 +348,10 @@ func (cs *ChainState) MergeCoverWriteChainState(src *ChainState) error {
 	e9 := cs.usrlendDB.TraversalCopy(src.usrlendDB)
 	if e9 != nil {
 		return e9
+	}
+	e10 := cs.chaswapDB.TraversalCopy(src.chaswapDB)
+	if e10 != nil {
+		return e10
 	}
 
 	// copy ok

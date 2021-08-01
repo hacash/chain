@@ -27,23 +27,23 @@ type BlockStore struct {
 	btcmovelogTotalPage int // 最大数据页码
 }
 
-func NewBlockStoreOfBlockDataDB(basedir string) (*biglogdb.BigLogDB, error) {
+func NewBlockStoreOfBlockDataDB(basedir string, ldb *leveldb.DB) (*biglogdb.BigLogDB, error) {
 	var blockPartFileMaxSize int64 = 1024 * 1024 * 100 // 100MB
 	blcnf := biglogdb.NewBigLogDBConfig(path.Join(basedir, "blockdata"), 32, blockPartFileMaxSize)
 	blcnf.LogHeadMaxSize = blocks.BlockHeadSize
-	return biglogdb.NewBigLogDB(blcnf)
+	return biglogdb.NewBigLogDBByLevelDB(blcnf, "blockdata", ldb)
 }
 
 func NewBlockStore(cnf *BlockStoreConfig) (*BlockStore, error) {
 
-	// create blockdataDB
-	blockdataDB, e0 := NewBlockStoreOfBlockDataDB(cnf.Datadir)
+	// create leveldb
+	useldb, e0 := leveldb.OpenFile(cnf.Datadir, nil)
 	if e0 != nil {
 		return nil, e0
 	}
 
-	// create leveldb
-	useldb, e0 := leveldb.OpenFile(cnf.Datadir, nil)
+	// create blockdataDB
+	blockdataDB, e0 := NewBlockStoreOfBlockDataDB(cnf.Datadir, useldb)
 	if e0 != nil {
 		return nil, e0
 	}
@@ -89,14 +89,15 @@ func NewBlockStore(cnf *BlockStoreConfig) (*BlockStore, error) {
 
 // 创建一个用于更新数据库版本的区块存储器
 func NewBlockStoreForUpdateDatabaseVersion(cnf *BlockStoreConfig) (*BlockStore, error) {
-	// create blockdataDB
-	blockdataDB, e0 := NewBlockStoreOfBlockDataDB(cnf.Datadir)
+
+	// create leveldb
+	useldb, e0 := leveldb.OpenFile(cnf.Datadir, nil)
 	if e0 != nil {
 		return nil, e0
 	}
 
-	// create leveldb
-	useldb, e0 := leveldb.OpenFile(cnf.Datadir, nil)
+	// create blockdataDB
+	blockdataDB, e0 := NewBlockStoreOfBlockDataDB(cnf.Datadir, useldb)
 	if e0 != nil {
 		return nil, e0
 	}

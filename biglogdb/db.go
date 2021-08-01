@@ -75,15 +75,26 @@ func NewBigLogDB(config *BigLogDBConfig) (*BigLogDB, error) {
 	if e0 != nil {
 		return nil, e0
 	}
+	// 创建
+	return NewBigLogDBByLevelDB(config, "", bsldb)
+}
+
+// create DataBase
+func NewBigLogDBByLevelDB(config *BigLogDBConfig, keySubfix string, ldb *leveldb.DB) (*BigLogDB, error) {
+
+	e21 := os.MkdirAll(config.DataDir, os.ModePerm)
+	if e21 != nil {
+		return nil, e21
+	}
 	// cnf
 	hsdbcnf := statedomaindb.NewStateDomainDBConfig(
-		"",
+		keySubfix,
 		LogFilePtrSeekSize+uint32(config.LogHeadMaxSize),
 		config.KeySize,
 	)
 	hsdbcnf.LevelDB = true // 必须使用 leveldb
 	// new tree db
-	basedb := statedomaindb.NewStateDomainDB(hsdbcnf, bsldb)
+	basedb := statedomaindb.NewStateDomainDB(hsdbcnf, ldb)
 
 	// return
 	db := &BigLogDB{

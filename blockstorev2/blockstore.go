@@ -1,9 +1,9 @@
-package blockstore
+package blockstorev2
 
 import (
 	"github.com/hacash/chain/biglogdb"
-	"github.com/hacash/chain/hashtreedb"
-	"github.com/hacash/chain/tinykvdb"
+	"github.com/hacash/chain/leveldb"
+	"github.com/hacash/chain/statedomaindb"
 	"github.com/hacash/core/blocks"
 	"path"
 )
@@ -14,60 +14,65 @@ type BlockStore struct {
 	config *BlockStoreConfig
 
 	// data store
-	blockdataDB  *biglogdb.BigLogDB
-	trsdataptrDB *hashtreedb.HashTreeDB
-	blknumhashDB *hashtreedb.HashTreeDB
-	diamondDB    *hashtreedb.HashTreeDB
-	diamondnumDB *hashtreedb.HashTreeDB
+	blockdataDB *biglogdb.BigLogDB
+
+	// store
+	trsdataptrDB *statedomaindb.StateDomainDB
+	blknumhashDB *statedomaindb.StateDomainDB
+	diamondDB    *statedomaindb.StateDomainDB
+	diamondnumDB *statedomaindb.StateDomainDB
 
 	// btc move log
-	btcmovelogDB        *tinykvdb.TinyKVDB
+	btcmovelogDB        *statedomaindb.StateDomainDB
 	btcmovelogTotalPage int // 最大数据页码
 }
 
 func NewBlockStoreOfBlockDataDB(basedir string) (*biglogdb.BigLogDB, error) {
 	var blockPartFileMaxSize int64 = 1024 * 1024 * 100 // 100MB
 	blcnf := biglogdb.NewBigLogDBConfig(path.Join(basedir, "blockdata"), 32, blockPartFileMaxSize)
-	//blcnf.UseLevelDB = true
 	blcnf.LogHeadMaxSize = blocks.BlockHeadSize
-	//blcnf.FileDividePartitionLevel = 1
-	//blcnf.KeyReverse = true // reverse key
-	//blockdataDB, e0 := biglogdb.NewBigLogDB(blcnf)
 	return biglogdb.NewBigLogDB(blcnf)
 }
 
 func NewBlockStore(cnf *BlockStoreConfig) (*BlockStore, error) {
+
 	// create blockdataDB
 	blockdataDB, e0 := NewBlockStoreOfBlockDataDB(cnf.Datadir)
 	if e0 != nil {
 		return nil, e0
 	}
-	// create trsdataptrDB
-	tdrcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "trsdataptr"), 5+biglogdb.LogFilePtrSeekSize, 32)
-	tdrcnf.LevelDB = true
-	//tdrcnf.FileDividePartitionLevel = 2
-	trsdataptrDB := hashtreedb.NewHashTreeDB(tdrcnf)
-	// create blknumhashDB
-	bnhcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "blocknum"), 32, 8)
-	bnhcnf.LevelDB = true
-	//bnhcnf.KeyPrefixSupplement = 8
-	blknumhashDB := hashtreedb.NewHashTreeDB(bnhcnf)
-	// create diamondDB
-	dmdcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "diamond"), 0, 6)
-	dmdcnf.LevelDB = true
-	//dmdcnf.KeyPrefixSupplement = 11
-	diamondDB := hashtreedb.NewHashTreeDB(dmdcnf)
-	// create diamondnumDB
-	dmdnumcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "diamondnum"), 0, 4)
-	dmdnumcnf.LevelDB = true
-	//dmdnumcnf.KeyPrefixSupplement = 4
-	diamondnumDB := hashtreedb.NewHashTreeDB(dmdnumcnf)
-	// btcmovelogsDB
-	lsdb, lserr := tinykvdb.NewTinyKVDB(path.Join(cnf.Datadir, "btcmovelog"), true)
-	if lserr != nil {
-		return nil, lserr
+
+	// create leveldb
+	useldb, e0 := leveldb.OpenFile(cnf.Datadir, nil)
+	if e0 != nil {
+		return nil, e0
 	}
-	btcmovelogDB := lsdb
+
+	// trsdataptrDB
+	tdrcnf := statedomaindb.NewStateDomainDBConfig("trsdataptr", 5+biglogdb.LogFilePtrSeekSize, 32)
+	tdrcnf.LevelDB = true
+	trsdataptrDB := statedomaindb.NewStateDomainDB(tdrcnf, useldb)
+
+	// blocknumDB
+	bnhcnf := statedomaindb.NewStateDomainDBConfig("blocknum", 32, 8)
+	bnhcnf.LevelDB = true
+	blknumhashDB := statedomaindb.NewStateDomainDB(bnhcnf, useldb)
+
+	// diamondDB
+	dmdcnf := statedomaindb.NewStateDomainDBConfig("diamond", 0, 6)
+	dmdcnf.LevelDB = true
+	diamondDB := statedomaindb.NewStateDomainDB(dmdcnf, useldb)
+
+	// diamondnumDB
+	dmdnumcnf := statedomaindb.NewStateDomainDBConfig("diamondnum", 0, 4)
+	dmdnumcnf.LevelDB = true
+	diamondnumDB := statedomaindb.NewStateDomainDB(dmdnumcnf, useldb)
+
+	// btcmovelogsDB
+	btmvcnf := statedomaindb.NewStateDomainDBConfig("btcmovelog", 0, 0)
+	btmvcnf.LevelDB = true
+	btcmovelogDB := statedomaindb.NewStateDomainDB(btmvcnf, useldb)
+
 	// return ok
 	cs := &BlockStore{
 		config:              cnf,
@@ -89,11 +94,17 @@ func NewBlockStoreForUpdateDatabaseVersion(cnf *BlockStoreConfig) (*BlockStore, 
 	if e0 != nil {
 		return nil, e0
 	}
-	// create blknumhashDB
-	bnhcnf := hashtreedb.NewHashTreeDBConfig(path.Join(cnf.Datadir, "blocknum"), 32, 8)
+
+	// create leveldb
+	useldb, e0 := leveldb.OpenFile(cnf.Datadir, nil)
+	if e0 != nil {
+		return nil, e0
+	}
+
+	bnhcnf := statedomaindb.NewStateDomainDBConfig("blocknum", 32, 8)
 	bnhcnf.LevelDB = true
-	//bnhcnf.KeyPrefixSupplement = 8
-	blknumhashDB := hashtreedb.NewHashTreeDB(bnhcnf)
+	blknumhashDB := statedomaindb.NewStateDomainDB(bnhcnf, useldb)
+
 	// return ok
 	cs := &BlockStore{
 		config:              cnf,

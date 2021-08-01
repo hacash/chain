@@ -21,7 +21,7 @@ func (db *BigLogDB) Read(key []byte, readlen uint32) ([]byte, error) {
 // Read log Head
 func (db *BigLogDB) ReadHead(key []byte) ([]byte, *LogFilePtrSeek, error) {
 	// query
-	query, err := db.bashhashtreedb.CreateNewQueryInstance(key)
+	query, err := db.basedb.CreateNewQueryInstance(key)
 	if err != nil {
 		return nil, nil, err
 	}

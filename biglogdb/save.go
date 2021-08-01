@@ -61,7 +61,7 @@ OPENSTOREFILE:
 		Valsize:  uint32(len(logbodydatas)),
 	}
 	// save index
-	query, err := db.bashhashtreedb.CreateNewQueryInstance(key)
+	query, err := db.basedb.CreateNewQueryInstance(key)
 	if err != nil {
 		return nil, err
 	}

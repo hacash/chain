@@ -3,7 +3,8 @@ package biglogdb
 import (
 	"encoding/binary"
 	"fmt"
-	"github.com/hacash/chain/hashtreedb"
+	"github.com/hacash/chain/leveldb"
+	"github.com/hacash/chain/statedomaindb"
 	"os"
 	"path"
 	"strconv"
@@ -14,9 +15,9 @@ import (
  * config
  */
 type BigLogDBConfig struct {
-	UseLevelDB bool
-	DataDir    string
-	KeySize    uint8
+	//UseLevelDB bool
+	DataDir string
+	KeySize uint8
 	//KeyReverse               bool
 	LogHeadMaxSize       int
 	BlockPartFileMaxSize int64
@@ -51,7 +52,7 @@ type BigLogDB struct {
 
 	//////////////////////
 
-	bashhashtreedb *hashtreedb.HashTreeDB
+	basedb *statedomaindb.StateDomainDB
 
 	headstat        *os.File
 	headstatFileNum uint32
@@ -64,22 +65,30 @@ type BigLogDB struct {
 // create DataBase
 func NewBigLogDB(config *BigLogDBConfig) (*BigLogDB, error) {
 
-	os.MkdirAll(config.DataDir, os.ModePerm)
 	hsdbdir := path.Join(config.DataDir, "INDEXS")
-	hsdbcnf := hashtreedb.NewHashTreeDBConfig(
-		hsdbdir,
+	e21 := os.MkdirAll(hsdbdir, os.ModePerm)
+	if e21 != nil {
+		return nil, e21
+	}
+	// leveldb
+	bsldb, e0 := leveldb.OpenFile(hsdbdir, nil)
+	if e0 != nil {
+		return nil, e0
+	}
+	// cnf
+	hsdbcnf := statedomaindb.NewStateDomainDBConfig(
+		"",
 		LogFilePtrSeekSize+uint32(config.LogHeadMaxSize),
 		config.KeySize,
 	)
-	// copy cnf con
-	hsdbcnf.LevelDB = config.UseLevelDB
-	//hsdbcnf.KeyReverse = config.KeyReverse
-	//hsdbcnf.FileDividePartitionLevel = config.FileDividePartitionLevel
+	hsdbcnf.LevelDB = true // 必须使用 leveldb
 	// new tree db
-	basedb := hashtreedb.NewHashTreeDB(hsdbcnf)
+	basedb := statedomaindb.NewStateDomainDB(hsdbcnf, bsldb)
+
+	// return
 	db := &BigLogDB{
 		config:          config,
-		bashhashtreedb:  basedb,
+		basedb:          basedb,
 		headstat:        nil,
 		headstatFileNum: 4294967295, // not use
 		storefilecache:  make([]storefilecache, 0),
@@ -188,8 +197,8 @@ func (db *BigLogDB) SetFileNum(newnum uint32) error {
 }
 
 func (db *BigLogDB) Close() {
-	if db.bashhashtreedb != nil {
-		db.bashhashtreedb.Close()
+	if db.basedb != nil {
+		db.basedb.Close()
 	}
 	if db.headstat != nil {
 		db.headstat.Close()

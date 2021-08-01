@@ -20,6 +20,11 @@ type ChainState struct {
 	// config
 	config *ChainStateConfig
 
+	// level db
+	ldb *leveldb.DB
+
+	/////////////////////////////
+
 	// status
 	laststatusDB *statedomaindb.StateDomainDB
 
@@ -176,6 +181,7 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 		config: cnf,
 		// temporaryDataDir:      temporaryDataDir,
 		base:                  nil,
+		ldb:                   useldb,
 		laststatusDB:          laststatusDB,
 		balanceDB:             balanceDB,
 		diamondDB:             diamondDB,
@@ -200,6 +206,10 @@ func (cs *ChainState) Destory() {
 }
 
 func (cs *ChainState) Close() {
+	if cs.ldb != nil {
+		cs.ldb.Close()
+		cs.ldb = nil
+	}
 	if cs.laststatusDB != nil {
 		cs.laststatusDB.Close()
 	}

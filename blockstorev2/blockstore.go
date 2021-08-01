@@ -13,6 +13,9 @@ type BlockStore struct {
 	// config
 	config *BlockStoreConfig
 
+	// level db
+	ldb *leveldb.DB
+
 	// data store
 	blockdataDB *biglogdb.BigLogDB
 
@@ -76,6 +79,7 @@ func NewBlockStore(cnf *BlockStoreConfig) (*BlockStore, error) {
 	// return ok
 	cs := &BlockStore{
 		config:              cnf,
+		ldb:                 useldb,
 		blockdataDB:         blockdataDB,
 		trsdataptrDB:        trsdataptrDB,
 		blknumhashDB:        blknumhashDB,
@@ -117,6 +121,10 @@ func NewBlockStoreForUpdateDatabaseVersion(cnf *BlockStoreConfig) (*BlockStore, 
 }
 
 func (cs *BlockStore) Close() {
+	if cs.ldb != nil {
+		cs.ldb.Close()
+		cs.ldb = nil
+	}
 	if cs.blockdataDB != nil {
 		cs.blockdataDB.Close()
 	}

@@ -2,12 +2,12 @@ package chainstatev2
 
 import (
 	"fmt"
-	"github.com/hacash/chain/hashtreedb"
 	"github.com/hacash/chain/leveldb"
 	"github.com/hacash/chain/statedomaindb"
 	"github.com/hacash/core/fields"
 	"github.com/hacash/core/interfaces"
 	"github.com/hacash/core/stores"
+	"strings"
 	"time"
 )
 
@@ -435,7 +435,7 @@ func (cs *ChainState) SubmitDataStoreWriteToInvariableDisk(block interfaces.Bloc
 
 ////////////////////////////////////////////////////
 
-func Test_print_all_address_balance(db *hashtreedb.HashTreeDB) {
+func Test_print_all_address_balance(db *statedomaindb.StateDomainDB) {
 
 	time.Sleep(time.Microsecond)
 
@@ -448,10 +448,15 @@ func Test_print_all_address_balance(db *hashtreedb.HashTreeDB) {
 	total_btc := int64(0)
 	total_hacd := int(0)
 
-	iter := db.GetOrCreateLevelDBwithPanic().NewIterator(nil, nil)
+	iter := db.LevelDB.NewIterator(nil, nil)
 	for iter.Next() {
 		//fmt.Printf("key:%s, value:%s\n", iter.Key(), iter.Value())
-		addr := fields.Address(iter.Key())
+		key := iter.Key()
+		if !strings.HasSuffix(string(key), "balance") {
+			continue
+		}
+		addrbt := iter.Key()[0:21]
+		addr := fields.Address(addrbt)
 		var bls = stores.Balance{}
 		bls.Parse(iter.Value(), 0)
 		hacfltn := bls.Hacash.ToMei()

@@ -2,7 +2,6 @@ package chainstatev2
 
 import (
 	"fmt"
-	"sync"
 
 	"github.com/hacash/core/blocks"
 	"github.com/hacash/core/genesis"

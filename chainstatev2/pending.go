@@ -1,8 +1,6 @@
 package chainstatev2
 
 import (
-	"sync"
-
 	"github.com/hacash/core/fields"
 	"github.com/hacash/core/stores"
 )

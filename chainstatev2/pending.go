@@ -1,11 +1,15 @@
 package chainstatev2
 
 import (
+	"sync"
+
 	"github.com/hacash/core/fields"
 	"github.com/hacash/core/stores"
 )
 
 func (cs *ChainState) GetPendingBlockHeight() uint64 {
+	cs.chainStateMutex.RLock()
+	defer cs.chainStateMutex.RUnlock()
 	if cs.pendingBlockHeight == nil {
 		if cs.base != nil {
 			return cs.base.GetPendingBlockHeight()

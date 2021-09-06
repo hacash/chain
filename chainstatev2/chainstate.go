@@ -9,6 +9,7 @@ import (
 	"github.com/hacash/core/stores"
 	"strings"
 	"time"
+	"sync"
 )
 
 type ChainState struct {
@@ -59,6 +60,9 @@ type ChainState struct {
 
 	// status
 	isInTxPool bool
+
+	// Read/Write Mutex
+	chainStateMutex sync.RWMutex
 }
 
 func NewChainState(cnf *ChainStateConfig) (*ChainState, error) {
@@ -196,6 +200,7 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 		pendingBlockHeight:    nil,
 		pendingBlockHash:      nil,
 		isInTxPool:            false,
+		chainStateMutex:       sync.RWMutex{},
 	}
 	return cs, nil
 }
@@ -426,9 +431,11 @@ func (cs *ChainState) SubmitDataStoreWriteToInvariableDisk(block interfaces.Bloc
 		return e3
 	}
 	// reset clear
+	cs.chainStateMutex.Lock()
 	cs.pendingBlockHash = nil
 	cs.pendingBlockHeight = nil
 	cs.submitStoreDiamond = nil
+	cs.chainStateMutex.Unlock()
 	// ok
 	return nil
 }

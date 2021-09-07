@@ -67,7 +67,9 @@ func (cs *ChainState) ReadLastestBlockHeadAndMeta() (interfaces.Block, error) {
 		return nil, err1
 	}
 	// cache set
+	cs.chainStateMutex.Lock()
 	cs.lastestBlockHeadAndMeta = tarblk
+	cs.chainStateMutex.Unlock()
 	return tarblk, nil
 }
 

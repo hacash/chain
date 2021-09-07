@@ -76,8 +76,10 @@ func (cs *ChainState) ReadLastestBlockHeadAndMeta() (interfaces.Block, error) {
 func (cs *ChainState) SetLastestDiamond(diamond *stores.DiamondSmelt) error {
 	//fmt.Println("<<<<<<<<<<<<<   SetLastestDiamond")
 	//fmt.Println("diamond", string(diamond.Diamond), diamond.PrevContainBlockHash.ToHex(), diamond.ContainBlockHash.ToHex())
+	cs.chainStateMutex.Lock()
 	cs.lastestDiamond = diamond
 	cs.lastestDiamond_forSave = diamond
+	cs.chainStateMutex.Unlock()
 	return nil
 }
 
@@ -113,12 +115,16 @@ func (cs *ChainState) IncompleteSaveLastestDiamond() error {
 
 func (cs *ChainState) ReadLastestDiamond() (*stores.DiamondSmelt, error) {
 	//fmt.Println("ReadLastestDiamond >>>>>>>")
+	cs.chainStateMutex.RLock()
 	if cs.lastestDiamond != nil {
+		defer cs.chainStateMutex.RUnlock()
 		return cs.lastestDiamond, nil
 	}
 	if cs.base != nil {
+		defer cs.chainStateMutex.RUnlock()
 		return cs.base.ReadLastestDiamond()
 	}
+	cs.chainStateMutex.RUnlock()
 	// read from status db
 	//fmt.Println("ReadLastestDiamond >>>>>>>  read from status db")
 	vdatas, e3 := cs.laststatusDB.Get([]byte(LastestStatusKeyName_lastest_diamond))

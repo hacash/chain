@@ -19,7 +19,9 @@ func (cs *ChainState) GetPendingBlockHeight() uint64 {
 
 func (cs *ChainState) SetPendingBlockHeight(height uint64) {
 	setheight := height + 1 - 1 // copy
+	cs.chainStateMutex.Lock()
 	cs.pendingBlockHeight = &setheight
+	cs.chainStateMutex.Unlock()
 }
 
 ////////////////////////////////////

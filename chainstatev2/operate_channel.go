@@ -6,7 +6,7 @@ import (
 )
 
 //
-func (cs *ChainState) Channel(channelid fields.Bytes16) *stores.Channel {
+func (cs *ChainState) Channel(channelid fields.ChannelId) *stores.Channel {
 	query, e1 := cs.channelDB.CreateNewQueryInstance(channelid)
 	if e1 != nil {
 		return nil // error
@@ -36,7 +36,7 @@ func (cs *ChainState) Channel(channelid fields.Bytes16) *stores.Channel {
 }
 
 //
-func (cs *ChainState) ChannelCreate(channel_id fields.Bytes16, channel *stores.Channel) error {
+func (cs *ChainState) ChannelCreate(channel_id fields.ChannelId, channel *stores.Channel) error {
 	query, e1 := cs.channelDB.CreateNewQueryInstance(channel_id)
 	if e1 != nil {
 		return e1 // error
@@ -55,12 +55,12 @@ func (cs *ChainState) ChannelCreate(channel_id fields.Bytes16, channel *stores.C
 }
 
 //
-func (cs *ChainState) ChannelUpdate(channel_id fields.Bytes16, channel *stores.Channel) error {
+func (cs *ChainState) ChannelUpdate(channel_id fields.ChannelId, channel *stores.Channel) error {
 	return cs.ChannelCreate(channel_id, channel)
 }
 
 //
-func (cs *ChainState) ChannelDelete(channel_id fields.Bytes16) error {
+func (cs *ChainState) ChannelDelete(channel_id fields.ChannelId) error {
 	query, e1 := cs.channelDB.CreateNewQueryInstance(channel_id)
 	if e1 != nil {
 		return e1 // error

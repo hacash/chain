@@ -6,7 +6,7 @@ import (
 )
 
 // DiamondLending 查询
-func (cs *ChainState) UserLending(lendid fields.Bytes17) *stores.UserLending {
+func (cs *ChainState) UserLending(lendid fields.UserLendingId) *stores.UserLending {
 	query, e1 := cs.usrlendDB.CreateNewQueryInstance(lendid)
 	if e1 != nil {
 		return nil // error
@@ -33,7 +33,7 @@ func (cs *ChainState) UserLending(lendid fields.Bytes17) *stores.UserLending {
 }
 
 // 创建 Diamond Lending
-func (cs *ChainState) UserLendingCreate(lendid fields.Bytes17, stoitem *stores.UserLending) error {
+func (cs *ChainState) UserLendingCreate(lendid fields.UserLendingId, stoitem *stores.UserLending) error {
 	query, e1 := cs.usrlendDB.CreateNewQueryInstance(lendid)
 	if e1 != nil {
 		return e1 // error
@@ -52,12 +52,12 @@ func (cs *ChainState) UserLendingCreate(lendid fields.Bytes17, stoitem *stores.U
 }
 
 // 更新
-func (cs *ChainState) UserLendingUpdate(lendid fields.Bytes17, stoitem *stores.UserLending) error {
+func (cs *ChainState) UserLendingUpdate(lendid fields.UserLendingId, stoitem *stores.UserLending) error {
 	return cs.UserLendingCreate(lendid, stoitem)
 }
 
 // 删除
-func (cs *ChainState) UserLendingDelete(lendid fields.Bytes17) error {
+func (cs *ChainState) UserLendingDelete(lendid fields.UserLendingId) error {
 	query, e1 := cs.usrlendDB.CreateNewQueryInstance(lendid)
 	if e1 != nil {
 		return e1 // error

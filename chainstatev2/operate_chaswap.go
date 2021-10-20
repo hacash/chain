@@ -54,6 +54,10 @@ func (cs *ChainState) ChaswapCreate(chaswap_id fields.HashHalfChecker, chaswap *
 	return nil
 }
 
+func (cs *ChainState) ChaswapUpdate(chaswap_id fields.HashHalfChecker, chaswap *stores.Chaswap) error {
+	return cs.ChaswapCreate(chaswap_id, chaswap)
+}
+
 //
 func (cs *ChainState) ChaswapDelete(chaswap_id fields.HashHalfChecker) error {
 	query, e1 := cs.chaswapDB.CreateNewQueryInstance(chaswap_id)

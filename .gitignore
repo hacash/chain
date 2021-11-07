@@ -14,3 +14,6 @@
 
 .idea/
 testdata/
+
+test_*.go
+*_local_*.go

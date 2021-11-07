@@ -207,7 +207,7 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 	//go func() {
 	//	if !isSubBranchTemporary {
 	//		time.Sleep(time.Second * 5)
-	//		Test_print_283756384756389(cs)
+	//		Ttttt_print_238746592387465239(cs)
 	//	}
 	//}()
 	/////////////  TEST END   /////////////
@@ -450,40 +450,7 @@ func (cs *ChainState) SubmitDataStoreWriteToInvariableDisk(block interfaces.Bloc
 	return nil
 }
 
-////////////////////////////////////////////////////
-
-func Test_print_283756384756389(db *ChainState) {
-
-	ttchun := 0
-
-	for i := 1; ; i++ {
-		diaobj, e := db.datastore.ReadDiamondByNumber(uint32(i))
-		if e != nil {
-			break
-		}
-		vg := diaobj.VisualGene
-		if vg[7] == vg[8] {
-			hexstr := vg.ToHex()
-			if hexstr[17] == hexstr[16] &&
-				hexstr[16] == hexstr[15] &&
-				hexstr[15] == hexstr[14] {
-				ttchun += 1
-				fmt.Println(diaobj.Number, string(diaobj.Diamond))
-			}
-		}
-	}
-
-	fmt.Println("total: ", ttchun)
-
-	/*
-
-
-	YHSBKT,AEZYXZ,UHIWIW,SNSVHB,HVBSMA,XUISAZ,VAEEMZ,XIHKSY,NAHMIT,XWUTXM,ATVBWI,WSKWHT,AHANHU,XAESVH,AXTZZS
-
-
-	*/
-
-}
+/////////////////////////////////////////////
 
 func Test_print_all_address_balance(db *statedomaindb.StateDomainDB) {
 

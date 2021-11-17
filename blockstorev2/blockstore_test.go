@@ -61,7 +61,7 @@ func Test_t1(t *testing.T) {
 	fmt.Println(tx1.HashFresh())
 	fmt.Println(tx1.Serialize())
 
-	fmt.Println(db.ReadTransactionDataByHash(tx1.HashFresh()))
+	fmt.Println(db.ReadTransactionBytesByHash(tx1.HashFresh()))
 
 	//fmt.Println(block1.HashFresh())
 	//fmt.Println(0, blkdatas)

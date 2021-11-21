@@ -378,6 +378,17 @@ func (cs *ChainState) IsDatabaseVersionRebuildMode() bool {
 	return cs.config.DatabaseVersionRebuildMode
 }
 
+// 恢复模式
+func (cs *ChainState) RecoverDatabaseVersionRebuildMode() {
+	if cs.base != nil {
+		// 递归向上
+		cs.base.RecoverDatabaseVersionRebuildMode()
+		return
+	}
+	// 恢复最终配置
+	cs.config.DatabaseVersionRebuildMode = false
+}
+
 // fork sub
 func (cs *ChainState) NewSubBranchTemporaryChainState() (*ChainState, error) {
 

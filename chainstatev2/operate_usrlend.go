@@ -6,30 +6,30 @@ import (
 )
 
 // DiamondLending 查询
-func (cs *ChainState) UserLending(lendid fields.UserLendingId) *stores.UserLending {
+func (cs *ChainState) UserLending(lendid fields.UserLendingId) (*stores.UserLending, error) {
 	query, e1 := cs.usrlendDB.CreateNewQueryInstance(lendid)
 	if e1 != nil {
-		return nil // error
+		return nil, nil // error
 	}
 	defer query.Destroy()
 	vdatas, e2 := query.Find()
 	if e2 != nil {
-		return nil // error
+		return nil, nil // error
 	}
 	if vdatas == nil {
 		if cs.base != nil {
 			return cs.base.UserLending(lendid) // check base
 		} else {
-			return nil // not find
+			return nil, nil // not find
 		}
 	}
 	var stoitem stores.UserLending
 	_, e3 := stoitem.Parse(vdatas, 0)
 	if e3 != nil {
-		return nil // error
+		return nil, nil // error
 	}
 	// return ok
-	return &stoitem
+	return &stoitem, nil
 }
 
 // 创建 Diamond Lending

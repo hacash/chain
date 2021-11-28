@@ -1,0 +1,55 @@
+package chainstatev3
+
+import (
+	"github.com/hacash/chain/leveldb"
+	"sync"
+)
+
+func (s *ChainState) TraversalCopy(src *ChainState) error {
+	s.statusMux.Lock()
+	defer s.statusMux.Unlock()
+
+	if src.IsImmutable() {
+		panic("TraversalCopy src state cannot must use LevelDB!")
+	}
+
+	if s.IsImmutable() {
+		// leveldb
+		e := s.traversalCopyMemToLevelUnsafe(s.ldb, src.memdb)
+		if e != nil {
+			return e
+		}
+	} else {
+		// memdb
+		src.memdb.Range(func(key, value interface{}) bool {
+			s.memdb.Store(key, value)
+			return true
+		})
+
+	}
+	// err
+	return nil
+}
+
+func (s ChainState) traversalCopyMemToLevelUnsafe(ldb *leveldb.DB, mem *sync.Map) error {
+	var e error = nil
+	mem.Range(func(key, value interface{}) bool {
+		// save to leveldb
+		k := key.(string)
+		v := value.(*MemoryStorageItem)
+		var e error = nil
+		if v.IsDelete {
+			// delete
+			e = ldb.Delete([]byte(k), nil)
+		} else {
+			// save & update
+			e = ldb.Put([]byte(k), v.Value, nil)
+		}
+		if e != nil {
+			return false
+		}
+		return true
+	})
+	// err
+	return e
+}

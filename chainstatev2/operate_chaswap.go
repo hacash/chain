@@ -6,33 +6,33 @@ import (
 )
 
 //
-func (cs *ChainState) Chaswap(chaswap_id fields.HashHalfChecker) *stores.Chaswap {
+func (cs *ChainState) Chaswap(chaswap_id fields.HashHalfChecker) (*stores.Chaswap, error) {
 	query, e1 := cs.chaswapDB.CreateNewQueryInstance(chaswap_id)
 	if e1 != nil {
-		return nil // error
+		return nil, nil // error
 	}
 	defer query.Destroy()
 	vdatas, e2 := query.Find()
 	if e2 != nil {
-		return nil // error
+		return nil, nil // error
 	}
 	if vdatas == nil {
 		if cs.base != nil {
 			return cs.base.Chaswap(chaswap_id) // check base
 		} else {
-			return nil // not find
+			return nil, nil // not find
 		}
 	}
 	if len(vdatas) == 0 {
-		return nil // error
+		return nil, nil // error
 	}
 	var stoitem stores.Chaswap
 	_, e3 := stoitem.Parse(vdatas, 0)
 	if e3 != nil {
-		return nil // error
+		return nil, nil // error
 	}
 	// return ok
-	return &stoitem
+	return &stoitem, nil
 }
 
 //

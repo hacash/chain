@@ -6,33 +6,33 @@ import (
 )
 
 // lockbls 查询
-func (cs *ChainState) Lockbls(lkid fields.LockblsId) *stores.Lockbls {
+func (cs *ChainState) Lockbls(lkid fields.LockblsId) (*stores.Lockbls, error) {
 	query, e1 := cs.lockblsDB.CreateNewQueryInstance(lkid)
 	if e1 != nil {
-		return nil // error
+		return nil, nil // error
 	}
 	defer query.Destroy()
 	vdatas, e2 := query.Find()
 	if e2 != nil {
-		return nil // error
+		return nil, nil // error
 	}
 	if vdatas == nil {
 		if cs.base != nil {
 			return cs.base.Lockbls(lkid) // check base
 		} else {
-			return nil // not find
+			return nil, nil // not find
 		}
 	}
 	if len(vdatas) == 0 {
-		return nil // error
+		return nil, nil // error
 	}
 	var stoitem stores.Lockbls
 	_, e3 := stoitem.Parse(vdatas, 0)
 	if e3 != nil {
-		return nil // error
+		return nil, nil // error
 	}
 	// return ok
-	return &stoitem
+	return &stoitem, nil
 }
 
 // 创建线性锁仓

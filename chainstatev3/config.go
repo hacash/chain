@@ -1,4 +1,4 @@
-package chainstatev2
+package chainstatev3
 
 import (
 	"github.com/hacash/core/sys"
@@ -23,7 +23,7 @@ func NewEmptyChainStateConfig() *ChainStateConfig {
 func NewChainStateConfig(cnffile *sys.Inicnf) *ChainStateConfig {
 	cnf := NewEmptyChainStateConfig()
 
-	cnf.Datadir = path.Join(cnffile.MustDataDirWithVersion(), "chainstate")
+	cnf.Datadir = path.Join(cnffile.MustDataDir(), "chainstate")
 
 	// 验证比特币转移
 	sec1 := cnffile.Section("btcmovecheck")

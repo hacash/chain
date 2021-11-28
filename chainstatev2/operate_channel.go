@@ -6,33 +6,33 @@ import (
 )
 
 //
-func (cs *ChainState) Channel(channelid fields.ChannelId) *stores.Channel {
+func (cs *ChainState) Channel(channelid fields.ChannelId) (*stores.Channel, error) {
 	query, e1 := cs.channelDB.CreateNewQueryInstance(channelid)
 	if e1 != nil {
-		return nil // error
+		return nil, nil // error
 	}
 	defer query.Destroy()
 	vdatas, e2 := query.Find()
 	if e2 != nil {
-		return nil // error
+		return nil, nil // error
 	}
 	if vdatas == nil {
 		if cs.base != nil {
 			return cs.base.Channel(channelid) // check base
 		} else {
-			return nil // not find
+			return nil, nil // not find
 		}
 	}
 	if len(vdatas) == 0 {
-		return nil // error
+		return nil, nil // error
 	}
 	var stoitem stores.Channel
 	_, e3 := stoitem.Parse(vdatas, 0)
 	if e3 != nil {
-		return nil // error
+		return nil, nil // error
 	}
 	// return ok
-	return &stoitem
+	return &stoitem, nil
 }
 
 //

@@ -6,33 +6,33 @@ import (
 )
 
 //
-func (cs *ChainState) Balance(addr fields.Address) *stores.Balance {
+func (cs *ChainState) Balance(addr fields.Address) (*stores.Balance, error) {
 	query, e1 := cs.balanceDB.CreateNewQueryInstance(addr)
 	if e1 != nil {
-		return nil // error
+		return nil, nil // error
 	}
 	defer query.Destroy()
 	vdatas, e2 := query.Find()
 	if e2 != nil {
-		return nil // error
+		return nil, nil // error
 	}
 	if vdatas == nil {
 		if cs.base != nil {
 			return cs.base.Balance(addr) // check base
 		} else {
-			return stores.NewEmptyBalance() // not find
+			return stores.NewEmptyBalance(), nil // not find
 		}
 	}
 	if len(vdatas) == 0 {
-		return nil // error
+		return nil, nil // error
 	}
 	var stoitem stores.Balance
 	_, e3 := stoitem.Parse(vdatas, 0)
 	if e3 != nil {
-		return nil // error
+		return nil, nil // error
 	}
 	// return ok
-	return &stoitem
+	return &stoitem, nil
 }
 
 //

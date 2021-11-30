@@ -40,7 +40,7 @@ func Test_t1(t *testing.T) {
 	}
 	tx1.AppendAction(action1)
 	// create block
-	block1 := blocks.NewEmptyBlock_v1(genesis.GetGenesisBlock())
+	block1 := blocks.NewEmptyBlockVersion1(genesis.GetGenesisBlock())
 	block1.Timestamp = 123456
 	coinbasetx1 := transactions.NewTransaction_0_CoinbaseV0()
 	coinbasetx1.Address = account1.Address

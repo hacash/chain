@@ -1,6 +1,7 @@
 package chainstatev3
 
 import (
+	"github.com/hacash/chain/blockstorev3"
 	"github.com/hacash/chain/leveldb"
 	"github.com/hacash/core/fields"
 	"github.com/hacash/core/interfaces"
@@ -15,7 +16,7 @@ type ChainState struct {
 	// config
 	config *ChainStateConfig
 
-	blockstore interfacev3.BlockStore
+	blockstore *blockstorev3.BlockStore
 
 	// parent & childs state
 	base   *ChainState
@@ -27,7 +28,8 @@ type ChainState struct {
 
 	isInTxPool bool
 
-	pending interfacev3.PendingStatus
+	pending         interfacev3.PendingStatus
+	lastStatusCache interfacev3.LatestStatus
 
 	// lock
 	statusMux *sync.RWMutex
@@ -55,27 +57,28 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 
 	sid := rand.Uint64()
 	state := &ChainState{
-		sid:        sid,
-		config:     cnf,
-		blockstore: nil,
-		base:       nil,
-		childs:     make(map[uint64]*ChainState, 0),
-		pending:    nil,
-		ldb:        nil,
-		memdb:      nil,
-		isInTxPool: false,
-		statusMux:  &sync.RWMutex{},
+		sid:             sid,
+		config:          cnf,
+		blockstore:      nil,
+		base:            nil,
+		childs:          make(map[uint64]*ChainState, 0),
+		pending:         nil,
+		lastStatusCache: nil,
+		ldb:             nil,
+		memdb:           nil,
+		isInTxPool:      false,
+		statusMux:       &sync.RWMutex{},
 	}
 
 	// 建立数据库 db
 	if isSubBranchTemporary {
+		state.memdb = &sync.Map{}
+	} else {
 		useldb, e := leveldb.OpenFile(cnf.Datadir, nil)
 		if e != nil {
 			return nil, e
 		}
 		state.ldb = useldb
-	} else {
-		state.memdb = &sync.Map{}
 	}
 
 	// ok
@@ -101,7 +104,7 @@ func (s ChainState) BlockStoreRead() interfaces.BlockStoreRead {
 	return s.blockstore
 }
 
-func (s ChainState) SetBlockStore(store interfacev3.BlockStore) {
+func (s *ChainState) SetBlockStoreObj(store *blockstorev3.BlockStore) {
 	s.statusMux.Lock()
 	defer s.statusMux.Unlock()
 

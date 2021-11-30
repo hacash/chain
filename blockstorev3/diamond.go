@@ -1,6 +1,7 @@
 package blockstorev3
 
 import (
+	"github.com/hacash/chain/leveldb"
 	"github.com/hacash/core/fields"
 	"github.com/hacash/core/stores"
 )
@@ -31,6 +32,9 @@ func (bs *BlockStore) ReadDiamond(name fields.DiamondName) (*stores.DiamondSmelt
 	key := keyfix(name, "diamond")
 	databytes, e := ldb.Get(key, nil)
 	if e != nil {
+		if e == leveldb.ErrNotFound {
+			return nil, nil // notfind
+		}
 		return nil, e
 	}
 
@@ -59,6 +63,9 @@ func (bs *BlockStore) ReadDiamondByNumber(number uint32) (*stores.DiamondSmelt, 
 	key := keyfix(heibts, "dianum")
 	dianame, e := ldb.Get(key, nil)
 	if e != nil {
+		if e == leveldb.ErrNotFound {
+			return nil, nil // notfind
+		}
 		return nil, e
 	}
 

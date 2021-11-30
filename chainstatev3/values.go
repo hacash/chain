@@ -77,7 +77,11 @@ func (s *ChainState) save(suffix string, k, value []byte) error {
 
 	if ldb != nil {
 		// delete from leveldb
-		return ldb.Put([]byte(usekey), value, nil)
+		e := ldb.Put([]byte(usekey), value, nil)
+		if e != nil {
+			return e
+		}
+		return nil
 	}
 
 	// error
@@ -100,7 +104,11 @@ func (s *ChainState) delete(suffix string, k []byte) error {
 
 	if ldb != nil {
 		// delete from leveldb
-		return ldb.Delete([]byte(usekey), nil)
+		e := ldb.Delete([]byte(usekey), nil)
+		if e != nil {
+			return e
+		}
+		return nil
 	}
 
 	// error

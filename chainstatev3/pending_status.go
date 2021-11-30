@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"github.com/hacash/core/blocks"
 	"github.com/hacash/core/fields"
-	"github.com/hacash/core/interfacev3"
+	"github.com/hacash/core/interfaces"
 	"github.com/hacash/core/stores"
 )
 
@@ -15,7 +15,7 @@ type PendingStatus struct {
 	blockHash        fields.Hash
 
 	blockHeadMetaIsExist fields.Bool
-	blockHeadMeta        interfacev3.Block
+	blockHeadMeta        interfaces.BlockHeadMetaRead
 
 	waitingSubmitDiamondIsExist fields.Bool
 	waitingSubmitDiamond        *stores.DiamondSmelt
@@ -114,7 +114,7 @@ func (p *PendingStatus) Parse(buf []byte, seek uint32) (uint32, error) {
 		return 0, e
 	}
 	if p.blockHeadMetaIsExist.Check() {
-		seek, e = p.blockHeadMeta.ParseExcludeTransactions(buf, seek)
+		p.blockHeadMeta, seek, e = blocks.ParseExcludeTransactions(buf, seek)
 		if e != nil {
 			return 0, e
 		}
@@ -135,7 +135,7 @@ func (p *PendingStatus) Parse(buf []byte, seek uint32) (uint32, error) {
 
 /////////////////////////////////////////////
 
-func (p *PendingStatus) GetPendingBlockHead() interfacev3.Block {
+func (p *PendingStatus) GetPendingBlockHead() interfaces.BlockHeadMetaRead {
 	if p.blockHeadMetaIsExist.Check() {
 		return p.blockHeadMeta
 	}
@@ -151,7 +151,7 @@ func (p *PendingStatus) GetPendingBlockHeight() uint64 {
 
 func (p *PendingStatus) GetPendingBlockHash() fields.Hash {
 	if p.blockHeadMetaIsExist.Check() {
-		return p.blockHeadMeta.HashFresh()
+		return p.blockHeadMeta.Hash()
 	}
 	return p.blockHash
 }
@@ -175,7 +175,7 @@ func (p *PendingStatus) ClearWaitingSubmitDiamond() {
 
 /////////////////////////////////////////////
 
-func NewPendingStatus(hei uint64, hx fields.Hash, blockhead interfacev3.Block) *PendingStatus {
+func NewPendingStatus(hei uint64, hx fields.Hash, blockhead interfaces.BlockHeadMetaRead) *PendingStatus {
 	ins := &PendingStatus{
 		blockHeight:                 0,
 		blockHashIsExist:            fields.CreateBool(false),

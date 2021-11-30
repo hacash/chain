@@ -1,6 +1,7 @@
 package blockstorev3
 
 import (
+	"github.com/hacash/chain/leveldb"
 	"github.com/hacash/core/fields"
 	"github.com/hacash/core/interfacev3"
 )
@@ -20,7 +21,11 @@ func (bs *BlockStore) SaveBlock(fullblock interfacev3.Block) error {
 
 	// save
 	key := keyfix(blockhash, "block")
-	return ldb.Put(key, blockbytes, nil)
+	e = ldb.Put(key, blockbytes, nil)
+	if e != nil {
+		return e
+	}
+	return nil
 }
 
 func (bs *BlockStore) ReadBlockBytesByHash(blockhash fields.Hash) ([]byte, error) {
@@ -33,6 +38,9 @@ func (bs *BlockStore) ReadBlockBytesByHash(blockhash fields.Hash) ([]byte, error
 	key := keyfix(blockhash, "block")
 	blockbytes, e := ldb.Get(key, nil)
 	if e != nil {
+		if e == leveldb.ErrNotFound {
+			return nil, nil // not find
+		}
 		return nil, e
 	}
 
@@ -69,6 +77,9 @@ func (bs *BlockStore) ReadBlockHashByHeight(blockheight uint64) (fields.Hash, er
 	key := keyfix(heibts, "blkheihx")
 	blockhash, e := ldb.Get(key, nil)
 	if e != nil {
+		if e == leveldb.ErrNotFound {
+			return nil, nil // not find
+		}
 		return nil, e
 	}
 

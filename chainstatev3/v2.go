@@ -15,7 +15,6 @@ func (cs *ChainState) GetPendingBlockHash() fields.Hash {
 }
 
 func (cs *ChainState) ReadLastestBlockHeadMetaForRead() (interfaces.BlockHeadMetaRead, error) {
-
 	return cs.GetPending().GetPendingBlockHead().(interfaces.BlockHeadMetaRead), nil
 }
 

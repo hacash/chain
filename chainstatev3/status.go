@@ -6,6 +6,9 @@ import (
 )
 
 func (cs *ChainState) LatestStatusRead() (interfacev3.LatestStatus, error) {
+	if cs.lastStatusCache != nil {
+		return cs.lastStatusCache, nil
+	}
 	value, ok, e := cs.find(KeySuffixType_laststatus, []byte{1})
 	if e != nil {
 		return nil, e
@@ -25,6 +28,9 @@ func (cs *ChainState) LatestStatusRead() (interfacev3.LatestStatus, error) {
 }
 
 func (cs *ChainState) LatestStatusSet(status interfacev3.LatestStatus) error {
+	// 缓存状态
+	cs.lastStatusCache = status
+	// 保存
 	datas, e := status.Serialize()
 	if e != nil {
 		return e

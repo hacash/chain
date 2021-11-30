@@ -4,7 +4,8 @@ import (
 	"bytes"
 	"github.com/hacash/core/blocks"
 	"github.com/hacash/core/fields"
-	"github.com/hacash/core/interfacev3"
+	"github.com/hacash/core/genesis"
+	"github.com/hacash/core/interfaces"
 	"github.com/hacash/core/stores"
 )
 
@@ -15,7 +16,7 @@ type LatestStatus struct {
 
 	// 成熟的区块头
 	ImmutableBlockHeadMetaIsExist fields.Bool
-	ImmutableBlockHeadMeta        interfacev3.Block
+	ImmutableBlockHeadMeta        interfaces.BlockHeadMetaRead
 
 	// 最新的区块头
 	LatestBlockHashIsExist fields.Bool
@@ -114,7 +115,9 @@ func (p *LatestStatus) Parse(buf []byte, seek uint32) (uint32, error) {
 	if e != nil {
 		return 0, e
 	}
-	for i := 0; i < int(p.ImmatureBlockHashCount); i++ {
+	hxlen := int(p.ImmatureBlockHashCount)
+	p.ImmatureBlockHashs = make([]fields.Hash, hxlen)
+	for i := 0; i < hxlen; i++ {
 		seek, e = p.ImmatureBlockHashs[i].Parse(buf, seek)
 		if e != nil {
 			return 0, e
@@ -126,7 +129,7 @@ func (p *LatestStatus) Parse(buf []byte, seek uint32) (uint32, error) {
 		return 0, e
 	}
 	if p.ImmutableBlockHeadMetaIsExist.Check() {
-		seek, e = p.ImmutableBlockHeadMeta.ParseExcludeTransactions(buf, seek)
+		p.ImmutableBlockHeadMeta, seek, e = blocks.ParseExcludeTransactions(buf, seek)
 		if e != nil {
 			return 0, e
 		}
@@ -148,6 +151,7 @@ func (p *LatestStatus) Parse(buf []byte, seek uint32) (uint32, error) {
 		return 0, e
 	}
 	if p.LatestDiamondIsExist.Check() {
+		p.LatestDiamond = &stores.DiamondSmelt{}
 		seek, e = p.LatestDiamond.Parse(buf, seek)
 		if e != nil {
 			return 0, e
@@ -184,14 +188,20 @@ func (p *LatestStatus) GetLatestBlockHash() fields.Hash {
 	return nil
 }
 
-func (p *LatestStatus) GetImmutableBlockHeadMeta() interfacev3.Block {
+func (p *LatestStatus) SetLatestBlockHash(hx fields.Hash) {
+	p.LatestBlockHashIsExist.Set(true)
+	p.LatestBlockHash = hx
+}
+
+func (p *LatestStatus) GetImmutableBlockHeadMeta() interfaces.BlockHeadMetaRead {
 	if p.ImmutableBlockHeadMetaIsExist.Check() {
 		return p.ImmutableBlockHeadMeta
 	}
-	return nil
+	// 返回传世区块
+	return genesis.GetGenesisBlock()
 }
 
-func (p *LatestStatus) SetImmutableBlockHeadMeta(blkHeadMeta interfacev3.Block) {
+func (p *LatestStatus) SetImmutableBlockHeadMeta(blkHeadMeta interfaces.BlockHeadMetaRead) {
 	p.ImmutableBlockHeadMetaIsExist.Set(true)
 	p.ImmutableBlockHeadMeta = blkHeadMeta
 }

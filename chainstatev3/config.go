@@ -23,7 +23,7 @@ func NewEmptyChainStateConfig() *ChainStateConfig {
 func NewChainStateConfig(cnffile *sys.Inicnf) *ChainStateConfig {
 	cnf := NewEmptyChainStateConfig()
 
-	cnf.Datadir = path.Join(cnffile.MustDataDir(), "chainstate")
+	cnf.Datadir = path.Join(cnffile.MustDataDirWithVersion(), "chainstate")
 
 	// 验证比特币转移
 	sec1 := cnffile.Section("btcmovecheck")

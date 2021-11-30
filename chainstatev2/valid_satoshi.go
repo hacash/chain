@@ -3,7 +3,7 @@ package chainstatev2
 import (
 	"encoding/binary"
 	"fmt"
-	"github.com/hacash/core/interfaces"
+	"github.com/hacash/core/interfacev2"
 	"github.com/hacash/core/stores"
 	"github.com/hacash/mint/coinbase"
 	"io/ioutil"
@@ -37,6 +37,9 @@ func (cs *ChainState) SaveMoveBTCBelongTxHash(trsno uint32, txhash []byte) error
 }
 
 // block data store
+func (cs *ChainState) ReadMoveBTCTxHashByTrsNo(trsno uint32) ([]byte, error) {
+	return cs.ReadMoveBTCTxHashByNumber(trsno)
+}
 func (cs *ChainState) ReadMoveBTCTxHashByNumber(number uint32) ([]byte, error) {
 	// find by number key
 	numberkey := make([]byte, 4)
@@ -93,7 +96,7 @@ func (cs *ChainState) LoadValidatedSatoshiGenesis(trsno int64) (*stores.SatoshiG
 var btcMoveLocalLogsCachePage int = -1
 var btcMoveLocalLogsCachePageData []*stores.SatoshiGenesis = nil
 
-func readSatoshiGenesisByLocalLogs(store interfaces.BlockStore, trsno int64) *stores.SatoshiGenesis {
+func readSatoshiGenesisByLocalLogs(store interfacev2.BlockStore, trsno int64) *stores.SatoshiGenesis {
 	var limit = stores.SatoshiGenesisLogStorePageLimit // limit 100
 	readpage := int((trsno-1)/int64(limit)) + 1
 	offset := int((trsno - 1) % int64(limit))

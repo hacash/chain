@@ -6,7 +6,7 @@ import (
 )
 
 // block data store
-func (cs *BlockStore) ReadBlockBytesByHash(blkhash fields.Hash, readlen uint32) ([]byte, error) {
+func (cs *BlockStore) ReadBlockBytesLengthByHash(blkhash fields.Hash, readlen uint32) ([]byte, error) {
 	blkdata, e1 := cs.blockdataDB.Read(blkhash, readlen)
 	if e1 != nil {
 		return nil, e1
@@ -14,9 +14,18 @@ func (cs *BlockStore) ReadBlockBytesByHash(blkhash fields.Hash, readlen uint32) 
 	return blkdata, nil
 }
 
+func (cs *BlockStore) ReadBlockBytesByHash(blkhash fields.Hash) ([]byte, error) {
+	return cs.ReadBlockBytesLengthByHash(blkhash, 0)
+}
+
 // block data store
 // return: hash body error
-func (cs *BlockStore) ReadBlockBytesByHeight(height uint64, readlen uint32) ([]byte, []byte, error) {
+
+func (cs *BlockStore) ReadBlockBytesByHeight(height uint64) (fields.Hash, []byte, error) {
+	return cs.ReadBlockBytesLengthByHeight(height, 0)
+}
+
+func (cs *BlockStore) ReadBlockBytesLengthByHeight(height uint64, readlen uint32) (fields.Hash, []byte, error) {
 	numhash := make([]byte, 8)
 	binary.BigEndian.PutUint64(numhash, height)
 	// read
@@ -33,7 +42,7 @@ func (cs *BlockStore) ReadBlockBytesByHeight(height uint64, readlen uint32) ([]b
 		return nil, nil, nil // not find
 	}
 	// read
-	resdata, err := cs.ReadBlockBytesByHash(blkhash, readlen)
+	resdata, err := cs.ReadBlockBytesLengthByHash(blkhash, readlen)
 	return blkhash, resdata, err
 }
 

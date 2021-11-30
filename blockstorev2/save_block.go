@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/hacash/core/blocks"
 	"github.com/hacash/core/fields"
-	"github.com/hacash/core/interfaces"
+	"github.com/hacash/core/interfacev2"
 )
 
 type transactionStoreItemV1 struct {
@@ -16,7 +16,7 @@ type transactionStoreItemV1 struct {
 }
 
 // block data store
-func (cs *BlockStore) CancelUniteTransactions(fullblock interfaces.Block) error {
+func (cs *BlockStore) CancelUniteTransactions(fullblock interfacev2.Block) error {
 	alltrs := fullblock.GetTransactions()
 	txlen := len(alltrs)
 	if txlen < 1 {
@@ -41,7 +41,7 @@ func (cs *BlockStore) CancelUniteTransactions(fullblock interfaces.Block) error 
 }
 
 // block data store
-func (cs *BlockStore) SaveBlockUniteTransactions(fullblock interfaces.Block) error {
+func (cs *BlockStore) SaveBlockUniteTransactions(fullblock interfacev2.Block) error {
 	// trs
 	allTransactionStoreItem := make([]transactionStoreItemV1, 0, fullblock.GetTransactionCount())
 	alltrs := fullblock.GetTransactions()

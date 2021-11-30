@@ -7,6 +7,10 @@ import (
 )
 
 const (
+	KeySuffixType_laststatus = "laststatus"
+
+	KeySuffixType_totalsupply = "totalsupply"
+
 	KeySuffixType_balance = "balance"
 	KeySuffixType_diamond = "diamond"
 	KeySuffixType_channel = "channel"
@@ -17,6 +21,11 @@ const (
 	KeySuffixType_usrlend = "usrlend"
 	KeySuffixType_chaswap = "chaswap"
 	KeySuffixType_txhxchk = "txhxchk"
+)
+
+const (
+	LastStatusKeyImmutableBlockHash = "immutable_block_hash"
+	LastStatusKeyImmatureBlockHashs = "immature_block_hashs"
 )
 
 /*********************************************/

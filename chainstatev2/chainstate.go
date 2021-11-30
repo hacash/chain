@@ -6,6 +6,7 @@ import (
 	"github.com/hacash/chain/statedomaindb"
 	"github.com/hacash/core/fields"
 	"github.com/hacash/core/interfaces"
+	"github.com/hacash/core/interfacev2"
 	"github.com/hacash/core/stores"
 	"strings"
 	"sync"
@@ -42,8 +43,8 @@ type ChainState struct {
 	txhxchkDB *statedomaindb.StateDomainDB // 交易是否存在（已经上链）
 
 	// store
-	datastore          interfaces.BlockStore
-	datastore_mycreate interfaces.BlockStore
+	datastore          interfacev2.BlockStore
+	datastore_mycreate interfacev2.BlockStore
 
 	// data hold
 	pendingBlockHeight *uint64
@@ -52,9 +53,9 @@ type ChainState struct {
 	submitStoreDiamond *stores.DiamondSmelt
 
 	prev288BlockTimestamp           uint64
-	lastestBlockHeadAndMeta         interfaces.Block
+	lastestBlockHeadAndMeta         interfacev2.Block
 	lastestDiamond                  *stores.DiamondSmelt
-	lastestBlockHeadAndMeta_forSave interfaces.Block
+	lastestBlockHeadAndMeta_forSave interfacev2.Block
 	lastestDiamond_forSave          *stores.DiamondSmelt
 	totalSupply                     *stores.TotalSupply
 	totalSupply_forSave             *stores.TotalSupply
@@ -280,7 +281,7 @@ func (cs *ChainState) DestoryTemporary() {
 }
 
 // chain data store
-func (cs *ChainState) BlockStore() interfaces.BlockStore {
+func (cs *ChainState) BlockStore() interfacev2.BlockStore {
 	if cs.datastore != nil {
 		return cs.datastore
 	}
@@ -291,7 +292,18 @@ func (cs *ChainState) BlockStore() interfaces.BlockStore {
 	return cs.datastore
 }
 
-func (cs *ChainState) SetBlockStore(store interfaces.BlockStore) error {
+func (cs *ChainState) BlockStoreRead() interfaces.BlockStoreRead {
+	if cs.datastore != nil {
+		return cs.datastore
+	}
+	if cs.base != nil {
+		cs.datastore = cs.base.BlockStore() // copy
+		return cs.datastore
+	}
+	return cs.datastore
+}
+
+func (cs *ChainState) SetBlockStore(store interfacev2.BlockStore) error {
 	if cs.base != nil {
 		return fmt.Errorf("Can only be set chainstore in the final state.")
 	}
@@ -383,7 +395,7 @@ func (cs *ChainState) MergeCoverWriteChainState(src *ChainState) error {
 }
 
 // interface api
-func (cs *ChainState) Fork() (interfaces.ChainState, error) {
+func (cs *ChainState) Fork() (interfacev2.ChainState, error) {
 	return cs.NewSubBranchTemporaryChainState()
 }
 
@@ -426,7 +438,7 @@ func (cs *ChainState) NewSubBranchTemporaryChainState() (*ChainState, error) {
 }
 
 // submit to write disk
-func (cs *ChainState) SubmitDataStoreWriteToInvariableDisk(block interfaces.Block) error {
+func (cs *ChainState) SubmitDataStoreWriteToInvariableDisk(block interfacev2.Block) error {
 	if cs.base != nil {
 		panic("Can only be saved in the final state.")
 	}

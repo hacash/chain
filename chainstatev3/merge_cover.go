@@ -5,7 +5,7 @@ import (
 	"sync"
 )
 
-func (s *ChainState) TraversalCopy(src *ChainState) error {
+func (s *ChainState) TraversalCopyByObj(src *ChainState) error {
 	s.statusMux.Lock()
 	defer s.statusMux.Unlock()
 

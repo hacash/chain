@@ -2,15 +2,16 @@ package chainstatev3
 
 import (
 	"fmt"
+	"github.com/hacash/core/interfacev3"
 )
 
 // 保存在磁盘
-func (s *ChainState) ImmutableWriteToDisk() error {
+func (s *ChainState) ImmutableWriteToDisk() (interfacev3.ChainStateImmutable, error) {
 	if s.base.IsImmutable() == false {
-		return fmt.Errorf("State parent is not immutable.")
+		return nil, fmt.Errorf("State parent is not immutable.")
 	}
 	if s.IsImmutable() == true {
-		return fmt.Errorf("State self is immutable.")
+		return nil, fmt.Errorf("State self is immutable.")
 	}
 
 	s.statusMux.Lock()
@@ -20,7 +21,7 @@ func (s *ChainState) ImmutableWriteToDisk() error {
 	e := s.traversalCopyMemToLevelUnsafe(s.base.ldb, s.memdb)
 	if e != nil {
 		// err
-		return e
+		return nil, e
 	}
 
 	// update ptr
@@ -28,5 +29,5 @@ func (s *ChainState) ImmutableWriteToDisk() error {
 	s.memdb = nil // delete
 
 	// ok
-	return nil
+	return s, nil
 }

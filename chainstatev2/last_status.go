@@ -2,14 +2,15 @@ package chainstatev2
 
 import (
 	"fmt"
+	"github.com/hacash/core/interfaces"
 
 	"github.com/hacash/core/blocks"
 	"github.com/hacash/core/genesis"
-	"github.com/hacash/core/interfaces"
+	"github.com/hacash/core/interfacev2"
 	"github.com/hacash/core/stores"
 )
 
-func (cs *ChainState) SetLastestBlockHeadAndMeta(blockmeta interfaces.Block) error {
+func (cs *ChainState) SetLastestBlockHeadAndMeta(blockmeta interfacev2.Block) error {
 	cs.chainStateMutex.Lock()
 	cs.lastestBlockHeadAndMeta = blockmeta
 	cs.lastestBlockHeadAndMeta_forSave = blockmeta
@@ -38,7 +39,12 @@ func (cs *ChainState) IncompleteSaveLastestBlockHeadAndMeta() error {
 	return nil
 }
 
-func (cs *ChainState) ReadLastestBlockHeadAndMeta() (interfaces.Block, error) {
+func (cs *ChainState) ReadLastestBlockHeadMetaForRead() (interfaces.BlockHeadMetaRead, error) {
+	blk, e := cs.ReadLastestBlockHeadAndMeta()
+	return blk, e
+}
+
+func (cs *ChainState) ReadLastestBlockHeadAndMeta() (interfacev2.Block, error) {
 	cs.chainStateMutex.RLock()
 	if cs.lastestBlockHeadAndMeta != nil {
 		defer cs.chainStateMutex.RUnlock()

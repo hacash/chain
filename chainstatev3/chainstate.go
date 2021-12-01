@@ -222,7 +222,14 @@ func (s *ChainState) Destory() {
 		s.base.RemoveChild(s)
 	}
 	// clean
+	s.config = nil
+	s.blockstore = nil
+	s.pending = nil
+	s.lastStatusCache = nil
+	s.base = nil
+	s.childs = nil
 	s.memdb = nil
+	s.ldb = nil
 }
 
 // 关闭文件句柄等

@@ -33,6 +33,7 @@ func (s *ChainState) ImmutableWriteToDiskObj() (*ChainState, error) {
 	// update ptr
 	s.ldb = s.base.ldb
 	s.memdb = nil // delete
+	s.base = nil
 
 	// ok
 	return s, nil

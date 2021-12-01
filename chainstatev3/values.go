@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	KeySuffixType_laststatus = "laststatus"
+	KeySuffixType_statuskv = "statuskv"
 
 	KeySuffixType_totalsupply = "totalsupply"
 

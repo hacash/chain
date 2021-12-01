@@ -1,9 +1,20 @@
 package chainstatev3
 
 import (
+	"fmt"
 	"github.com/hacash/chain/leveldb"
+	"github.com/hacash/core/interfaces"
 	"sync"
 )
+
+//
+func (s *ChainState) TraversalCopy(src interfaces.ChainState) error {
+	sta, ok := src.(*ChainState)
+	if !ok {
+		return fmt.Errorf("src chainstate is must *ChainState")
+	}
+	return s.TraversalCopyByObj(sta)
+}
 
 func (s *ChainState) TraversalCopyByObj(src *ChainState) error {
 	s.statusMux.Lock()

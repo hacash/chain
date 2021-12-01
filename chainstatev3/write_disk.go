@@ -2,11 +2,11 @@ package chainstatev3
 
 import (
 	"fmt"
-	"github.com/hacash/core/interfacev3"
+	"github.com/hacash/core/interfaces"
 )
 
 // 保存在磁盘
-func (s *ChainState) ImmutableWriteToDisk() (interfacev3.ChainStateImmutable, error) {
+func (s *ChainState) ImmutableWriteToDisk() (interfaces.ChainStateImmutable, error) {
 	obj, e := s.ImmutableWriteToDiskObj()
 	return obj, e
 }

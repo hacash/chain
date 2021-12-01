@@ -3,10 +3,10 @@ package blockstorev3
 import (
 	"github.com/hacash/chain/leveldb"
 	"github.com/hacash/core/fields"
-	"github.com/hacash/core/interfacev3"
+	"github.com/hacash/core/interfaces"
 )
 
-func (bs *BlockStore) SaveBlock(fullblock interfacev3.Block) error {
+func (bs *BlockStore) SaveBlock(fullblock interfaces.Block) error {
 
 	ldb, e := bs.getDB()
 	if e != nil {

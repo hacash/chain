@@ -2,7 +2,7 @@ package chainstatev3
 
 import (
 	"github.com/hacash/core/fields"
-	"github.com/hacash/core/interfacev3"
+	"github.com/hacash/core/interfaces"
 )
 
 // 查询指定的状态树位置
@@ -27,7 +27,7 @@ func (s *ChainState) SearchBaseStateByBlockHashObj(hx fields.Hash) (*ChainState,
 	return nil, nil
 }
 
-func (s *ChainState) SearchBaseStateByBlockHash(hx fields.Hash) (interfacev3.ChainState, error) {
+func (s *ChainState) SearchBaseStateByBlockHash(hx fields.Hash) (interfaces.ChainState, error) {
 	obj, e := s.SearchBaseStateByBlockHashObj(hx)
 	return obj, e
 }

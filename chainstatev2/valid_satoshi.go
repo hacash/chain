@@ -11,11 +11,11 @@ import (
 	"time"
 )
 
-func (cs *ChainState) SetInMemTxPool(stat bool) {
+func (cs *ChainState) SetInTxPool(stat bool) {
 	cs.isInTxPool = stat
 }
 
-func (cs *ChainState) IsInMemTxPool() bool {
+func (cs *ChainState) IsInTxPool() bool {
 	return cs.isInTxPool
 }
 

@@ -2,18 +2,37 @@ package chainstatev3
 
 import (
 	"fmt"
-	"github.com/hacash/core/interfacev3"
+	"github.com/hacash/core/interfaces"
 )
 
-func (cs *ChainState) LatestStatusRead() (interfacev3.LatestStatus, error) {
-	if cs.lastStatusCache != nil {
-		return cs.lastStatusCache, nil
-	}
-	value, ok, e := cs.find(KeySuffixType_laststatus, []byte{1})
+const (
+	status_key_latest    = "latest"
+	status_key_immutable = "immutable"
+)
+
+func (cs *ChainState) StatusRead(name string) ([]byte, error) {
+	value, ok, e := cs.find(KeySuffixType_statuskv, []byte(name))
 	if e != nil {
 		return nil, e
 	}
 	if !ok {
+		return nil, nil // not find
+	}
+	return value, nil
+}
+
+func (cs *ChainState) StatusSet(name string, value []byte) error {
+	return cs.save(KeySuffixType_statuskv, []byte(name), value)
+}
+
+/////////////////////////////////////////
+
+func (cs *ChainState) LatestStatusRead() (interfaces.LatestStatus, error) {
+	value, e := cs.StatusRead(status_key_latest)
+	if e != nil {
+		return nil, e
+	}
+	if value == nil {
 		// not find 返回初始状态
 		return NewInitialLatestStatus(), nil
 	}
@@ -27,19 +46,48 @@ func (cs *ChainState) LatestStatusRead() (interfacev3.LatestStatus, error) {
 	return &stoitem, nil
 }
 
-func (cs *ChainState) LatestStatusSet(status interfacev3.LatestStatus) error {
-	// 缓存状态
-	cs.lastStatusCache = status
+func (cs *ChainState) LatestStatusSet(status interfaces.LatestStatus) error {
 	// 保存
 	datas, e := status.Serialize()
 	if e != nil {
 		return e
 	}
 	// do save
-	return cs.save(KeySuffixType_laststatus, []byte{1}, datas)
+	return cs.StatusSet(status_key_latest, datas)
 }
 
-func (cs *ChainState) GetPending() interfacev3.PendingStatus {
+func (cs *ChainState) ImmutableStatusSet(status interfaces.ImmutableStatus) error {
+	// 保存
+	datas, e := status.Serialize()
+	if e != nil {
+		return e
+	}
+	// do save
+	return cs.StatusSet(status_key_immutable, datas)
+}
+
+func (cs *ChainState) ImmutableStatusRead() (interfaces.ImmutableStatus, error) {
+	value, e := cs.StatusRead(status_key_immutable)
+	if e != nil {
+		return nil, e
+	}
+	if value == nil {
+		// not find 返回初始状态
+		return NewInitialImmutableStatus(), nil
+	}
+
+	var stoitem ImmutableStatus
+	_, e = stoitem.Parse(value, 0)
+	if e != nil {
+		return nil, e // error
+	}
+	// return ok
+	return &stoitem, nil
+}
+
+//////////////////////////////////////////////////////
+
+func (cs *ChainState) GetPending() interfaces.PendingStatus {
 	if cs.pending == nil {
 		panic(fmt.Errorf("pending cannot be nil."))
 	}
@@ -47,7 +95,7 @@ func (cs *ChainState) GetPending() interfacev3.PendingStatus {
 
 }
 
-func (cs *ChainState) SetPending(pd interfacev3.PendingStatus) error {
+func (cs *ChainState) SetPending(pd interfaces.PendingStatus) error {
 	cs.pending = pd
 	return nil
 }

@@ -48,7 +48,7 @@ func (cs *ChainState) ReadLastestBlockHeadAndMeta() (interfacev2.Block, error) {
 	cs.chainStateMutex.RLock()
 	if cs.lastestBlockHeadAndMeta != nil {
 		defer cs.chainStateMutex.RUnlock()
-		return cs.lastestBlockHeadAndMeta, nil
+		return cs.lastestBlockHeadAndMeta.(interfacev2.Block), nil
 	}
 	if cs.base != nil {
 		return cs.base.ReadLastestBlockHeadAndMeta()
@@ -63,7 +63,8 @@ func (cs *ChainState) ReadLastestBlockHeadAndMeta() (interfacev2.Block, error) {
 	// check
 	if vdatas == nil {
 		// return genesis block
-		return genesis.GetGenesisBlock(), nil
+		g := genesis.GetGenesisBlock()
+		return g, nil
 	}
 	if len(vdatas) < blocks.BlockHeadSize {
 		return nil, fmt.Errorf("lastest_block_head store file error.")
@@ -74,9 +75,9 @@ func (cs *ChainState) ReadLastestBlockHeadAndMeta() (interfacev2.Block, error) {
 	}
 	// cache set
 	cs.chainStateMutex.Lock()
-	cs.lastestBlockHeadAndMeta = tarblk
+	cs.lastestBlockHeadAndMeta = tarblk.(interfacev2.Block)
 	cs.chainStateMutex.Unlock()
-	return tarblk, nil
+	return tarblk.(interfacev2.Block), nil
 }
 
 /////////////////////////////////////////////////////////////////////////

@@ -5,7 +5,6 @@ import (
 	"github.com/hacash/chain/leveldb"
 	"github.com/hacash/core/fields"
 	"github.com/hacash/core/interfaces"
-	"github.com/hacash/core/interfacev3"
 	"math/rand"
 	"sync"
 )
@@ -28,8 +27,8 @@ type ChainState struct {
 
 	isInTxPool bool
 
-	pending         interfacev3.PendingStatus
-	lastStatusCache interfacev3.LatestStatus
+	pending         interfaces.PendingStatus
+	lastStatusCache interfaces.LatestStatus
 
 	// lock
 	statusMux *sync.RWMutex
@@ -40,15 +39,6 @@ func NewChainStateImmutable(cnf *ChainStateConfig) (*ChainState, error) {
 	if e != nil {
 		return nil, e
 	}
-
-	// 创建 peadding 状态
-	last, e := ins.LatestStatusRead()
-	if e != nil {
-		ins.Close() // 错误关闭
-		return nil, e
-	}
-	curblk := last.GetImmutableBlockHeadMeta()
-	ins.pending = NewPendingStatus(0, nil, curblk)
 
 	return ins, nil
 }
@@ -85,7 +75,7 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 	return state, nil
 }
 
-func (s ChainState) BlockStore() interfacev3.BlockStore {
+func (s ChainState) BlockStore() interfaces.BlockStore {
 	s.statusMux.RLock()
 	defer s.statusMux.RUnlock()
 
@@ -143,7 +133,7 @@ func (s *ChainState) ForkSubChildObj() (*ChainState, error) {
 	return sub, nil
 }
 
-func (s *ChainState) ForkSubChild() (interfacev3.ChainState, error) {
+func (s *ChainState) ForkSubChild() (interfaces.ChainState, error) {
 	obj, e := s.ForkSubChildObj()
 	if e != nil {
 		return nil, e
@@ -151,7 +141,7 @@ func (s *ChainState) ForkSubChild() (interfacev3.ChainState, error) {
 	return obj, nil
 }
 
-func (s *ChainState) ForkNextBlockObj(hei uint64, hx fields.Hash, blockhead interfacev3.Block) (*ChainState, error) {
+func (s *ChainState) ForkNextBlockObj(hei uint64, hx fields.Hash, blockhead interfaces.Block) (*ChainState, error) {
 	// create
 	sub, e := s.ForkSubChildObj()
 	if e != nil {
@@ -168,7 +158,7 @@ func (s *ChainState) ForkNextBlockObj(hei uint64, hx fields.Hash, blockhead inte
 	return sub, nil
 }
 
-func (s *ChainState) ForkNextBlock(hei uint64, hx fields.Hash, blockhead interfacev3.Block) (interfacev3.ChainState, error) {
+func (s *ChainState) ForkNextBlock(hei uint64, hx fields.Hash, blockhead interfaces.Block) (interfaces.ChainState, error) {
 	obj, e := s.ForkNextBlockObj(hei, hx, blockhead)
 	if e != nil {
 		return nil, e
@@ -191,7 +181,7 @@ func (s ChainState) GetParentObj() *ChainState {
 
 	return s.base
 }
-func (s ChainState) GetParent() interfacev3.ChainState {
+func (s ChainState) GetParent() interfaces.ChainState {
 	base := s.GetParentObj()
 	return base
 }
@@ -203,11 +193,11 @@ func (s *ChainState) GetChildObjs() map[uint64]*ChainState {
 
 	return s.childs
 }
-func (s *ChainState) GetChilds() map[uint64]interfacev3.ChainState {
+func (s *ChainState) GetChilds() map[uint64]interfaces.ChainState {
 	s.statusMux.RLock()
 	defer s.statusMux.RUnlock()
 
-	var childs = make(map[uint64]interfacev3.ChainState)
+	var childs = make(map[uint64]interfaces.ChainState)
 	for i, v := range s.childs {
 		childs[i] = v
 	}
@@ -264,14 +254,14 @@ func (s *ChainState) RecoverDatabaseVersionRebuildMode() {
 	s.config.DatabaseVersionRebuildMode = false
 }
 
-func (s *ChainState) SetInMemTxPool(stat bool) {
+func (s *ChainState) SetInTxPool(stat bool) {
 	s.statusMux.Lock()
 	defer s.statusMux.Unlock()
 
 	s.isInTxPool = stat
 }
 
-func (s *ChainState) IsInMemTxPool() bool {
+func (s *ChainState) IsInTxPool() bool {
 	s.statusMux.RLock()
 	defer s.statusMux.RUnlock()
 

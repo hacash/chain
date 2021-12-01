@@ -25,7 +25,7 @@ func (cs *ChainState) ReadTransactionBytesByHash(txhx fields.Hash) (fields.Block
 	if e != nil {
 		return 0, nil, e
 	}
-	for _, t := range blkObj.GetTransactions() {
+	for _, t := range blkObj.GetTrsList() {
 		if t.Hash().Equal(txhx) {
 			txbtx, e := t.Serialize()
 			if e != nil {

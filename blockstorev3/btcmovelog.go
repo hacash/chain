@@ -34,6 +34,10 @@ func (cs *BlockStore) GetBTCMoveLogTotalPage() (int, error) {
 	// 从储存读取
 	bts, e := ldb.Get([]byte("btc_move_log_total_page"), nil)
 	if e != nil {
+		if e == leveldb.ErrNotFound {
+			cs.btcmovelogTotalPage = 0 // 无数据
+			return 0, nil
+		}
 		return -1, e
 	}
 	if len(bts) != 4 {

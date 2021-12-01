@@ -252,13 +252,11 @@ func (s *ChainState) IsDatabaseVersionRebuildMode() bool {
 	return s.config.DatabaseVersionRebuildMode
 }
 
-// 恢复模式
-func (s *ChainState) RecoverDatabaseVersionRebuildMode() {
-	s.statusMux.Lock()
-	defer s.statusMux.Unlock()
+func (s *ChainState) SetDatabaseVersionRebuildMode(set bool) {
+	s.statusMux.RLock()
+	defer s.statusMux.RUnlock()
 
-	// 恢复最终配置
-	s.config.DatabaseVersionRebuildMode = false
+	s.config.DatabaseVersionRebuildMode = set
 }
 
 func (s *ChainState) SetInTxPool(stat bool) {

@@ -409,10 +409,10 @@ func (cs *ChainState) IsDatabaseVersionRebuildMode() bool {
 }
 
 // 恢复模式
-func (cs *ChainState) RecoverDatabaseVersionRebuildMode() {
+func (cs *ChainState) SetDatabaseVersionRebuildMode(set bool) {
 	if cs.base != nil {
 		// 递归向上
-		cs.base.RecoverDatabaseVersionRebuildMode()
+		cs.base.SetDatabaseVersionRebuildMode(set)
 		return
 	}
 	// 恢复最终配置

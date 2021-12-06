@@ -43,7 +43,7 @@ func (s *ChainState) SeekImmatureBlockHashs() ([]fields.Hash, error) {
 	hxmaps := make(map[string]bool)
 	newhxlist := make([]fields.Hash, 0)
 	for _, v := range hxs {
-		if len(v) == fields.HashSize {
+		if len(v) == fields.HashSize && v.NotZeroBlank() {
 			if _, ok := hxmaps[string(v)]; !ok {
 				newhxlist = append(newhxlist, v)
 			}

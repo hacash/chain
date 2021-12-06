@@ -34,14 +34,33 @@ func (s *ChainState) SearchBaseStateByBlockHash(hx fields.Hash) (interfaces.Chai
 
 // 遍历不成熟的区块哈希
 func (s *ChainState) SeekImmatureBlockHashs() ([]fields.Hash, error) {
+	s.statusMux.RLock()
+	defer s.statusMux.RUnlock()
+
 	var hxs = make([]fields.Hash, 0)
 	e := s.doSeekImmatureBlockHashs(&hxs) // 递归遍历
-	return hxs, e
+	// 去重去无效
+	hxmaps := make(map[string]bool)
+	newhxlist := make([]fields.Hash, 0)
+	for _, v := range hxs {
+		if len(v) == fields.HashSize {
+			if _, ok := hxmaps[string(v)]; !ok {
+				newhxlist = append(newhxlist, v)
+			}
+			hxmaps[string(v)] = true
+		}
+	}
+	// 返回
+	return newhxlist, e
 }
 
 func (s *ChainState) doSeekImmatureBlockHashs(hxs *[]fields.Hash) error {
 	for _, child := range s.childs {
-		*hxs = append(*hxs, child.pending.GetPendingBlockHash())
+		hx := child.pending.GetPendingBlockHash()
+		if len(hx) != fields.HashSize {
+			continue // 无效的哈希
+		}
+		*hxs = append(*hxs, hx)
 		e := child.doSeekImmatureBlockHashs(hxs)
 		if e != nil {
 			return e

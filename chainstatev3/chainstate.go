@@ -1,12 +1,16 @@
 package chainstatev3
 
 import (
+	"fmt"
 	"github.com/hacash/chain/blockstorev3"
 	"github.com/hacash/chain/leveldb"
 	"github.com/hacash/core/fields"
 	"github.com/hacash/core/interfaces"
+	"github.com/hacash/core/stores"
 	"math/rand"
+	"strings"
 	"sync"
+	"time"
 )
 
 type ChainState struct {
@@ -69,6 +73,15 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 			return nil, e
 		}
 		state.ldb = useldb
+		/////////////  TEST BEGIN /////////////
+		//go func() {
+		//	if !isSubBranchTemporary {
+		//		time.Sleep(time.Second * 5)
+		//		Test_print_all_address_balance(useldb)
+		//	}
+		//}()
+		/////////////  TEST END   /////////////
+
 	}
 
 	// ok
@@ -271,4 +284,55 @@ func (s *ChainState) IsInTxPool() bool {
 	defer s.statusMux.RUnlock()
 
 	return s.isInTxPool
+}
+
+/////////////////////////////////////////////
+
+func Test_print_all_address_balance(ldb *leveldb.DB) {
+
+	time.Sleep(time.Microsecond)
+
+	total_address_count := int64(0)
+	total_hac_address_count := int64(0)
+	total_btc_address_count := int64(0)
+	total_hacd_address_count := int64(0)
+
+	total_hac := float64(0)
+	total_btc := int64(0)
+	total_hacd := int(0)
+
+	iter := ldb.NewIterator(nil, nil)
+	for iter.Next() {
+		//fmt.Printf("key:%s, value:%s\n", iter.Key(), iter.Value())
+		key := iter.Key()
+		if !strings.HasSuffix(string(key), "balance") {
+			continue
+		}
+		addrbt := iter.Key()[0:21]
+		addr := fields.Address(addrbt)
+		var bls = stores.Balance{}
+		bls.Parse(iter.Value(), 0)
+		hacfltn := bls.Hacash.ToMei()
+		if hacfltn == 0 && bls.Satoshi == 0 && bls.Diamond == 0 {
+			continue
+		}
+		fmt.Printf("% 4d %-34s % 12.4f % 6d %d\n", total_address_count+1, addr.ToReadable(), hacfltn, bls.Diamond, bls.Satoshi)
+		total_hac += float64(hacfltn)
+		total_btc += int64(bls.Satoshi)
+		total_hacd += int(bls.Diamond)
+		if float64(hacfltn) > 0 {
+			total_hac_address_count++
+		}
+		if int64(bls.Satoshi) > 0 {
+			total_btc_address_count++
+		}
+		if int(bls.Diamond) > 0 {
+			total_hacd_address_count++
+		}
+		total_address_count++
+
+	}
+	iter.Release()
+
+	fmt.Printf("------------------\n[ADDRESS] %d address, hac: %d, btc: %d, hacd: %d \n[AMOUNT] HAC: %f, SAT: %d, HACD: %d\n", total_address_count, total_hac_address_count, total_btc_address_count, total_hacd_address_count, total_hac, total_btc, total_hacd)
 }

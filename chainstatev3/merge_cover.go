@@ -17,14 +17,17 @@ func (s *ChainState) TraversalCopy(src interfaces.ChainState) error {
 }
 
 func (s *ChainState) TraversalCopyByObj(src *ChainState) error {
-	s.statusMux.Lock()
-	defer s.statusMux.Unlock()
 
 	if src.IsImmutable() {
 		panic("TraversalCopy src state cannot must use LevelDB!")
 	}
 
-	if s.IsImmutable() {
+	myIsImm := s.IsImmutable()
+
+	s.statusMux.Lock()
+	defer s.statusMux.Unlock()
+
+	if myIsImm {
 		// leveldb
 		e := s.traversalCopyMemToLevelUnsafe(s.ldb, src.memdb)
 		if e != nil {
@@ -36,7 +39,6 @@ func (s *ChainState) TraversalCopyByObj(src *ChainState) error {
 			s.memdb.Store(key, value)
 			return true
 		})
-
 	}
 	// err
 	return nil

@@ -12,7 +12,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/golang/snappy"
+	"github.com/hacash/chain/snappy"
 
 	"github.com/hacash/chain/leveldb/comparer"
 	"github.com/hacash/chain/leveldb/filter"

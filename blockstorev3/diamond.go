@@ -47,7 +47,7 @@ func (bs *BlockStore) ReadDiamond(name fields.DiamondName) (*stores.DiamondSmelt
 	return &diamondObj, nil
 }
 
-func (bs *BlockStore) ReadDiamondByNumber(number uint32) (*stores.DiamondSmelt, error) {
+func (bs *BlockStore) ReadDiamondNameByNumber(number uint32) (fields.DiamondName, error) {
 
 	ldb, e := bs.getDB()
 	if e != nil {
@@ -66,6 +66,16 @@ func (bs *BlockStore) ReadDiamondByNumber(number uint32) (*stores.DiamondSmelt, 
 		if e == leveldb.ErrNotFound {
 			return nil, nil // notfind
 		}
+		return nil, e
+	}
+
+	return dianame, nil
+}
+
+func (bs *BlockStore) ReadDiamondByNumber(number uint32) (*stores.DiamondSmelt, error) {
+
+	dianame, e := bs.ReadDiamondNameByNumber(number)
+	if e != nil {
 		return nil, e
 	}
 

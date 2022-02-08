@@ -32,7 +32,7 @@ func (cs *BlockStore) ReadDiamond(diamond_name fields.DiamondName) (*stores.Diam
 }
 
 // block data store
-func (cs *BlockStore) ReadDiamondByNumber(number uint32) (*stores.DiamondSmelt, error) {
+func (cs *BlockStore) ReadDiamondNameByNumber(number uint32) (fields.DiamondName, error) {
 	// find by number key
 	numberkey := make([]byte, 4)
 	binary.BigEndian.PutUint32(numberkey, number)
@@ -49,5 +49,16 @@ func (cs *BlockStore) ReadDiamondByNumber(number uint32) (*stores.DiamondSmelt, 
 		return nil, fmt.Errorf("diamond num store file break.")
 	}
 	// find by name
-	return cs.ReadDiamond(diamondnamedatas)
+	return diamondnamedatas, nil
+}
+
+// block data store
+func (cs *BlockStore) ReadDiamondByNumber(number uint32) (*stores.DiamondSmelt, error) {
+	// find by number key
+	dmdname, e1 := cs.ReadDiamondNameByNumber(number)
+	if e1 != nil {
+		return nil, e1
+	}
+	// find by name
+	return cs.ReadDiamond(dmdname)
 }

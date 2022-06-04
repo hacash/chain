@@ -23,7 +23,7 @@ func (cs *ChainState) ReadTotalSupply() (*stores.TotalSupply, error) {
 		if parentObj == nil {
 			return nil, fmt.Errorf("not find TotalSupply from store.")
 		}
-		// copy obj, 避免重复添加到
+		// Copy obj to avoid repeated addition to
 		cs.totalSupply = parentObj.Clone()
 		return cs.totalSupply, nil
 	}

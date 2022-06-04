@@ -5,7 +5,7 @@ import (
 	"github.com/hacash/core/stores"
 )
 
-// lockbls 查询
+// Lockbls query
 func (cs *ChainState) Lockbls(lkid fields.LockblsId) (*stores.Lockbls, error) {
 	query, e1 := cs.lockblsDB.CreateNewQueryInstance(lkid)
 	if e1 != nil {
@@ -35,7 +35,7 @@ func (cs *ChainState) Lockbls(lkid fields.LockblsId) (*stores.Lockbls, error) {
 	return &stoitem, nil
 }
 
-// 创建线性锁仓
+// Create linear lock
 func (cs *ChainState) LockblsCreate(lkid fields.LockblsId, stoitem *stores.Lockbls) error {
 	query, e1 := cs.lockblsDB.CreateNewQueryInstance(lkid)
 	if e1 != nil {
@@ -54,12 +54,12 @@ func (cs *ChainState) LockblsCreate(lkid fields.LockblsId, stoitem *stores.Lockb
 	return nil
 }
 
-// 释放（取出部分任意可取额度）
+// Release (take out any available quota)
 func (cs *ChainState) LockblsUpdate(lkid fields.LockblsId, stoitem *stores.Lockbls) error {
 	return cs.LockblsCreate(lkid, stoitem)
 }
 
-// 删除
+// delete
 func (cs *ChainState) LockblsDelete(lkid fields.LockblsId) error {
 	query, e1 := cs.lockblsDB.CreateNewQueryInstance(lkid)
 	if e1 != nil {

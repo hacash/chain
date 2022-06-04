@@ -243,7 +243,7 @@ func Test_create_query_ins_t1(t *testing.T) {
 
 	//fmt.Println(qins.filePath)
 
-	// 关闭查询
+	// Close query
 	qins.Destroy()
 
 	qins_1, _ := db.CreateNewQueryInstance(key1)

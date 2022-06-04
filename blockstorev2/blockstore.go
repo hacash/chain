@@ -27,7 +27,7 @@ type BlockStore struct {
 
 	// btc move log
 	btcmovelogDB        *statedomaindb.StateDomainDB
-	btcmovelogTotalPage int // 最大数据页码
+	btcmovelogTotalPage int // Maximum data page number
 }
 
 func NewBlockStoreOfBlockDataDB(basedir string, ldb *leveldb.DB) (*biglogdb.BigLogDB, error) {
@@ -91,7 +91,7 @@ func NewBlockStore(cnf *BlockStoreConfig) (*BlockStore, error) {
 	return cs, nil
 }
 
-// 创建一个用于更新数据库版本的区块存储器
+// Create a block store for updating the database version
 func NewBlockStoreForUpdateDatabaseVersion(cnf *BlockStoreConfig) (*BlockStore, error) {
 
 	// create leveldb

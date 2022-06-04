@@ -14,7 +14,7 @@ type BlockStore struct {
 	// level db
 	ldb *leveldb.DB
 
-	btcmovelogTotalPage int // 最大数据页码
+	btcmovelogTotalPage int // Maximum data page number
 
 	statusMux *sync.RWMutex
 }

@@ -7,19 +7,19 @@ import (
 
 type StateDomainDBConfig struct {
 	// MemoryStorage
-	MemoryStorage bool // 在内存内保存数据
+	MemoryStorage bool // Save data in memory
 	// LevelDB
-	LevelDB bool // 使用 level db 保存数据
+	LevelDB bool // Save data using level dB
 	// size
-	KeySize                  uint8  // key值长度  <= 32
-	SupplementalMaxValueSize uint32 // 数据内容长度
+	KeySize                  uint8  // Key value length < = 32
+	SupplementalMaxValueSize uint32 // Data content length
 
-	KeyDomainName string // key 前缀
+	KeyDomainName string // Key prefix
 }
 
 func NewStateDomainDBConfig(
 	keyDomainName string,
-	mustMinValueSize uint32, // 必须补足的数据长度
+	mustMinValueSize uint32, // Data length that must be supplemented
 	keySize uint8,
 ) *StateDomainDBConfig {
 	return &StateDomainDBConfig{
@@ -45,12 +45,12 @@ func NewStateDomainDB(config *StateDomainDBConfig, ldb *leveldb.DB) *StateDomain
 		config:  config,
 		LevelDB: ldb,
 	}
-	// 内存数据库
+	// In memory database
 	if config.MemoryStorage {
 		db.MemoryStorageDB = NewMemoryStorageDB()
 		return db
 	}
-	// 使用 level db
+	// Using level dB
 	if config.LevelDB {
 		if ldb == nil {
 			panic("Must give param ldb *leveldb.DB")
@@ -60,12 +60,12 @@ func NewStateDomainDB(config *StateDomainDBConfig, ldb *leveldb.DB) *StateDomain
 
 	panic("NewStateDomainDB  must use MemoryStorage or LevelDB!")
 
-	// 文件数据库，数据长度
+	// File database, data length
 	// db.freshRecordDataSize()
 	return db
 }
 
-// 创建执行单元
+// Create execution unit
 func (db *StateDomainDB) CreateNewQueryInstance(key []byte) (*QueryInstance, error) {
 	kz := int(db.config.KeySize)
 	if kz > 0 && len(key) != kz {
@@ -76,7 +76,7 @@ func (db *StateDomainDB) CreateNewQueryInstance(key []byte) (*QueryInstance, err
 
 // close
 func (db *StateDomainDB) Close() error {
-	// 关闭 leveldb
+	// Turn off leveldb
 	if db.LevelDB != nil {
 		db.LevelDB.Close()
 	}

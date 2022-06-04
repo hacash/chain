@@ -11,15 +11,15 @@ import (
 
 type ImmutableStatus struct {
 
-	// 成熟的区块头
+	// Mature block
 	ImmutableBlockHeadMetaIsExist fields.Bool
 	ImmutableBlockHeadMeta        interfaces.BlockHeadMetaRead
 
-	// 最新的区块头
+	// Latest block header
 	LatestBlockHashIsExist fields.Bool
 	LatestBlockHash        fields.Hash
 
-	// 不成熟的区块哈希
+	// Immature block hash
 	ImmatureBlockHashCount fields.VarUint2
 	ImmatureBlockHashs     []fields.Hash
 }
@@ -167,7 +167,7 @@ func (p *ImmutableStatus) GetImmutableBlockHeadMeta() interfaces.BlockHeadMetaRe
 	if p.ImmutableBlockHeadMetaIsExist.Check() {
 		return p.ImmutableBlockHeadMeta
 	}
-	// 首次返回创始区块
+	// First return to the original block
 	return genesis.GetGenesisBlock()
 }
 
@@ -179,7 +179,7 @@ func (p *ImmutableStatus) SetImmutableBlockHeadMeta(head interfaces.BlockHeadMet
 //////////////////////////////////////////////////////////////////
 
 type LatestStatus struct {
-	// 最新区块钻石
+	// Latest block diamond
 	LatestDiamondIsExist fields.Bool
 	LatestDiamond        *stores.DiamondSmelt
 }

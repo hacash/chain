@@ -6,7 +6,7 @@ import ()
  * search index exist
  */
 func (ins *QueryInstance) Exist() (bool, error) {
-	// 内存数据库
+	// In memory database
 	if ins.db.config.MemoryStorage {
 		return ins.db.MemoryStorageDB.Exist(ins.key), nil
 	}
@@ -23,7 +23,7 @@ func (ins *QueryInstance) Exist() (bool, error) {
 	panic("NewHashTreeDB  must use LevelDB!")
 
 	/*
-		// 文件数据库
+		// File database
 		ins.ClearSearchIndexCache()
 		ofstItem, err := ins.SearchIndex()
 		if err != nil {
@@ -55,7 +55,7 @@ func (ins *QueryInstance) Exist() (bool, error) {
  * search index file and get the item part
  */
 func (ins *QueryInstance) Find() ([]byte, error) {
-	// 内存数据库
+	// In memory database
 	if ins.db.config.MemoryStorage {
 		val, ok := ins.db.MemoryStorageDB.Read(ins.key)
 		if !ok || val == nil {
@@ -68,7 +68,7 @@ func (ins *QueryInstance) Find() ([]byte, error) {
 			//fmt.Println("MemoryStorageDB Find", fields.Address(ins.key).ToReadable(), retdts)
 			return retdts, nil
 		}
-		// 原始存入数据
+		// Original stored data
 		return val, nil
 	}
 
@@ -85,14 +85,14 @@ func (ins *QueryInstance) Find() ([]byte, error) {
 			//fmt.Println("LevelDB Find", fields.Address(ins.key).ToReadable(), retdts)
 			return retdts, nil
 		}
-		// 原始存入数据
+		// Original stored data
 		return val, nil
 	}
 
 	panic("NewHashTreeDB must use LevelDB!")
 
 	/*
-		// 文件数据库
+		// File database
 		ins.ClearSearchIndexCache()
 		ofstItem, err := ins.SearchIndex()
 		if err != nil {
@@ -174,7 +174,7 @@ func (ins *QueryInstance) SearchIndex() (*FindValueOffsetItem, error) {
 	var idxrofst uint32 = 0
 	var qhash_si = 0 // already drop file part prefix from searchHash
 	for {
-		// 例外
+		// exception
 		if qhash_si >= len(ins.searchHash) {
 			return nil, fmt.Errorf("search to the final.")
 		}

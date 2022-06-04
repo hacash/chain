@@ -2,12 +2,12 @@ package hashtreedb
 
 /*
 type TargetFilePackage struct {
-	fileKey  string // 当前正在使用的文件 key
-	filePath string // 当前正在使用的文件 完整路径但不带后缀名
+	fileKey  string // Currently in use file key
+	filePath string // Full path to the file currently in use without suffix
 
-	gcFile    *os.File // .gc  垃圾回收文件
-	indexFile *os.File // .idx 索引文件
-	dataFile  *os.File // .dat 数据保存文件
+	gcFile    *os.File // . GC garbage collection file
+	indexFile *os.File // . IDX index file
+	dataFile  *os.File // . Dat data saving file
 
 	//dataSegmentSize uint32 // 数据段尺寸
 	//isStoreKeySize  uint32 // 如果储存了key，则key的尺寸   未储存则为0
@@ -20,7 +20,7 @@ type TargetFilePackage struct {
 func (tf *TargetFilePackage) Destroy() {
 	tf.fileKey = ""
 	tf.filePath = ""
-	// 关闭文件
+	// Close file
 	if tf.gcFile != nil {
 		tf.gcFile.Close()
 		tf.gcFile = nil
@@ -37,16 +37,16 @@ func (tf *TargetFilePackage) Destroy() {
 */
 
 /*
-// 等待获取文件控制权（锁）
+// Waiting for file control (lock)
 func (db *HashTreeDB) waitForTakeControlOfFile(ins *QueryInstance) (*lockFilePkgItem, error) {
 	if len(ins.fileKey) == 0 {
 		panic("(db *HashTreeDB) waitForTakeControlOfFile -> len(ins.fileKey) == 0")
 	}
 
-	// 操作锁定
+	// Operation lock
 	db.filesOptLock.Lock()
 
-	// 开始检测文件
+	// Start detecting files
 	var fileitem *lockFilePkgItem = nil
 	fwlockptr := &sync.Mutex{}
 	tarlock, ldok := db.filesWriteLock.Load(ins.fileKey)
@@ -54,37 +54,37 @@ func (db *HashTreeDB) waitForTakeControlOfFile(ins *QueryInstance) (*lockFilePkg
 		fileitem = tarlock.(*lockFilePkgItem) // just get out
 		fwlockptr = fileitem.lock
 	}
-	// 目标文件包
+	// Destination package
 	var targetfilepkg = &TargetFilePackage{}
 	targetfilepkg.fileKey = ins.fileKey
 	targetfilepkg.filePath = ins.filePath
 	var datfn = ins.filePath + ".dat"
-	// 判断文件是否存在
+	// Determine whether the file exists
 	if fileitem != nil && fileitem.count >= 1 {
-		// 使用缓存，并且文件没有被关闭
+		// Cache is used and the file is not closed
 		targetfilepkg = fileitem.targetFilePackageCache
-		fileitem.count += 1 // 统计数量
+		fileitem.count += 1 // Statistical quantity
 	} else {
-		// 缓存不存在
-		// 检查文件是否存在
+		// Cache does not exist
+		// Check whether the file exists
 		exist, e1 := PathExists(datfn)
 		if e1 != nil {
 			return nil, e1
 		}
 		if !exist {
-			// 文件不存在，则创建目录
+			// Create directory if file does not exist
 			basedir := path.Dir(datfn)
 			e := os.MkdirAll(basedir, os.ModePerm)
 			if e != nil {
 				return nil, e
 			}
 		}
-		// 创建或打开文件
+		// Create or open file
 		err := openCreateTargetFiles(ins.filePath, targetfilepkg)
 		if err != nil {
 			return nil, err
 		}
-		// 保存缓存
+		// Save cache
 		fileitem = &lockFilePkgItem{
 			count:                  1,
 			lock:                   fwlockptr,
@@ -93,12 +93,12 @@ func (db *HashTreeDB) waitForTakeControlOfFile(ins *QueryInstance) (*lockFilePkg
 		db.filesWriteLock.Store(ins.fileKey, fileitem)
 	}
 	//db.existsFileKeys.Store(ins.fileKey, true) // 确定存在
-	// 给出文件包
+	// Give package
 	ins.targetFilePackage = targetfilepkg
 
-	// 操作解锁
+	// Operation unlocking
 	db.filesOptLock.Unlock()
-	// 目标文件加锁
+	// Target file locking
 	fwlockptr.Lock()
 
 	// fwlockptr.Unlock()
@@ -132,14 +132,14 @@ func openCreateTargetFiles(fpfn string, targetfilepkg *TargetFilePackage) error 
 	return nil
 }
 
-// 等待获取文件控制权
+// Waiting for file control
 func (db *HashTreeDB) releaseControlOfFile(ins *QueryInstance) error {
 	ins.targetFileItem.count -= 1
 	if ins.targetFileItem.count == 0 {
-		// 已经无人采用，关闭所有文件
+		// No one has adopted it. Close all files
 		ins.targetFileItem.targetFilePackageCache.Destroy()
 	}
-	ins.targetFileItem.lock.Unlock() // 释放文件锁
+	ins.targetFileItem.lock.Unlock() // Release file lock
 
 	//fk := ins.fileKey
 

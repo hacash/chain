@@ -8,25 +8,25 @@ import (
 
 // btc move log
 
-// 数据页数，每页100条数据
+// Number of data pages, 100 pieces of data per page
 func (cs *BlockStore) GetBTCMoveLogTotalPage() (int, error) {
 	if cs.btcmovelogTotalPage >= 0 {
 		return cs.btcmovelogTotalPage, nil
 	}
-	// 从储存读取
+	// Read from storage
 	bts, _ := cs.btcmovelogDB.Get([]byte("total_page"))
 	//fmt.Println("---------bts----", bts)
 	if len(bts) != 4 {
-		cs.btcmovelogTotalPage = 0 // 无数据
+		cs.btcmovelogTotalPage = 0 // No data
 	} else {
 		pg := binary.BigEndian.Uint32(bts)
 		cs.btcmovelogTotalPage = int(pg)
 	}
-	// 返回
+	// return
 	return cs.btcmovelogTotalPage, nil
 }
 
-// 获取数据页
+// Get data page
 func (cs *BlockStore) GetBTCMoveLogPageData(page int) ([]*stores.SatoshiGenesis, error) {
 	realpage, e0 := cs.GetBTCMoveLogTotalPage()
 	if e0 != nil {
@@ -40,13 +40,13 @@ func (cs *BlockStore) GetBTCMoveLogPageData(page int) ([]*stores.SatoshiGenesis,
 		return []*stores.SatoshiGenesis{}, nil
 	}
 
-	// 解析
+	// analysis
 	return stores.SatoshiGenesisPageParse(dtbts, 0), nil
 }
 
-// 保存数据页
+// Save data page
 func (cs *BlockStore) SaveBTCMoveLogPageData(svpage int, list []*stores.SatoshiGenesis) error {
-	// 保存页码
+	// Save page number
 	if svpage >= cs.btcmovelogTotalPage {
 		cs.btcmovelogTotalPage = svpage
 		pgk := []byte("total_page")
@@ -55,7 +55,7 @@ func (cs *BlockStore) SaveBTCMoveLogPageData(svpage int, list []*stores.SatoshiG
 		//fmt.Println("-------------", svpage, pgd)
 		cs.btcmovelogDB.Set(pgk, pgd)
 	}
-	// 保存内容
+	// Save content
 	datas := stores.SatoshiGenesisPageSerialize(list)
 	//fmt.Println(strings.Join(stores.SatoshiGenesisPageSerializeForShow(list), " | "))
 	//fmt.Println(stores.SatoshiGenesisPageParse(datas, 0))

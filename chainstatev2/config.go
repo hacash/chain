@@ -11,7 +11,7 @@ type ChainStateConfig struct {
 	BTCMoveCheckEnable  bool
 	BTCMoveCheckLogsURL string
 
-	// 数据库重建模式
+	// Database rebuild mode
 	DatabaseVersionRebuildMode bool
 }
 
@@ -25,7 +25,7 @@ func NewChainStateConfig(cnffile *sys.Inicnf) *ChainStateConfig {
 
 	cnf.Datadir = path.Join(cnffile.MustDataDirWithVersion(), "chainstate")
 
-	// 验证比特币转移
+	// Verify bitcoin transfer
 	sec1 := cnffile.Section("btcmovecheck")
 	cnf.BTCMoveCheckEnable = sec1.Key("enable").MustBool(false)
 	cnf.BTCMoveCheckLogsURL = sec1.Key("logs_url").MustString("")

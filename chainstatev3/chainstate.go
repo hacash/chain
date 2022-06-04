@@ -14,7 +14,7 @@ import (
 )
 
 type ChainState struct {
-	sid uint64 // 唯一标识
+	sid uint64 // Unique identification
 
 	// config
 	config *ChainStateConfig
@@ -71,7 +71,7 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 		statusMux:       &sync.RWMutex{},
 	}
 
-	// 建立数据库 db
+	// Establish database db
 	if isSubBranchTemporary {
 		state.memdb = &sync.Map{}
 	} else {
@@ -194,7 +194,7 @@ func (s *ChainState) ForkNextBlock(hei uint64, hx fields.Hash, blockhead interfa
 //	return s.referBlockHeight, s.referBlockHash
 //}
 
-// 获得父级状态
+// Get parent status
 func (s ChainState) GetParentObj() *ChainState {
 	s.statusMux.RLock()
 	defer s.statusMux.RUnlock()
@@ -206,7 +206,7 @@ func (s ChainState) GetParent() interfaces.ChainState {
 	return base
 }
 
-// 获得所有子状态
+// Get all child States
 func (s *ChainState) GetChildObjs() map[uint64]*ChainState {
 	s.statusMux.RLock()
 	defer s.statusMux.RUnlock()
@@ -225,7 +225,7 @@ func (s *ChainState) GetChilds() map[uint64]interfaces.ChainState {
 	return childs
 }
 
-// 获得所有子状态
+// Get all child States
 func (s *ChainState) RemoveChild(child *ChainState) {
 	s.statusMux.Lock()
 	defer s.statusMux.Unlock()
@@ -233,7 +233,7 @@ func (s *ChainState) RemoveChild(child *ChainState) {
 	delete(s.childs, child.sid)
 }
 
-// 销毁，包括删除所有子状态、缓存、状态数据等
+// Destroy, including deleting all sub States, caches, status data, etc
 func (s *ChainState) Destory() {
 	s.statusMux.Lock()
 	defer s.statusMux.Unlock()
@@ -252,7 +252,7 @@ func (s *ChainState) Destory() {
 	s.ldb = nil
 }
 
-// 关闭文件句柄等
+// Close file handle, etc
 func (s *ChainState) Close() {
 	s.statusMux.Lock()
 	defer s.statusMux.Unlock()
@@ -268,7 +268,7 @@ func (s *ChainState) IsDatabaseVersionRebuildMode() bool {
 	s.statusMux.RLock()
 	defer s.statusMux.RUnlock()
 
-	// 返回最终配置
+	// Return to final configuration
 	return s.config.DatabaseVersionRebuildMode
 }
 

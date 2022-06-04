@@ -31,8 +31,8 @@ const (
 /*********************************************/
 
 type MemoryStorageItem struct {
-	IsDelete bool   // 已经删除标记
-	Value    []byte // 数据
+	IsDelete bool   // Tag deleted
+	Value    []byte // data
 }
 
 func NewDeleteMarkItem() *MemoryStorageItem {

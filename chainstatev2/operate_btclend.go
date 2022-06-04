@@ -5,7 +5,7 @@ import (
 	"github.com/hacash/core/stores"
 )
 
-// DiamondLending 查询
+// Diamondlending query
 func (cs *ChainState) BitcoinSystemLending(lendid fields.BitcoinSyslendId) (*stores.BitcoinSystemLending, error) {
 	query, e1 := cs.btclendDB.CreateNewQueryInstance(lendid)
 	if e1 != nil {
@@ -32,7 +32,7 @@ func (cs *ChainState) BitcoinSystemLending(lendid fields.BitcoinSyslendId) (*sto
 	return &stoitem, nil
 }
 
-// 创建 Diamond Lending
+// Create diamond lending
 func (cs *ChainState) BitcoinLendingCreate(lendid fields.BitcoinSyslendId, stoitem *stores.BitcoinSystemLending) error {
 	query, e1 := cs.btclendDB.CreateNewQueryInstance(lendid)
 	if e1 != nil {
@@ -51,12 +51,12 @@ func (cs *ChainState) BitcoinLendingCreate(lendid fields.BitcoinSyslendId, stoit
 	return nil
 }
 
-// 更新
+// to update
 func (cs *ChainState) BitcoinLendingUpdate(lendid fields.BitcoinSyslendId, stoitem *stores.BitcoinSystemLending) error {
 	return cs.BitcoinLendingCreate(lendid, stoitem)
 }
 
-// 删除
+// delete
 func (cs *ChainState) BitcoinLendingDelete(lendid fields.BitcoinSyslendId) error {
 	query, e1 := cs.btclendDB.CreateNewQueryInstance(lendid)
 	if e1 != nil {

@@ -6,7 +6,7 @@ import ()
  * search index exist
  */
 func (ins *QueryInstance) Exist() (bool, error) {
-	// 内存数据库
+	// In memory database
 	if ins.db.config.MemoryStorage {
 		return ins.db.MemoryStorageDB.Exist(ins.inputkey), nil
 	}
@@ -28,7 +28,7 @@ func (ins *QueryInstance) Exist() (bool, error) {
  * search index file and get the item part
  */
 func (ins *QueryInstance) Find() ([]byte, error) {
-	// 内存数据库
+	// In memory database
 	if ins.db.config.MemoryStorage {
 		val, ok := ins.db.MemoryStorageDB.Read(ins.inputkey)
 		if !ok || val == nil {
@@ -41,7 +41,7 @@ func (ins *QueryInstance) Find() ([]byte, error) {
 			//fmt.Println("MemoryStorageDB Find", fields.Address(ins.domainkey).ToReadable(), retdts)
 			return retdts, nil
 		}
-		// 原始存入数据
+		// Original stored data
 		return val, nil
 	}
 
@@ -58,7 +58,7 @@ func (ins *QueryInstance) Find() ([]byte, error) {
 			//fmt.Println("LevelDB Find", fields.Address(ins.domainkey).ToReadable(), retdts)
 			return retdts, nil
 		}
-		// 原始存入数据
+		// Original stored data
 		return val, nil
 	}
 

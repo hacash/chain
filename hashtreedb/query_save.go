@@ -18,7 +18,7 @@ import (
 //func (ins *QueryInstance) Save(valuedatas []byte) (ValueSegmentOffset uint32, err error) {
 func (ins *QueryInstance) Save(valuedatas []byte) error {
 
-	// 内存数据库
+	// In memory database
 	if ins.db.config.MemoryStorage {
 		// copy
 		retdts := make([]byte, len(valuedatas))
@@ -40,7 +40,7 @@ func (ins *QueryInstance) Save(valuedatas []byte) error {
 	panic("NewHashTreeDB  must use LevelDB!")
 
 	/*
-		// 文件数据库
+		// File database
 		_, err := ins.saveEx(valuedatas, -1)
 	*/
 	return nil

@@ -2,7 +2,7 @@ package statedomaindb
 
 import "bytes"
 
-// 查询实例
+// Query instance
 
 type QueryInstance struct {
 	db *StateDomainDB
@@ -12,10 +12,10 @@ type QueryInstance struct {
 }
 
 func newQueryInstance(db *StateDomainDB, inkey []byte) (*QueryInstance, error) {
-	// 给KEY 加上后缀
+	// Suffix key
 	keybuf := bytes.NewBuffer(inkey)
 	keybuf.Write([]byte(db.config.KeyDomainName))
-	// 创建
+	// establish
 	ins, e := newQueryInstanceByRealUseKey(db, keybuf.Bytes())
 	if e != nil {
 		return nil, e
@@ -29,11 +29,11 @@ func newQueryInstanceByRealUseKey(db *StateDomainDB, realkey []byte) (*QueryInst
 		db:        db,
 		domainkey: realkey,
 	}
-	// 如果是内存数据库，则不打开本地文件
+	// If it is an in memory database, do not open the local file
 	if db.config.MemoryStorage {
 		return ins, nil
 	}
-	// 如果是 level db, 则不打开文件
+	// If it is level dB, do not open the file
 	if db.config.LevelDB {
 		return ins, nil
 	}
@@ -42,13 +42,13 @@ func newQueryInstanceByRealUseKey(db *StateDomainDB, realkey []byte) (*QueryInst
 
 }
 
-// 关闭
+// close
 func (ins *QueryInstance) Destroy() {
-	// 释放文件控制
+	// Release file control
 	if !ins.db.config.MemoryStorage && !ins.db.config.LevelDB {
 		// ins.db.releaseControlOfFile(ins)
 	}
-	// 清空数据
+	// wipe data 
 	ins.db = nil
 	ins.inputkey = nil
 	ins.domainkey = nil

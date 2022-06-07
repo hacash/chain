@@ -7,7 +7,7 @@ import (
 //func (ins *QueryInstance) Save(valuedatas []byte) (ValueSegmentOffset uint32, err error) {
 func (ins *QueryInstance) Save(valuedatas []byte) error {
 
-	// 内存数据库
+	// In memory database
 	if ins.db.config.MemoryStorage {
 		// copy
 		retdts := make([]byte, len(valuedatas))

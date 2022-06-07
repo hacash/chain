@@ -1,6 +1,6 @@
 package hashtreedb
 
-// 查询实例
+// Query instance
 
 type QueryInstance struct {
 	db *HashTreeDB
@@ -31,11 +31,11 @@ func newQueryInstance(db *HashTreeDB, key []byte) (*QueryInstance, error) {
 		key: key,
 		//searchResultCache: nil,
 	}
-	// 如果是内存数据库，则不打开本地文件
+	// If it is an in memory database, do not open the local file
 	if db.config.MemoryStorage {
 		return ins, nil
 	}
-	// 如果是 level db, 则不打开文件
+	// If it is level dB, do not open the file
 	if db.config.LevelDB {
 		return ins, nil
 	}
@@ -46,24 +46,24 @@ func newQueryInstance(db *HashTreeDB, key []byte) (*QueryInstance, error) {
 		ins.hash = db.convertKeyToHash(key)
 		ins.filePath, ins.fileKey, ins.searchHash = db.locateTargetFilePath(ins.hash)
 		//fmt.Println("newQueryInstance searchHash ", ins.searchHash)
-		// 等待获取文件控制
+		// Waiting for file control
 		fileitem, err := db.waitForTakeControlOfFile(ins)
 		if err != nil {
 			return nil, err
 		}
 		ins.targetFileItem = fileitem
-		// 返回使用
+		// Return to use
 	*/
 	return ins, nil
 }
 
-// 关闭
+// close
 func (ins *QueryInstance) Destroy() {
-	// 释放文件控制
+	// Release file control
 	if !ins.db.config.MemoryStorage && !ins.db.config.LevelDB {
 		// ins.db.releaseControlOfFile(ins)
 	}
-	// 清空数据
+	// wipe data 
 	ins.db = nil
 	ins.key = nil
 	//ins.hash = nil

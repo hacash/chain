@@ -5,13 +5,13 @@ import (
 	"github.com/hacash/core/interfaces"
 )
 
-// 保存在磁盘
+// Save on disk
 func (s *ChainState) ImmutableWriteToDisk() (interfaces.ChainStateImmutable, error) {
 	obj, e := s.ImmutableWriteToDiskObj()
 	return obj, e
 }
 
-// 保存在磁盘
+// Save on disk
 func (s *ChainState) ImmutableWriteToDiskObj() (*ChainState, error) {
 	if s.base != nil && s.base.GetPendingBlockHeight() > 0 && s.base.IsImmutable() == false {
 		return nil, fmt.Errorf("State parent is not immutable.")

@@ -3,8 +3,8 @@ package hashtreedb
 import "sync"
 
 type MemoryStorageItem struct {
-	IsDelete bool   // 已经删除标记
-	Value    []byte // 数据
+	IsDelete bool   // Tag deleted
+	Value    []byte // data
 }
 
 type MemoryStorageDB struct {
@@ -74,7 +74,7 @@ func (ms *MemoryStorageDB) Delete(realkey []byte) {
 	ms.wlok.Lock()
 	defer ms.wlok.Unlock()
 	if v, has := ms.Datas[string(realkey)]; has {
-		v.IsDelete = true // 删除标记
+		v.IsDelete = true // Delete tag
 		v.Value = nil
 	} else {
 		ms.Datas[string(realkey)] = &MemoryStorageItem{

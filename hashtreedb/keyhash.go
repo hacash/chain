@@ -11,7 +11,7 @@ func (db *HashTreeDB) locateTargetFilePath(hash []byte) (string, string, []byte)
 	return filepath, mpath + "-", use_hash
 }
 
-// 分割hash为路径
+// Split hash as path
 func (db *HashTreeDB) spreadHashToIndexPath(hash []byte) ([]byte, []byte, []string) {
 	lv := int(db.config.FileDividePartitionLevel)
 	if lv > 0 {
@@ -25,7 +25,7 @@ func (db *HashTreeDB) spreadHashToIndexPath(hash []byte) ([]byte, []byte, []stri
 	}
 }
 
-// 将原始的key展开转变为hash值
+// Convert the original key expansion to hash value
 func (db *HashTreeDB) convertKeyToHash(key []byte) []byte {
 	// reverse
 	if db.config.KeyReverse {

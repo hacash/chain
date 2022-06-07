@@ -5,12 +5,12 @@ package hashtreedb
  */
 func (ins *QueryInstance) Delete() error {
 
-	// 内存数据库
+	// In memory database
 	if ins.db.config.MemoryStorage {
 		ins.db.MemoryStorageDB.Delete(ins.key)
 		return nil
 	}
-	// 磁盘数据库
+	// Disk database
 	if ins.db.config.LevelDB {
 		ins.db.GetOrCreateLevelDBwithPanic().Delete(ins.key, nil)
 		return nil
@@ -19,7 +19,7 @@ func (ins *QueryInstance) Delete() error {
 	panic("NewHashTreeDB  must use LevelDB!")
 
 	/*
-		// 文件数据库
+		// File database
 		ins.ClearSearchIndexCache()
 		ofstItem, err := ins.SearchIndex()
 		if err != nil {

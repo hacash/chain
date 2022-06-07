@@ -5,7 +5,7 @@ import (
 	"github.com/hacash/core/fields"
 )
 
-// 读取交易内容
+// Read transaction content
 func (cs *ChainState) ReadTransactionBytesByHash(txhx fields.Hash) (fields.BlockHeight, []byte, error) {
 	hei, e := cs.ReadTxBelongHeightByHash(txhx)
 	if e != nil {
@@ -37,7 +37,7 @@ func (cs *ChainState) ReadTransactionBytesByHash(txhx fields.Hash) (fields.Block
 	return 0, nil, nil // notfind
 }
 
-// 检查交易所属区块高度
+// Check the height of the block to which the exchange belongs
 func (cs *ChainState) ReadTxBelongHeightByHash(txhx fields.Hash) (fields.BlockHeight, error) {
 	value, ok, e := cs.find(KeySuffixType_txhxchk, txhx)
 	if e != nil {
@@ -54,19 +54,19 @@ func (cs *ChainState) ReadTxBelongHeightByHash(txhx fields.Hash) (fields.BlockHe
 	return 0, nil
 }
 
-// 检查交易是否上链
+// Check whether the transaction is linked
 func (cs *ChainState) CheckTxHash(txhx fields.Hash) (bool, error) {
 	hei, e := cs.ReadTxBelongHeightByHash(txhx)
 	return hei > 0, e
 }
 
-// 写入包含交易哈希
+// Write include transaction hash
 func (cs *ChainState) ContainTxHash(txhx fields.Hash, blkhei fields.BlockHeight) error {
 	heibts, _ := blkhei.Serialize()
 	return cs.save(KeySuffixType_txhxchk, txhx, heibts)
 }
 
-// 移除交易
+// Remove transaction
 func (cs *ChainState) RemoveTxHash(txhx fields.Hash) error {
 	return cs.delete(KeySuffixType_txhxchk, txhx)
 }

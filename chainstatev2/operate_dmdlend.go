@@ -5,7 +5,7 @@ import (
 	"github.com/hacash/core/stores"
 )
 
-// DiamondLending 查询
+// Diamondlending query
 func (cs *ChainState) DiamondSystemLending(dmdid fields.DiamondSyslendId) (*stores.DiamondSystemLending, error) {
 	query, e1 := cs.dmdlendDB.CreateNewQueryInstance(dmdid)
 	if e1 != nil {
@@ -32,7 +32,7 @@ func (cs *ChainState) DiamondSystemLending(dmdid fields.DiamondSyslendId) (*stor
 	return &stoitem, nil
 }
 
-// 创建 Diamond Lending
+// Create diamond lending
 func (cs *ChainState) DiamondLendingCreate(dmdid fields.DiamondSyslendId, stoitem *stores.DiamondSystemLending) error {
 	query, e1 := cs.dmdlendDB.CreateNewQueryInstance(dmdid)
 	if e1 != nil {
@@ -51,12 +51,12 @@ func (cs *ChainState) DiamondLendingCreate(dmdid fields.DiamondSyslendId, stoite
 	return nil
 }
 
-// 更新
+// to update
 func (cs *ChainState) DiamondLendingUpdate(dmdid fields.DiamondSyslendId, stoitem *stores.DiamondSystemLending) error {
 	return cs.DiamondLendingCreate(dmdid, stoitem)
 }
 
-// 删除
+// delete
 func (cs *ChainState) DiamondLendingDelete(dmdid fields.DiamondSyslendId) error {
 	query, e1 := cs.dmdlendDB.CreateNewQueryInstance(dmdid)
 	if e1 != nil {

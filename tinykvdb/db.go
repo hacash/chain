@@ -33,7 +33,7 @@ func NewTinyKVDB(abspath string, UseLevelDB bool) (*TinyKVDB, error) {
 
 	if UseLevelDB {
 
-		// 返回
+		// return
 		return &TinyKVDB{
 			abspath:    abspath,
 			UseLevelDB: true,
@@ -62,7 +62,7 @@ func NewTinyKVDB(abspath string, UseLevelDB bool) (*TinyKVDB, error) {
 	return db, nil
 }
 
-// 获取或创建 level db 对象
+// Get or create a level dB object
 func (db *TinyKVDB) GetOrCreateLevelDBwithPanic() *leveldb.DB {
 	if db.ldb != nil {
 		return db.ldb

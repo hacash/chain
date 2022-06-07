@@ -4,7 +4,7 @@ import (
 	"github.com/hacash/core/fields"
 )
 
-// 写入包含交易哈希
+// Write include transaction hash
 func (cs *ChainState) ContainTxHash(txhx fields.Hash, blkhei fields.BlockHeight) error {
 	query, e1 := cs.txhxchkDB.CreateNewQueryInstance(txhx)
 	if e1 != nil {
@@ -20,7 +20,7 @@ func (cs *ChainState) ContainTxHash(txhx fields.Hash, blkhei fields.BlockHeight)
 	return nil
 }
 
-// 移除交易
+// Remove transaction
 func (cs *ChainState) RemoveTxHash(txhx fields.Hash) error {
 	query, e1 := cs.txhxchkDB.CreateNewQueryInstance(txhx)
 	if e1 != nil {
@@ -34,7 +34,7 @@ func (cs *ChainState) RemoveTxHash(txhx fields.Hash) error {
 	return nil
 }
 
-// 检查交易是否上链
+// Check whether the transaction is linked
 func (cs *ChainState) CheckTxHash(txhx fields.Hash) (bool, error) {
 	hei, e := cs.ReadTxBelongHeightByHash(txhx)
 	if e != nil {
@@ -46,7 +46,7 @@ func (cs *ChainState) CheckTxHash(txhx fields.Hash) (bool, error) {
 	return false, nil // not find
 }
 
-// 检查交易所属区块高度
+// Check the height of the block to which the exchange belongs
 func (cs *ChainState) ReadTxBelongHeightByHash(txhx fields.Hash) (fields.BlockHeight, error) {
 
 	query, e1 := cs.txhxchkDB.CreateNewQueryInstance(txhx)

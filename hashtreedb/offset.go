@@ -9,10 +9,10 @@ type FindValueOffsetItem struct {
 
 	// index
 	Type               uint8  // 0:默认空 1:枝 2:叶 3:被删除的叶
-	ValueSegmentOffset uint32 // value Segment 位置
+	ValueSegmentOffset uint32 // Value segment position
 
-	IndexMenuSelfSegmentOffset uint32 // 菜单段位置
-	IndexItemSelfAlignment     uint32 // 菜单项位置
+	IndexMenuSelfSegmentOffset uint32 // Menu segment location
+	IndexItemSelfAlignment     uint32 // Menu item location
 
 	// data
 	ValueMark byte
@@ -21,7 +21,7 @@ type FindValueOffsetItem struct {
 
 	// opt cnf
 	searchHash  []byte
-	searchCount int // 搜索次数，从0开始
+	searchCount int // Number of searches, starting from 0
 }
 
 func NewFindValueOffsetItem(ty uint8, ValueSegmentOffset uint32) *FindValueOffsetItem {

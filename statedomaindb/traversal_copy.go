@@ -1,13 +1,13 @@
 package statedomaindb
 
-// 遍历拷贝、修改、删除数据， 只能是单文件数据库
+// Traverse, copy, modify and delete data, only single file database
 
 func (this *StateDomainDB) TraversalCopy(target *StateDomainDB) error {
-	// 不能把文件数据库的内容，拷贝到内存数据库
+	// The contents of the file database cannot be copied to the memory database
 
-	// 内存数据库
+	// In memory database
 	if target.config.MemoryStorage {
-		// 遍历
+		// ergodic
 		target.MemoryStorageDB.wlok.Lock()
 		defer target.MemoryStorageDB.wlok.Unlock()
 		for k, v := range target.MemoryStorageDB.Datas {

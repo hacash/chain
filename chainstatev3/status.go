@@ -33,7 +33,7 @@ func (cs *ChainState) LatestStatusRead() (interfaces.LatestStatus, error) {
 		return nil, e
 	}
 	if value == nil {
-		// not find 返回初始状态
+		// Not find return to initial state
 		return NewInitialLatestStatus(), nil
 	}
 
@@ -47,7 +47,7 @@ func (cs *ChainState) LatestStatusRead() (interfaces.LatestStatus, error) {
 }
 
 func (cs *ChainState) LatestStatusSet(status interfaces.LatestStatus) error {
-	// 保存
+	// preservation
 	datas, e := status.Serialize()
 	if e != nil {
 		return e
@@ -57,7 +57,7 @@ func (cs *ChainState) LatestStatusSet(status interfaces.LatestStatus) error {
 }
 
 func (cs *ChainState) ImmutableStatusSet(status interfaces.ImmutableStatus) error {
-	// 保存
+	// preservation
 	datas, e := status.Serialize()
 	if e != nil {
 		return e
@@ -72,7 +72,7 @@ func (cs *ChainState) ImmutableStatusRead() (interfaces.ImmutableStatus, error) 
 		return nil, e
 	}
 	if value == nil {
-		// not find 返回初始状态
+		// Not find return to initial state
 		return NewInitialImmutableStatus(), nil
 	}
 

@@ -6,12 +6,12 @@ import (
 	"sync"
 )
 
-// 单个文件大小至少支持 256^4×5×8 MenuWide=8 时约 80GB
+// A single file size supports at least 256^4 × five × About 80GB when 8 menuwide=8
 
 /*
 const (
-	IndexItemSize int = 1 + 4              // 固定不变
-	IndexMenuSize int = 16 * IndexItemSize // 固定不变
+	IndexItemSize int = 1 + 4              // Fixed
+	IndexMenuSize int = 16 * IndexItemSize // Fixed
 )
 
 const (
@@ -25,12 +25,12 @@ const (
 
 type HashTreeDBConfig struct {
 	// MemoryStorage
-	MemoryStorage bool // 在内存内保存数据
+	MemoryStorage bool // Save data in memory
 	// LevelDB
-	LevelDB bool // 使用 level db 保存数据
+	LevelDB bool // Save data using level dB
 	// size
-	KeySize                  uint8  // key值长度  <= 32
-	SupplementalMaxValueSize uint32 // 数据内容长度
+	KeySize                  uint8  // Key value length < = 32
+	SupplementalMaxValueSize uint32 // Data content length
 	// key config
 	//KeyReverse          bool  // key值倒序
 	//KeyPrefixSupplement uint8 // key值前缀增补
@@ -42,7 +42,7 @@ type HashTreeDBConfig struct {
 
 	// file config
 	//FileDividePartitionLevel uint8  // 文件分区层级 0为不分区
-	FileAbsPath string // 文件的储存路径
+	FileAbsPath string // File storage path
 	//FileName                 string // 保存文件的名称
 	// gc
 	//ForbidGC bool // 禁止垃圾空间回收管理
@@ -54,7 +54,7 @@ type HashTreeDBConfig struct {
 
 func NewHashTreeDBConfig(
 	fileAbsPath string,
-	mustMinValueSize uint32, // 必须补足的数据长度
+	mustMinValueSize uint32, // Data length that must be supplemented
 	keySize uint8,
 ) *HashTreeDBConfig {
 	return &HashTreeDBConfig{
@@ -121,26 +121,26 @@ func NewHashTreeDB(config *HashTreeDBConfig) *HashTreeDB {
 	db := &HashTreeDB{
 		config: config,
 	}
-	// 内存数据库
+	// In memory database
 	if config.MemoryStorage {
 		db.MemoryStorageDB = NewMemoryStorageDB()
 		return db
 	}
-	// 使用 level db
+	// Using level dB
 	if config.LevelDB {
 		//fmt.Println("config.LevelDB file path: ", config.FileAbsPath)
-		// 使用时再按需创建
+		// Create on demand when using
 		return db
 	}
 
 	panic("NewHashTreeDB  must use LevelDB!")
 
-	// 文件数据库，数据长度
+	// File database, data length
 	// db.freshRecordDataSize()
 	return db
 }
 
-// 获取或创建 level db 对象
+// Get or create a level dB object
 func (db *HashTreeDB) GetOrCreateLevelDBwithPanic() *leveldb.DB {
 	if db.LevelDB != nil {
 		return db.LevelDB
@@ -159,7 +159,7 @@ func (db *HashTreeDB) GetOrCreateLevelDBwithPanic() *leveldb.DB {
 	return db.LevelDB
 }
 
-// 创建执行单元
+// Create execution unit
 func (db *HashTreeDB) CreateNewQueryInstance(key []byte) (*QueryInstance, error) {
 	if len(key) != int(db.config.KeySize) {
 		return nil, fmt.Errorf("len(key)<%d> not more than db.config.KeySize<%d>", len(key), int(db.config.KeySize))
@@ -184,7 +184,7 @@ func (db *HashTreeDB) freshRecordDataSize() {
 */
 // close
 func (db *HashTreeDB) Close() error {
-	// 关闭 leveldb
+	// Turn off leveldb
 	if db.LevelDB != nil {
 		db.LevelDB.Close()
 	}

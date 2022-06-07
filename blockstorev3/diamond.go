@@ -82,7 +82,7 @@ func (bs *BlockStore) ReadDiamondByNumber(number uint32) (*stores.DiamondSmelt, 
 	return bs.ReadDiamond(dianame)
 }
 
-// 设置钻石数字指向的钻石名称
+// Set the diamond name pointed by the diamond number
 func (bs *BlockStore) UpdateSetDiamondNameReferToNumber(number uint32, dianame fields.DiamondName) error {
 
 	ldb, e := bs.getDB()

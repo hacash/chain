@@ -1,13 +1,13 @@
 package hashtreedb
 
-// 遍历拷贝、修改、删除数据， 只能是单文件数据库
+// Traverse, copy, modify and delete data, only single file database
 
 func (this *HashTreeDB) TraversalCopy(target *HashTreeDB) error {
-	// 不能把文件数据库的内容，拷贝到内存数据库
+	// The contents of the file database cannot be copied to the memory database
 
-	// 内存数据库
+	// In memory database
 	if target.config.MemoryStorage {
-		// 遍历
+		// ergodic
 		target.MemoryStorageDB.wlok.Lock()
 		defer target.MemoryStorageDB.wlok.Unlock()
 		for k, v := range target.MemoryStorageDB.Datas {
@@ -39,7 +39,7 @@ func (this *HashTreeDB) TraversalCopy(target *HashTreeDB) error {
 
 	// LevelDB
 	if target.config.LevelDB {
-		// 遍历
+		// ergodic
 		iter := target.GetOrCreateLevelDBwithPanic().NewIterator(nil, nil)
 		for iter.Next() {
 			//fmt.Printf("key:%s, value:%s\n", iter.Key(), iter.Value())
@@ -61,7 +61,7 @@ func (this *HashTreeDB) TraversalCopy(target *HashTreeDB) error {
 	panic("NewHashTreeDB  must use LevelDB!")
 
 	/*
-		// 文件数据库
+		// File database
 		if target.config.FileDividePartitionLevel > 0 {
 			return fmt.Errorf("unsupported operations for TraversalCopy: config.FilePartitionLevel must be 0")
 		}

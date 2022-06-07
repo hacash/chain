@@ -75,7 +75,7 @@ func NewBigLogDB(config *BigLogDBConfig) (*BigLogDB, error) {
 	if e0 != nil {
 		return nil, e0
 	}
-	// 创建
+	// establish
 	return NewBigLogDBByLevelDB(config, "", bsldb)
 }
 
@@ -92,7 +92,7 @@ func NewBigLogDBByLevelDB(config *BigLogDBConfig, keySubfix string, ldb *leveldb
 		LogFilePtrSeekSize+uint32(config.LogHeadMaxSize),
 		config.KeySize,
 	)
-	hsdbcnf.LevelDB = true // 必须使用 leveldb
+	hsdbcnf.LevelDB = true // Leveldb must be used
 	// new tree db
 	basedb := statedomaindb.NewStateDomainDB(hsdbcnf, ldb)
 

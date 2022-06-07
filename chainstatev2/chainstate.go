@@ -34,13 +34,13 @@ type ChainState struct {
 	balanceDB *statedomaindb.StateDomainDB
 	diamondDB *statedomaindb.StateDomainDB
 	channelDB *statedomaindb.StateDomainDB // key len = 16
-	movebtcDB *statedomaindb.StateDomainDB // 转移BTC记录
-	lockblsDB *statedomaindb.StateDomainDB // 线性锁仓地址 key len = 18
-	dmdlendDB *statedomaindb.StateDomainDB // 钻石系统借贷 key len = 14
-	btclendDB *statedomaindb.StateDomainDB // 钻石系统借贷 key len = 15
-	usrlendDB *statedomaindb.StateDomainDB // 钻石系统借贷 key len = 17
-	chaswapDB *statedomaindb.StateDomainDB // channel 和 chain 原子互换 key len = 16
-	txhxchkDB *statedomaindb.StateDomainDB // 交易是否存在（已经上链）
+	movebtcDB *statedomaindb.StateDomainDB // Transfer BTC records
+	lockblsDB *statedomaindb.StateDomainDB // Linear lock address key len = 18
+	dmdlendDB *statedomaindb.StateDomainDB // Diamond system loan key len = 14
+	btclendDB *statedomaindb.StateDomainDB // Diamond system loan key len = 15
+	usrlendDB *statedomaindb.StateDomainDB // Diamond system loan key len = 17
+	chaswapDB *statedomaindb.StateDomainDB // Channel and chain atoms exchange key len = 16
+	txhxchkDB *statedomaindb.StateDomainDB // Whether the transaction exists (has been linked)
 
 	// store
 	datastore          interfacev2.BlockStore
@@ -85,18 +85,18 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 	// laststatusDB
 	lstcnf := statedomaindb.NewStateDomainDBConfig("laststatus", 0, 0)
 	if isSubBranchTemporary {
-		lstcnf.MemoryStorage = true // 内存数据库
+		lstcnf.MemoryStorage = true // In memory database
 	} else {
-		lstcnf.LevelDB = true // 使用 level db
+		lstcnf.LevelDB = true // Using level dB
 	}
 	laststatusDB := statedomaindb.NewStateDomainDB(lstcnf, useldb)
 
 	// balanceDB
 	blscnf := statedomaindb.NewStateDomainDBConfig("balance", 0, fields.AddressSize)
 	if isSubBranchTemporary {
-		blscnf.MemoryStorage = true // 内存数据库
+		blscnf.MemoryStorage = true // In memory database
 	} else {
-		blscnf.LevelDB = true // 使用 level db
+		blscnf.LevelDB = true // Using level dB
 	}
 	balanceDB := statedomaindb.NewStateDomainDB(blscnf, useldb)
 
@@ -112,27 +112,27 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 	// diamondDB
 	dmdcnf := statedomaindb.NewStateDomainDBConfig("diamond", 0, fields.DiamondNameSize)
 	if isSubBranchTemporary {
-		dmdcnf.MemoryStorage = true // 内存数据库
+		dmdcnf.MemoryStorage = true // In memory database
 	} else {
-		dmdcnf.LevelDB = true // 使用 level db
+		dmdcnf.LevelDB = true // Using level dB
 	}
 	diamondDB := statedomaindb.NewStateDomainDB(dmdcnf, useldb)
 
 	// channelDB
 	chlcnf := statedomaindb.NewStateDomainDBConfig("channel", 0, stores.ChannelIdLength)
 	if isSubBranchTemporary {
-		chlcnf.MemoryStorage = true // 内存数据库
+		chlcnf.MemoryStorage = true // In memory database
 	} else {
-		chlcnf.LevelDB = true // 使用 level db
+		chlcnf.LevelDB = true // Using level dB
 	}
 	channelDB := statedomaindb.NewStateDomainDB(chlcnf, useldb)
 
 	// movebtcDB
 	mvbtcnf := statedomaindb.NewStateDomainDBConfig("movebtc", 32, 4)
 	if isSubBranchTemporary {
-		mvbtcnf.MemoryStorage = true // 内存数据库
+		mvbtcnf.MemoryStorage = true // In memory database
 	} else {
-		mvbtcnf.LevelDB = true // 使用 level db
+		mvbtcnf.LevelDB = true // Using level dB
 	}
 	movebtcDB := statedomaindb.NewStateDomainDB(mvbtcnf, useldb)
 
@@ -140,54 +140,54 @@ func newChainStateEx(cnf *ChainStateConfig, isSubBranchTemporary bool) (*ChainSt
 	lkblscnf := statedomaindb.NewStateDomainDBConfig("lockbls", 0, stores.LockblsIdLength)
 	//blscnf.KeyReverse = true // 倒排key
 	if isSubBranchTemporary {
-		lkblscnf.MemoryStorage = true // 内存数据库
+		lkblscnf.MemoryStorage = true // In memory database
 	} else {
-		lkblscnf.LevelDB = true // 使用 level db
+		lkblscnf.LevelDB = true // Using level dB
 	}
 	lockblsDB := statedomaindb.NewStateDomainDB(lkblscnf, useldb)
 
 	// dmdlendDB
 	dmdlendcnf := statedomaindb.NewStateDomainDBConfig("dmdlend", 0, stores.DiamondSyslendIdLength)
 	if isSubBranchTemporary {
-		dmdlendcnf.MemoryStorage = true // 内存数据库
+		dmdlendcnf.MemoryStorage = true // In memory database
 	} else {
-		dmdlendcnf.LevelDB = true // 使用 level db
+		dmdlendcnf.LevelDB = true // Using level dB
 	}
 	dmdlendDB := statedomaindb.NewStateDomainDB(dmdlendcnf, useldb)
 
 	// btclendDB
 	btclendcnf := statedomaindb.NewStateDomainDBConfig("btclend", 0, stores.BitcoinSyslendIdLength)
 	if isSubBranchTemporary {
-		btclendcnf.MemoryStorage = true // 内存数据库
+		btclendcnf.MemoryStorage = true // In memory database
 	} else {
-		btclendcnf.LevelDB = true // 使用 level db
+		btclendcnf.LevelDB = true // Using level dB
 	}
 	btclendDB := statedomaindb.NewStateDomainDB(btclendcnf, useldb)
 
 	// btclendDB
 	usrlendcnf := statedomaindb.NewStateDomainDBConfig("usrlend", 0, stores.UserLendingIdLength)
 	if isSubBranchTemporary {
-		usrlendcnf.MemoryStorage = true // 内存数据库
+		usrlendcnf.MemoryStorage = true // In memory database
 	} else {
-		usrlendcnf.LevelDB = true // 使用 level db
+		usrlendcnf.LevelDB = true // Using level dB
 	}
 	usrlendDB := statedomaindb.NewStateDomainDB(usrlendcnf, useldb)
 
 	// chaswapDB
 	chaswapcnf := statedomaindb.NewStateDomainDBConfig("chaswap", 0, fields.HashHalfCheckerSize)
 	if isSubBranchTemporary {
-		chaswapcnf.MemoryStorage = true // 内存数据库
+		chaswapcnf.MemoryStorage = true // In memory database
 	} else {
-		chaswapcnf.LevelDB = true // 使用 level db
+		chaswapcnf.LevelDB = true // Using level dB
 	}
 	chaswapDB := statedomaindb.NewStateDomainDB(chaswapcnf, useldb)
 
 	// txhxchkDB
 	txhxchkcnf := statedomaindb.NewStateDomainDBConfig("txhxchk", 1, fields.HashSize)
 	if isSubBranchTemporary {
-		txhxchkcnf.MemoryStorage = true // 内存数据库
+		txhxchkcnf.MemoryStorage = true // In memory database
 	} else {
-		txhxchkcnf.LevelDB = true // 使用 level db
+		txhxchkcnf.LevelDB = true // Using level dB
 	}
 	txhxchkDB := statedomaindb.NewStateDomainDB(txhxchkcnf, useldb)
 
@@ -308,7 +308,7 @@ func (cs *ChainState) SetBlockStore(store interfacev2.BlockStore) error {
 		return fmt.Errorf("Can only be set chainstore in the final state.")
 	}
 	cs.datastore = store
-	cs.datastore_mycreate = store // 我创建的
+	cs.datastore_mycreate = store // I created
 	return nil
 }
 
@@ -401,21 +401,21 @@ func (cs *ChainState) Fork() (interfacev2.ChainState, error) {
 
 func (cs *ChainState) IsDatabaseVersionRebuildMode() bool {
 	if cs.base != nil {
-		// 递归向上
+		// Recursive up
 		return cs.base.IsDatabaseVersionRebuildMode()
 	}
-	// 返回最终配置
+	// Return to final configuration
 	return cs.config.DatabaseVersionRebuildMode
 }
 
-// 恢复模式
+// Recovery mode
 func (cs *ChainState) SetDatabaseVersionRebuildMode(set bool) {
 	if cs.base != nil {
-		// 递归向上
+		// Recursive up
 		cs.base.SetDatabaseVersionRebuildMode(set)
 		return
 	}
-	// 恢复最终配置
+	// Restore final configuration
 	cs.config.DatabaseVersionRebuildMode = false
 }
 
@@ -423,10 +423,10 @@ func (cs *ChainState) SetDatabaseVersionRebuildMode(set bool) {
 func (cs *ChainState) NewSubBranchTemporaryChainState() (*ChainState, error) {
 
 	tempcnf := NewEmptyChainStateConfig()
-	// 拷贝一些配置
+	// Copy some configurations
 	tempcnf.BTCMoveCheckEnable = cs.config.BTCMoveCheckEnable
 	tempcnf.BTCMoveCheckLogsURL = cs.config.BTCMoveCheckLogsURL
-	// 拷贝完毕
+	// Copy complete
 	newTempState, err1 := newChainStateEx(tempcnf, true)
 	if err1 != nil {
 		return nil, err1

@@ -63,7 +63,7 @@ func (ins *QueryInstance) Destroy() {
 	if !ins.db.config.MemoryStorage && !ins.db.config.LevelDB {
 		// ins.db.releaseControlOfFile(ins)
 	}
-	// wipe data 
+	// wipe data
 	ins.db = nil
 	ins.key = nil
 	//ins.hash = nil

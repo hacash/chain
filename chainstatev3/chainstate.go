@@ -46,7 +46,7 @@ func NewChainStateImmutable(cnf *ChainStateConfig) (*ChainState, error) {
 
 	/////////////  TEST BEGIN /////////////
 	//go func() {
-	//	time.Sleep(time.Second * 3)
+	//	time.Sleep(time.Second * 1)
 	//	Test_298576394857394857(ins)
 	//}()
 	/////////////  TEST END   /////////////

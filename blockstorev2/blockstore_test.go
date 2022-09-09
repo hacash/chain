@@ -48,7 +48,7 @@ func Test_t1(t *testing.T) {
 	coinbasetx1.Message = "firstcoinbase"
 	block1.AddTransaction(coinbasetx1)
 	block1.AddTransaction(tx1)
-	block1.SetMrklRoot(blocks.CalculateMrklRoot(block1.GetTransactions())) // update mrkl root
+	//block1.SetMrklRoot(blocks.CalculateMrklRoot(block1.GetTransactions())) // update mrkl root
 	// serialize
 	blkdatas, e3 := block1.Serialize()
 	if e3 != nil {

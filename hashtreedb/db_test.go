@@ -9,12 +9,12 @@ import (
 )
 
 const (
-	TestDir = "/media/yangjie/500GB/Hacash/src/github.com/hacash/chain/data1/"
+	TestDir = "./github.com/hacash/chain/data1/"
 )
 
 func Test_gc(t *testing.T) {
 
-	TestDir := "/home/shiqiujie/Desktop/Hacash/go/src/github.com/hacash/chain/hashtreedb/data1"
+	TestDir := "./github.com/hacash/chain/hashtreedb/data1"
 
 	cnf := NewHashTreeDBConfig(TestDir, 4, 4)
 	//cnf.FileDividePartitionLevel = 2

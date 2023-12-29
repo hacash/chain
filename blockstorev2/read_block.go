@@ -55,6 +55,10 @@ func (cs *BlockStore) ReadBlockHeadBytesByHash(blkhash fields.Hash) ([]byte, err
 	return blkdata, nil
 }
 
+func (cs *BlockStore) ReadLastBlockHeight() (uint64, error) {
+	return 1, nil
+}
+
 // block data store
 func (cs *BlockStore) ReadBlockHeadBytesByHeight(height uint64) ([]byte, error) {
 	// read

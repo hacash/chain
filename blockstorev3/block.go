@@ -1,10 +1,26 @@
 package blockstorev3
 
 import (
+	"encoding/binary"
 	"github.com/hacash/chain/leveldb"
 	"github.com/hacash/core/fields"
 	"github.com/hacash/core/interfaces"
 )
+
+func (bs *BlockStore) ReadLastBlockHeight() (uint64, error) {
+	if bs.lastBlockHeight > 0 {
+		return bs.lastBlockHeight, nil
+	}
+	ldb, e := bs.getDB()
+	if e != nil {
+		return 0, e
+	}
+	vnum, e := ldb.Get([]byte("lastblkhei"), nil)
+	if e != nil {
+		return 0, e
+	}
+	return binary.BigEndian.Uint64(vnum), nil
+}
 
 func (bs *BlockStore) SaveBlock(fullblock interfaces.Block) error {
 
@@ -13,6 +29,7 @@ func (bs *BlockStore) SaveBlock(fullblock interfaces.Block) error {
 		return e
 	}
 
+	blkhei := fullblock.GetHeight()
 	blockhash := fullblock.Hash()
 	blockbytes, e := fullblock.Serialize()
 	if e != nil {
@@ -25,6 +42,18 @@ func (bs *BlockStore) SaveBlock(fullblock interfaces.Block) error {
 	if e != nil {
 		return e
 	}
+
+	// save last height
+	if blkhei > bs.lastBlockHeight {
+		lstblkhei := make([]byte, 8)
+		binary.BigEndian.PutUint64(lstblkhei, blkhei)
+		e = ldb.Put([]byte("lastblkhei"), lstblkhei, nil)
+		if e != nil {
+			return e
+		}
+		bs.lastBlockHeight = blkhei
+	}
+
 	return nil
 }
 

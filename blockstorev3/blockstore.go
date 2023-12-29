@@ -14,6 +14,8 @@ type BlockStore struct {
 	// level db
 	ldb *leveldb.DB
 
+	lastBlockHeight uint64
+
 	btcmovelogTotalPage int // Maximum data page number
 
 	statusMux *sync.RWMutex
@@ -23,6 +25,7 @@ func NewBlockStore(cnf *BlockStoreConfig) (*BlockStore, error) {
 	store := &BlockStore{
 		config:              cnf,
 		ldb:                 nil,
+		lastBlockHeight:     0,
 		btcmovelogTotalPage: -1,
 		statusMux:           &sync.RWMutex{},
 	}

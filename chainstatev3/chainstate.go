@@ -382,7 +382,11 @@ func Test_print_all_address_balance(ldb *leveldb.DB) {
 		if hacfltn == 0 && bls.Satoshi == 0 && bls.Diamond == 0 {
 			continue
 		}
-		fmt.Printf("% 4d %-34s % 12.4f % 6d %d\n", total_address_count+1, addr.ToReadable(), hacfltn, bls.Diamond, bls.Satoshi)
+		fmt.Printf("% 4d, %-34s, % 12.4f, % 5.2f%%, % 6d, % 5.2f%%, %d\n",
+			total_address_count+1, addr.ToReadable(),
+			hacfltn, float64(hacfltn)*100.0/539730.8,
+			bls.Diamond, float64(bls.Diamond)*100.0/81985.0,
+			bls.Satoshi)
 		total_hac += float64(hacfltn)
 		total_btc += int64(bls.Satoshi)
 		total_hacd += int(bls.Diamond)

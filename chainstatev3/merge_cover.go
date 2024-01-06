@@ -7,7 +7,6 @@ import (
 	"sync"
 )
 
-//
 func (s *ChainState) TraversalCopy(src interfaces.ChainState) error {
 	sta, ok := src.(*ChainState)
 	if !ok {
@@ -46,23 +45,27 @@ func (s *ChainState) TraversalCopyByObj(src *ChainState) error {
 
 func (s ChainState) traversalCopyMemToLevelUnsafe(ldb *leveldb.DB, mem *sync.Map) error {
 	var e error = nil
+	batch := leveldb.MakeBatch(1)
 	mem.Range(func(key, value interface{}) bool {
 		// save to leveldb
 		k := key.(string)
 		v := value.(*MemoryStorageItem)
-		var e error = nil
+		//var e error = nil
 		if v.IsDelete {
 			// delete
-			e = ldb.Delete([]byte(k), nil)
+			batch.Delete([]byte(k))
+			//e = ldb.Delete([]byte(k), nil)
 		} else {
 			// save & update
-			e = ldb.Put([]byte(k), v.Value, nil)
+			batch.Put([]byte(k), v.Value)
+			//e = ldb.Put([]byte(k), v.Value, nil)
 		}
-		if e != nil {
-			return false
-		}
+		//if e != nil {
+		//	return false
+		//}
 		return true
 	})
+	e = ldb.Write(batch, nil)
 	// err
 	return e
 }
